@@ -10,6 +10,7 @@
 #include <linux/sched.h>
 #include <asm/thread_info.h>
 #include <asm/ptrace.h>
+#include <asm/suspend.h>
 
 void asm_offsets(void);
 
@@ -305,6 +306,8 @@ void asm_offsets(void)
 		  offsetof(struct task_struct, thread.fstate.fcsr)
 		- offsetof(struct task_struct, thread.fstate.f[0])
 	);
+
+	OFFSET(SUSPEND_CONTEXT_REGS, suspend_context, regs);
 
 	/*
 	 * We allocate a pt_regs on the stack when entering the kernel.  This
