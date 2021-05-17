@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config SUNXI_CCU
 	tristate "Clock support for Allwinner SoCs"
-	depends on ARCH_SUNXI || COMPILE_TEST
+	default ARCH_SUNXI || SOC_SUNXI
+	depends on ARCH_SUNXI || SOC_SUNXI || COMPILE_TEST
 	select RESET_CONTROLLER
 	default ARCH_SUNXI
 
@@ -14,13 +15,13 @@ config SUNIV_F1C100S_CCU
 
 config SUN20I_D1_CCU
 	tristate "Support for the Allwinner D1 CCU"
-	default RISCV && ARCH_SUNXI
-	depends on (RISCV && ARCH_SUNXI) || COMPILE_TEST
+	default RISCV && SOC_SUNXI
+	depends on (RISCV && SOC_SUNXI) || COMPILE_TEST
 
 config SUN20I_D1_R_CCU
 	tristate "Support for the Allwinner D1 PRCM CCU"
-	default RISCV && ARCH_SUNXI
-	depends on (RISCV && ARCH_SUNXI) || COMPILE_TEST
+	default RISCV && SOC_SUNXI
+	depends on (RISCV && SOC_SUNXI) || COMPILE_TEST
 
 config SUN50I_A64_CCU
 	tristate "Support for the Allwinner A64 CCU"
