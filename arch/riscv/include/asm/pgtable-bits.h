@@ -53,10 +53,12 @@ extern struct __riscv_pbmt_struct {
 	unsigned long mt[MT_MAX];
 } __riscv_pbmt;
 
-#define _PAGE_DMA_MASK		__riscv_pbmt.mask
 #define _PAGE_DMA_PMA		__riscv_pbmt.mt[MT_PMA]
 #define _PAGE_DMA_NC		__riscv_pbmt.mt[MT_NC]
-#define _PAGE_DMA_IO		__riscv_pbmt.mt[MT_IO]
+#define _PAGE_DMA_MASK	__riscv_custom_pte.mask
+#define _PAGE_DMA_CACHE	__riscv_custom_pte.cache
+#define _PAGE_DMA_IO	__riscv_custom_pte.io
+#define _PAGE_DMA_WC	__riscv_custom_pte.wc
 #else
 #define _PAGE_DMA_MASK		0
 #define _PAGE_DMA_PMA		0
@@ -76,11 +78,25 @@ extern struct __riscv_pbmt_struct {
 
 #define _PAGE_PFN_SHIFT 10
 
+#ifndef __ASSEMBLY__
+
+struct riscv_custom_pte {
+	unsigned long cache;
+	unsigned long mask;
+	unsigned long io;
+	unsigned long wc;
+};
+
+extern struct riscv_custom_pte __riscv_custom_pte;
+
 /* Set of bits to preserve across pte_modify() */
 #define _PAGE_CHG_MASK  (~(unsigned long)(_PAGE_PRESENT | _PAGE_READ |	\
 					  _PAGE_WRITE | _PAGE_EXEC |	\
 					  _PAGE_USER | _PAGE_GLOBAL |	\
 					  _PAGE_DMA_MASK))
+
+#endif
+
 /*
  * when all of R/W/X are zero, the PTE is a pointer to the next level
  * of the page table; otherwise, it is a leaf PTE.
