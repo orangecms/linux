@@ -654,6 +654,8 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 {
 	pmd_t __maybe_unused fix_bmap_spmd, fix_bmap_epmd;
 
+	apply_errata_setup_vm();
+
 	setup_protection_map();
 
 	kernel_map.virt_addr = KERNEL_LINK_ADDR;
@@ -928,4 +930,9 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
 {
 	return vmemmap_populate_basepages(start, end, node, NULL);
 }
+#endif
+
+#ifdef CONFIG_64BIT
+struct __riscv_pbmt_struct __riscv_pbmt __ro_after_init;
+EXPORT_SYMBOL(__riscv_pbmt);
 #endif
