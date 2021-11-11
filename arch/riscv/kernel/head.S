@@ -72,6 +72,8 @@ pe_head_start:
 relocate_enable_mmu:
 	/* Relocate return address */
 	la a1, kernel_map
+	li  t1, 0x50
+	call _halp
 	XIP_FIXUP_OFFSET a1
 	REG_L a1, KERNEL_MAP_VIRT_ADDR(a1)
 	la a2, _start
@@ -94,17 +96,27 @@ relocate_enable_mmu:
 	 * full fence here because setup_vm() just wrote these PTEs and we need
 	 * to ensure the new translations are in use.
 	 */
+	li  t1, 0x51
+	call _halp
 	la a0, trampoline_pg_dir
+	li  t1, 0x52
+	call _halp
 	XIP_FIXUP_OFFSET a0
 	srl a0, a0, PAGE_SHIFT
 	or a0, a0, a1
 	sfence.vma
-	csrw CSR_SATP, a0
+	li  t1, 0x53
+	call _halp
+	// csrw CSR_SATP, a0 // FIXME!
 .align 2
 1:
+	li  t1, 0x54
+	call _halp
 	/* Set trap vector to spin forever to help debug */
 	la a0, .Lsecondary_park
 	csrw CSR_TVEC, a0
+	li  t1, 0x55
+	call _halp
 
 	/* Reload the global pointer */
 .option push
@@ -112,15 +124,19 @@ relocate_enable_mmu:
 	la gp, __global_pointer$
 .option pop
 
+	li  t1, 0x56
+	call _halp
 	/*
 	 * Switch to kernel page tables.  A full fence is necessary in order to
 	 * avoid using the trampoline translations, which are only correct for
 	 * the first superpage.  Fetching the fence is guarnteed to work
 	 * because that first superpage is translated the same way.
 	 */
-	csrw CSR_SATP, a2
+	// csrw CSR_SATP, a2 // FIXME!
 	sfence.vma
-
+	li  t1, 0x57
+	call _halp
+	// FIXME: Seems like we never return...?
 	ret
 #endif /* CONFIG_MMU */
 #ifdef CONFIG_SMP
@@ -190,6 +206,18 @@ setup_trap_vector:
 
 END(_start)
 
+_halp:
+	.eqv TH, 0x0
+	.eqv IE, 0x4
+	li t0, 0x02500000
+	li  t2, 0x0
+	sw t2, IE(t0)
+_loop:
+	// li  t1, 0x42
+	sw t1, TH(t0)
+	// j _loop
+	ret
+
 ENTRY(_start_kernel)
 	/* Mask all interrupts */
 	csrw CSR_IE, zero
@@ -224,6 +252,8 @@ pmp_done:
 	csrr a0, CSR_MHARTID
 #endif /* CONFIG_RISCV_M_MODE */
 
+	li  t1, 0x42
+	call _halp
 	/* Load the global pointer */
 .option push
 .option norelax
@@ -249,6 +279,8 @@ pmp_done:
 	la a3, hart_lottery
 	li a2, 1
 	amoadd.w a3, a2, (a3)
+	li  t1, 0x43
+	call _halp
 	bnez a3, .Lsecondary_start
 
 #else
@@ -280,10 +312,22 @@ clear_bss:
 	add a3, a3, RISCV_SZPTR
 	blt a3, a4, clear_bss
 clear_bss_done:
+	li  t1, 0x44
+	call _halp
 #endif
 	/* Save hart ID and DTB physical address */
-	mv s0, a0
-	mv s1, a1
+	mv s0, a0 // hart ID
+	mv s1, a1 // DTB
+	mv  t1, a0
+	call _halp
+	mv  t1, a1
+	call _halp
+	srli  t1, t1, 8
+	call _halp
+	srli  t1, t1, 8
+	call _halp
+	srli  t1, t1, 8
+	call _halp
 
 	la a2, boot_cpu_hartid
 	XIP_FIXUP_OFFSET a2
@@ -293,17 +337,25 @@ clear_bss_done:
 	la sp, init_thread_union + THREAD_SIZE
 	XIP_FIXUP_OFFSET sp
 #ifdef CONFIG_BUILTIN_DTB
+	li  t1, 0x45
+	call _halp
 	la a0, __dtb_start
 #else
 	mv a0, s1
 #endif /* CONFIG_BUILTIN_DTB */
+	li  t1, 0x46
+	call _halp
 	call setup_vm
 #ifdef CONFIG_MMU
 	la a0, early_pg_dir
 	XIP_FIXUP_OFFSET a0
+	li  t1, 0x47
+	call _halp
 	call relocate_enable_mmu
 #endif /* CONFIG_MMU */
 
+	li  t1, 0x48
+	call _halp
 	call setup_trap_vector
 	/* Restore C environment */
 	la tp, init_task
@@ -314,7 +366,11 @@ clear_bss_done:
 	call kasan_early_init
 #endif
 	/* Start the kernel */
+	li  t1, 0x49
+	call _halp
 	call soc_early_init
+	li  t1, 0x4a
+	call _halp
 	tail start_kernel
 
 .Lsecondary_start:

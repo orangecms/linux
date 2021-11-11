@@ -614,6 +614,7 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 #endif
 
 	soc_setup_vm();
+	// CONTINUE HERE?
 	setup_protection_map();
 
 	kernel_map.virt_addr = KERNEL_LINK_ADDR;
