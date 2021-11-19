@@ -107,7 +107,7 @@ relocate_enable_mmu:
 	sfence.vma
 	li  t1, 0x53
 	call _halp
-	// csrw CSR_SATP, a0 // FIXME!
+	csrw CSR_SATP, a0 // FIXME!
 .align 2
 1:
 	li  t1, 0x54
@@ -132,7 +132,7 @@ relocate_enable_mmu:
 	 * the first superpage.  Fetching the fence is guarnteed to work
 	 * because that first superpage is translated the same way.
 	 */
-	// csrw CSR_SATP, a2 // FIXME!
+	csrw CSR_SATP, a2 // FIXME!
 	sfence.vma
 	li  t1, 0x57
 	call _halp
