@@ -368,8 +368,9 @@ clear_bss_done:
 	call relocate_enable_mmu
 #endif /* CONFIG_MMU */
 
-	li  t1, 0x48
-	call _halp
+	li  a1, 0x48
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	call setup_trap_vector
 	/* Restore C environment */
 	la tp, init_task
@@ -380,11 +381,13 @@ clear_bss_done:
 	call kasan_early_init
 #endif
 	/* Start the kernel */
-	li  t1, 0x49
-	call _halp
+	li  a1, 0x49
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	call soc_early_init
-	li  t1, 0x4a
-	call _halp
+	li  a1, 0x4a
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	tail start_kernel
 
 .Lsecondary_start:
