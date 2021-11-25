@@ -115,16 +115,20 @@ relocate_enable_mmu:
 	call _halp
 	li  t1, 0x53
 	call _halp
+	// From here on, we cannot use MMIO anymore! Use SBI console instead.
+	// Yes, it's deprecated and ugly to use. Deprecated ain't dead though.
+	li  a7, 0x01 # EID for sbi console putchar
+	li  a1, 0x54
+	ecall
 	csrw CSR_SATP, a0 // FIXME!
 .align 2
 1:
-	//li  t1, 0x54
-	//call _halp
 	/* Set trap vector to spin forever to help debug */
 	la a0, .Lsecondary_park
+	li  a1, 0x55
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	csrw CSR_TVEC, a0
-	//li  t1, 0x55
-	//call _halp
 
 	/* Reload the global pointer */
 .option push
@@ -132,8 +136,9 @@ relocate_enable_mmu:
 	la gp, __global_pointer$
 .option pop
 
-	//li  t1, 0x56
-	//call _halp
+	li  a1, 0x56
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	/*
 	 * Switch to kernel page tables.  A full fence is necessary in order to
 	 * avoid using the trampoline translations, which are only correct for
@@ -142,10 +147,9 @@ relocate_enable_mmu:
 	 */
 	csrw CSR_SATP, a2 // FIXME!
 	sfence.vma
-	// From here on, we cannot use MMIO anymore! Use SBI console instead.
-	// Yes, it's deprecated and ugly to use. Deprecated ain't dead though.
-	//li  t1, 0x57
-	//call _halp
+	li  a1, 0x57
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	// FIXME: Seems like we never return...?
 	ret
 #endif /* CONFIG_MMU */
