@@ -21,16 +21,16 @@
 
 static int riscv_kexec_elf_load(struct kimage *image, struct elfhdr *ehdr,
 				struct kexec_elf_info *elf_info, unsigned long old_pbase,
-				unsigned long new_pbase)
+				unsigned long new_pbase, unsigned long *last_kaddr)
 {
 	int i;
 	int ret = 0;
 	size_t size;
 	struct kexec_buf kbuf;
+	unsigned long klast = 0;
 	const struct elf_phdr *phdr;
 
 	kbuf.image = image;
-
 	for (i = 0; i < ehdr->e_phnum; i++) {
 		phdr = &elf_info->proghdrs[i];
 		if (phdr->p_type != PT_LOAD)
@@ -49,8 +49,11 @@ static int riscv_kexec_elf_load(struct kimage *image, struct elfhdr *ehdr,
 		ret = kexec_add_buffer(&kbuf);
 		if (ret)
 			break;
+		if (klast < kbuf.mem + kbuf.memsz)
+			klast = kbuf.mem + kbuf.memsz;
 	}
 
+	*last_kaddr = klast;
 	return ret;
 }
 
@@ -106,6 +109,7 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
 	unsigned long old_kernel_pbase = ULONG_MAX;
 	unsigned long new_kernel_pbase = 0UL;
 	unsigned long initrd_pbase = 0UL;
+	unsigned long last_kaddr;
 	void *fdt;
 	struct elfhdr ehdr;
 	struct kexec_buf kbuf;
@@ -122,13 +126,16 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
 	pr_notice("The entry point of kernel at 0x%lx\n", image->start);
 
 	/* Add the kernel binary to the image */
-	ret = riscv_kexec_elf_load(image, &ehdr, &elf_info,
-							old_kernel_pbase, new_kernel_pbase);
+	ret = riscv_kexec_elf_load(image, &ehdr, &elf_info, old_kernel_pbase,
+				   new_kernel_pbase, &last_kaddr);
 	if (ret)
 		goto out;
 
 	kbuf.image = image;
-	kbuf.buf_min = new_kernel_pbase + kernel_len;
+	kbuf.buf_min = last_kaddr;
+#if defined(CONFIG_64BIT) && defined(CONFIG_STRICT_KERNEL_RWX)
+	kbuf.buf_min = (kbuf.buf_min + PMD_SIZE - 1) & PMD_MASK;
+#endif
 	kbuf.buf_max = ULONG_MAX;
 	/* Add the initrd to the image */
 	if (initrd != NULL) {
