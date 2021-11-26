@@ -72,8 +72,6 @@ pe_head_start:
 relocate_enable_mmu:
 	/* Relocate return address */
 	la a1, kernel_map
-	li  t1, 0x50
-	call _halp
 	XIP_FIXUP_OFFSET a1
 	REG_L a1, KERNEL_MAP_VIRT_ADDR(a1)
 	la a2, _start
@@ -96,29 +94,17 @@ relocate_enable_mmu:
 	 * full fence here because setup_vm() just wrote these PTEs and we need
 	 * to ensure the new translations are in use.
 	 */
-	li  t1, 0x51
-	call _halp
 	la a0, trampoline_pg_dir
-	li  t1, 0x52
-	call _halp
 	XIP_FIXUP_OFFSET a0
 	srl a0, a0, PAGE_SHIFT
 	or a0, a0, a1
 	sfence.vma
-	// From here on, we cannot use MMIO anymore! Use SBI console instead.
-	// Yes, it's deprecated and ugly to use. Deprecated ain't dead though.
 	csrw CSR_SATP, a0
-	li  a0, 0x54
-	li  a7, 0x01
-	ecall
 .align 2
 1:
 	/* Set trap vector to spin forever to help debug */
 	la a0, .Lsecondary_park
 	csrw CSR_TVEC, a0
-	li  a0, 0x55
-	li  a7, 0x01 # EID for sbi console putchar
-	ecall
 
 	/* Reload the global pointer */
 .option push
@@ -126,9 +112,6 @@ relocate_enable_mmu:
 	la gp, __global_pointer$
 .option pop
 
-	li  a0, 0x56
-	li  a7, 0x01 # EID for sbi console putchar
-	ecall
 	/*
 	 * Switch to kernel page tables.  A full fence is necessary in order to
 	 * avoid using the trampoline translations, which are only correct for
@@ -136,10 +119,8 @@ relocate_enable_mmu:
 	 * because that first superpage is translated the same way.
 	 */
 	csrw CSR_SATP, a2
-	li  a0, 'W' # 0x57
-	li  a7, 0x01 # EID for sbi console putchar
-	ecall
 	sfence.vma
+
 	ret
 #endif /* CONFIG_MMU */
 #ifdef CONFIG_SMP
@@ -209,18 +190,6 @@ setup_trap_vector:
 
 END(_start)
 
-_halp:
-	.eqv TH, 0x0
-	.eqv IE, 0x4
-	li t0, 0x02500000
-	li  t2, 0x0
-	sw t2, IE(t0)
-_loop:
-	// li  t1, 0x42
-	sw t1, TH(t0)
-	// j _loop
-	ret
-
 ENTRY(_start_kernel)
 	/* Mask all interrupts */
 	csrw CSR_IE, zero
@@ -255,8 +224,6 @@ pmp_done:
 	csrr a0, CSR_MHARTID
 #endif /* CONFIG_RISCV_M_MODE */
 
-	li  t1, 0x42
-	call _halp
 	/* Load the global pointer */
 .option push
 .option norelax
@@ -282,8 +249,6 @@ pmp_done:
 	la a3, hart_lottery
 	li a2, 1
 	amoadd.w a3, a2, (a3)
-	li  t1, 0x43
-	call _halp
 	bnez a3, .Lsecondary_start
 
 #else
@@ -315,22 +280,10 @@ clear_bss:
 	add a3, a3, RISCV_SZPTR
 	blt a3, a4, clear_bss
 clear_bss_done:
-	li  t1, 0x44
-	call _halp
 #endif
 	/* Save hart ID and DTB physical address */
-	mv s0, a0 // hart ID
-	mv s1, a1 // DTB
-	li  a7, 0x01
-	ecall
-	// mv  a0, a1
-	// ecall
-	// srli  a0, a0, 8
-	// ecall
-	// srli  a0, a0, 8
-	// ecall
-	// srli  a0, a0, 8
-	// ecall
+	mv s0, a0
+	mv s1, a1
 
 	la a2, boot_cpu_hartid
 	XIP_FIXUP_OFFSET a2
@@ -340,84 +293,28 @@ clear_bss_done:
 	la sp, init_thread_union + THREAD_SIZE
 	XIP_FIXUP_OFFSET sp
 #ifdef CONFIG_BUILTIN_DTB
-	li  t1, 'E'
-	call _halp
 	la a0, __dtb_start
 #else
 	mv a0, s1
 #endif /* CONFIG_BUILTIN_DTB */
-	li  a7, 0x01
-	ecall
-	//li  t1, 'F'
-	//call _halp
 	call setup_vm
 #ifdef CONFIG_MMU
 	la a0, early_pg_dir
 	XIP_FIXUP_OFFSET a0
-	//li  t1, 'G'
-	//call _halp
-	//li  a0, '1'
-	li  a7, 0x01
-	ecall
 	call relocate_enable_mmu
-	li  a0, '1'
-	li  a7, 0x01
-	ecall
 #endif /* CONFIG_MMU */
 
 	call setup_trap_vector
-	li  a0, '2'
-	li  a7, 0x01 # EID for sbi console putchar
-	ecall
 	/* Restore C environment */
 	la tp, init_task
 	sw zero, TASK_TI_CPU(tp)
 	la sp, init_thread_union + THREAD_SIZE
 
-	li  a0, '3'
-	li  a7, 0x01
-	ecall
 #ifdef CONFIG_KASAN
 	call kasan_early_init
 #endif
 	/* Start the kernel */
-	li  a0, '4'
-	li  a7, 0x01
-	ecall
 	call soc_early_init
-	li  a0, '5'
-	li  a7, 0x01
-	ecall
-	li  a0, '\r'
-	li  a7, 0x01
-	ecall
-	li  a0, '\n'
-	li  a7, 0x01
-	ecall
-	li  a0, '='
-	li  a7, 0x01
-	ecall
-	li  a0, 'D'
-	li  a7, 0x01
-	ecall
-	li  a0, 'O'
-	li  a7, 0x01
-	ecall
-	li  a0, 'N'
-	li  a7, 0x01
-	ecall
-	li  a0, 'E'
-	li  a7, 0x01
-	ecall
-	li  a0, '='
-	li  a7, 0x01
-	ecall
-	li  a0, '\r'
-	li  a7, 0x01
-	ecall
-	li  a0, '\n'
-	li  a7, 0x01
-	ecall
 	tail start_kernel
 
 .Lsecondary_start:
