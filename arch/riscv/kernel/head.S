@@ -72,8 +72,6 @@ pe_head_start:
 relocate_enable_mmu:
 	/* Relocate return address */
 	la a1, kernel_map
-	li  t1, 0x50
-	call _halp
 	XIP_FIXUP_OFFSET a1
 	REG_L a1, KERNEL_MAP_VIRT_ADDR(a1)
 	la a2, _start
@@ -96,11 +94,7 @@ relocate_enable_mmu:
 	 * full fence here because setup_vm() just wrote these PTEs and we need
 	 * to ensure the new translations are in use.
 	 */
-	li  t1, 0x51
-	call _halp
 	la a0, trampoline_pg_dir
-	li  t1, 0x52
-	call _halp
 	XIP_FIXUP_OFFSET a0
 	srl a0, a0, PAGE_SHIFT
 	or a0, a0, a1
@@ -255,8 +249,6 @@ pmp_done:
 	csrr a0, CSR_MHARTID
 #endif /* CONFIG_RISCV_M_MODE */
 
-	li  t1, 0x42
-	call _halp
 	/* Load the global pointer */
 .option push
 .option norelax
@@ -282,8 +274,6 @@ pmp_done:
 	la a3, hart_lottery
 	li a2, 1
 	amoadd.w a3, a2, (a3)
-	li  t1, 0x43
-	call _halp
 	bnez a3, .Lsecondary_start
 
 #else
@@ -315,8 +305,6 @@ clear_bss:
 	add a3, a3, RISCV_SZPTR
 	blt a3, a4, clear_bss
 clear_bss_done:
-	li  t1, 0x44
-	call _halp
 #endif
 	/* Save hart ID and DTB physical address */
 	mv s0, a0 // hart ID
@@ -340,23 +328,16 @@ clear_bss_done:
 	la sp, init_thread_union + THREAD_SIZE
 	XIP_FIXUP_OFFSET sp
 #ifdef CONFIG_BUILTIN_DTB
-	li  t1, 'E'
-	call _halp
 	la a0, __dtb_start
 #else
 	mv a0, s1
 #endif /* CONFIG_BUILTIN_DTB */
 	li  a7, 0x01
 	ecall
-	//li  t1, 'F'
-	//call _halp
 	call setup_vm
 #ifdef CONFIG_MMU
 	la a0, early_pg_dir
 	XIP_FIXUP_OFFSET a0
-	//li  t1, 'G'
-	//call _halp
-	//li  a0, '1'
 	li  a7, 0x01
 	ecall
 	call relocate_enable_mmu
