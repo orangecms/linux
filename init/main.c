@@ -690,18 +690,21 @@ noinline void __ref rest_init(void)
 	struct task_struct *tsk;
 	int pid;
 
+  pr_info("rcu_scheduler_starting");
 	rcu_scheduler_starting();
 	/*
 	 * We need to spawn init first so that it obtains pid 1, however
 	 * the init task will end up wanting to create kthreads, which, if
 	 * we schedule it before we create kthreadd, will OOPS.
 	 */
+  pr_info("kernel_thread");
 	pid = kernel_thread(kernel_init, NULL, CLONE_FS);
 	/*
 	 * Pin init on the boot CPU. Task migration is not properly working
 	 * until sched_init_smp() has been run. It will set the allowed
 	 * CPUs for init to the non isolated CPUs.
 	 */
+  pr_info("rcu_read_lock");
 	rcu_read_lock();
 	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
 	tsk->flags |= PF_NO_SETAFFINITY;
@@ -723,6 +726,7 @@ noinline void __ref rest_init(void)
 	 */
 	system_state = SYSTEM_SCHEDULING;
 
+  pr_info("complete");
 	complete(&kthreadd_done);
 
 	/*
@@ -731,6 +735,7 @@ noinline void __ref rest_init(void)
 	 */
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
+  pr_info("cpu_startup_entry");
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
@@ -1049,14 +1054,19 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * - add_latent_entropy() to get any latent entropy
 	 * - adding command line entropy
 	 */
-	rand_initialize();
+  pr_info("SKIP rand_initialize");
+	// rand_initialize();
 	add_latent_entropy();
-	add_device_randomness(command_line, strlen(command_line));
+  pr_info("SKIP add_device_randomness");
+	// add_device_randomness(command_line, strlen(command_line));
 	boot_init_stack_canary();
 
-	time_init();
-	perf_event_init();
-	profile_init();
+  pr_info("SKIP time_init");
+	// time_init();
+  pr_info("SKIP perf_event_init");
+	// perf_event_init();
+  pr_info("SKIP profile_init");
+	// profile_init();
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
@@ -1107,7 +1117,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	if (late_time_init)
 		late_time_init();
 	sched_clock_init();
-	calibrate_delay();
+  pr_info("SKIP calibrate_delay");
+	// calibrate_delay();
 	pid_idr_init();
 	anon_vma_init();
 #ifdef CONFIG_X86
@@ -1141,6 +1152,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	kcsan_init();
 
 	/* Do the rest non-__init'ed, we're now alive */
+  pr_info("VROOM VROOM");
 	arch_call_rest_init();
 
 	prevent_tail_call_optimization();
