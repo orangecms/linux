@@ -124,8 +124,8 @@ void __init mem_init(void)
 	else
 		swiotlb_force = SWIOTLB_NO_FORCE;
 #endif
+  pr_info("__va high_memory");
 	high_memory = (void *)(__va(PFN_PHYS(max_low_pfn)));
-	memblock_free_all();
 
 	print_vm_layout();
 }
@@ -211,6 +211,7 @@ static void __init setup_bootmem(void)
 	dma32_phys_limit = min(4UL * SZ_1G, (unsigned long)PFN_PHYS(max_low_pfn));
 	set_max_mapnr(max_low_pfn - ARCH_PFN_OFFSET);
 
+	pr_info("reserve_initrd_mem");
 	reserve_initrd_mem();
 	/*
 	 * If DTB is built in, no need to reserve its memblock.
@@ -221,7 +222,9 @@ static void __init setup_bootmem(void)
 	if (!IS_ENABLED(CONFIG_BUILTIN_DTB))
 		memblock_reserve(dtb_early_pa, fdt_totalsize(dtb_early_va));
 
+	pr_info("early_init_fdt_scan_reserved_mem");
 	early_init_fdt_scan_reserved_mem();
+	pr_info("dma_contiguous_reserve");
 	dma_contiguous_reserve(dma32_phys_limit);
 	if (IS_ENABLED(CONFIG_64BIT))
 		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
@@ -739,6 +742,7 @@ static void __init setup_vm_final(void)
 			   __pa_symbol(fixmap_pgd_next),
 			   PGDIR_SIZE, PAGE_TABLE);
 
+  pr_info("map all banks in linear mapping");
 	/* Map all memory banks in the linear mapping */
 	for_each_mem_range(i, &start, &end) {
 		if (start >= end)
@@ -760,6 +764,7 @@ static void __init setup_vm_final(void)
 
 #ifdef CONFIG_64BIT
 	/* Map the kernel */
+  pr_info("create_kernel_page_table");
 	create_kernel_page_table(swapper_pg_dir, false);
 #endif
 
@@ -769,7 +774,9 @@ static void __init setup_vm_final(void)
 
 	/* Move to swapper page table */
 	csr_write(CSR_SATP, PFN_DOWN(__pa_symbol(swapper_pg_dir)) | SATP_MODE);
+  pr_info("local_flush_tlb_all");
 	local_flush_tlb_all();
+  pr_info("local_flush_tlb_all done");
 
 	/* generic page allocation functions must be used to setup page table */
 	pt_ops.alloc_pte = alloc_pte_late;
@@ -854,7 +861,9 @@ static void __init reserve_crashkernel(void)
 
 void __init paging_init(void)
 {
+	pr_info("setup_bootmem");
 	setup_bootmem();
+	pr_info("setup_vm_final");
 	setup_vm_final();
 }
 

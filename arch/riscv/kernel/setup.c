@@ -263,27 +263,45 @@ static void __init parse_dtb(void)
 void __init setup_arch(char **cmdline_p)
 {
 	parse_dtb();
+	pr_info("setup_initial_init_mm");
 	setup_initial_init_mm(_stext, _etext, _edata, _end);
 
 	*cmdline_p = boot_command_line;
 
+	pr_info("early_ioremap_setup");
 	early_ioremap_setup();
+	pr_info("jump_label_init");
 	jump_label_init();
+	pr_info("parse_early_param");
 	parse_early_param();
 
+	pr_info("efi_init");
 	efi_init();
+	pr_info("paging_init");
 	paging_init();
 #if IS_ENABLED(CONFIG_BUILTIN_DTB)
+  pr_info("unflatten_and_copy_device_tree");
 	unflatten_and_copy_device_tree();
 #else
-	if (early_init_dt_verify(__va(XIP_FIXUP(dtb_early_pa))))
+  // YOLO
+	pr_info("early_init_dt_verify");
+	pr_info("dtb_early_pa %d\n", dtb_early_pa);
+  uintptr_t fixed_addr = XIP_FIXUP(dtb_early_pa);
+	pr_info("dtb_early_pa fixed %d\n", fixed_addr);
+  uintptr_t fixed_addr__va = __va(fixed_addr);
+	pr_info("dtb_early_pa __va %d\n", fixed_addr__va);
+	if (early_init_dt_verify(fixed_addr__va)) {
+    pr_info("unflatten_device_tree");
 		unflatten_device_tree();
-	else
+  } else
 		pr_err("No DTB found in kernel mappings\n");
 #endif
+	pr_info("misc_mem_init");
 	misc_mem_init();
 
+	pr_info("init_resources");
 	init_resources();
+	pr_info("sbi_init");
 	sbi_init();
 
 #ifdef CONFIG_KASAN

@@ -834,19 +834,29 @@ static void __init mm_init(void)
 	init_mem_debugging_and_hardening();
 	kfence_alloc_pool();
 	report_meminit();
+  pr_info("stack_depot_init");
 	stack_depot_init();
+  pr_info("mem_init");
 	mem_init();
 	mem_init_print_info();
 	/* page_owner must be initialized after buddy is ready */
+  pr_info("page_ext_init_flatmem_late");
 	page_ext_init_flatmem_late();
+  pr_info("kmem_cache_init");
 	kmem_cache_init();
+  pr_info("kmemleak_init");
 	kmemleak_init();
+  pr_info("pgtable_init");
 	pgtable_init();
+  pr_info("debug_objects_mem_init");
 	debug_objects_mem_init();
+  pr_info("vmalloc_init");
 	vmalloc_init();
 	/* Should be run before the first non-init thread is created */
+  pr_info("init_espfix_bsp");
 	init_espfix_bsp();
 	/* Should be run after espfix64 is set up. */
+  pr_info("pti_init");
 	pti_init();
 }
 
@@ -979,11 +989,14 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
+  pr_info("mm_init");
 	mm_init();
 
+  pr_info("ftrace_init");
 	ftrace_init();
 
 	/* trace_printk can be enabled here */
+  pr_info("early_trace_init");
 	early_trace_init();
 
 	/*
@@ -991,6 +1004,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * timer interrupt). Full topology setup happens at smp_init()
 	 * time - but meanwhile we still have a functioning scheduler.
 	 */
+  pr_info("sched_init");
 	sched_init();
 
 	if (WARN(!irqs_disabled(),
