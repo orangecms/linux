@@ -733,6 +733,7 @@ noinline void __ref rest_init(void)
 	 * The boot idle thread must execute schedule()
 	 * at least once to get things moving:
 	 */
+  pr_info("schedule_preempt_disabled");
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
   pr_info("cpu_startup_entry");

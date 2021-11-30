@@ -4258,12 +4258,17 @@ static int __init futex_init(void)
 					       &futex_shift, NULL,
 					       futex_hashsize, futex_hashsize);
 	futex_hashsize = 1UL << futex_shift;
+  pr_info("futex_hashsize %d", futex_hashsize);
 
+  pr_info("futex_detect_cmpxchg");
 	futex_detect_cmpxchg();
 
 	for (i = 0; i < futex_hashsize; i++) {
+    pr_info("atomic_set");
 		atomic_set(&futex_queues[i].waiters, 0);
+    pr_info("plist_head_init");
 		plist_head_init(&futex_queues[i].chain);
+    pr_info("spin_lock_init");
 		spin_lock_init(&futex_queues[i].lock);
 	}
 

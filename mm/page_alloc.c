@@ -8777,15 +8777,19 @@ void *__init alloc_large_system_hash(const char *tablename,
 	if (!table)
 		panic("Failed to allocate %s hash table\n", tablename);
 
+  pr_info("===== we're here");
 	pr_info("%s hash table entries: %ld (order: %d, %lu bytes, %s)\n",
 		tablename, 1UL << log2qty, ilog2(size) - PAGE_SHIFT, size,
 		virt ? (huge ? "vmalloc hugepage" : "vmalloc") : "linear");
 
+  pr_info("===== 1");
 	if (_hash_shift)
 		*_hash_shift = log2qty;
+  pr_info("===== 2");
 	if (_hash_mask)
 		*_hash_mask = (1 << log2qty) - 1;
 
+  pr_info("===== 3");
 	return table;
 }
 
