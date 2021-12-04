@@ -3,7 +3,6 @@
 #include <linux/dma-map-ops.h>
 #include <asm/sbi.h>
 
-/*
 void arch_dma_prep_coherent(struct page *page, size_t size)
 {
 	void *ptr = page_address(page);
@@ -40,7 +39,6 @@ void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
 		BUG();
 	}
 }
-*/
 
 pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 			      unsigned long size, pgprot_t vma_prot)

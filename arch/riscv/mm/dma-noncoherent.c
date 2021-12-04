@@ -28,6 +28,7 @@ static void __dma_sync(phys_addr_t paddr, size_t size, enum dma_data_direction d
 		dma_cache_sync->cache_flush(paddr, size);
 }
 
+/*
 void arch_sync_dma_for_device(phys_addr_t paddr, size_t size, enum dma_data_direction dir)
 {
 	if (!dma_cache_sync)
@@ -43,6 +44,7 @@ void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size, enum dma_data_directi
 
 	__dma_sync(paddr, size, DMA_FROM_DEVICE);
 }
+*/
 
 void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
 		const struct iommu_ops *iommu, bool coherent)
@@ -51,6 +53,7 @@ void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
 	dev->dma_coherent = coherent;
 }
 
+/*
 void arch_dma_prep_coherent(struct page *page, size_t size)
 {
 	void *flush_addr = page_address(page);
@@ -59,6 +62,7 @@ void arch_dma_prep_coherent(struct page *page, size_t size)
 	if (dma_cache_sync && dma_cache_sync->cache_flush)
 		dma_cache_sync->cache_flush(__pa(flush_addr), size);
 }
+*/
 
 void riscv_dma_cache_sync_set(struct riscv_dma_cache_sync *ops)
 {
