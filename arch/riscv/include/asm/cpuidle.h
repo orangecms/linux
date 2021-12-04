@@ -20,7 +20,7 @@ static inline void cpu_do_idle(void)
   pr_info("mb");
 	mb();
   pr_info("WFI WFI WFI");
-	// wait_for_interrupt();
+	wait_for_interrupt();
 }
 
 #endif
