@@ -17,7 +17,7 @@ obj-y += extable.o
 obj-$(CONFIG_MMU) += fault.o pageattr.o
 obj-y += cacheflush.o
 obj-y += context.o
-#obj-y += dma-mapping.o
+obj-y += dma-mapping.o
 
 ifeq ($(CONFIG_MMU),y)
 obj-$(CONFIG_SMP) += tlbflush.o
@@ -32,4 +32,4 @@ KASAN_SANITIZE_init.o := n
 endif
 
 obj-$(CONFIG_DEBUG_VIRTUAL) += physaddr.o
-obj-$(CONFIG_RISCV_DMA_NONCOHERENT) += dma-noncoherent.o
+#obj-$(CONFIG_RISCV_DMA_NONCOHERENT) += dma-noncoherent.o
