@@ -935,6 +935,8 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
 #endif
 
 #ifdef CONFIG_64BIT
+struct __riscv_pbmt_struct __riscv_pbmt __ro_after_init;
+EXPORT_SYMBOL(__riscv_pbmt);
 struct riscv_custom_pte __riscv_custom_pte __ro_after_init;
 EXPORT_SYMBOL(__riscv_custom_pte);
 #endif
