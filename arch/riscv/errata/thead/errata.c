@@ -103,6 +103,6 @@ void __init thead_errata_patch_func(struct alt_entry *begin, struct alt_entry *e
 				     unsigned long archid, unsigned long impid)
 {
 #ifdef CONFIG_RISCV_DMA_NONCOHERENT
-	riscv_dma_cache_sync_set(&c900_dma_cache_sync);
+//	riscv_dma_cache_sync_set(&c900_dma_cache_sync);
 #endif
 }
