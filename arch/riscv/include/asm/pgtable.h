@@ -500,6 +500,21 @@ static inline pgprot_t pgprot_noncached(pgprot_t _prot)
 	return __pgprot(prot);
 }
 
+#define pgprot_writecombine pgprot_writecombine
+static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+{
+	unsigned long prot = pgprot_val(_prot);
+
+	prot &= ~_PAGE_DMA_MASK;
+	prot |= _PAGE_DMA_WC;
+
+	return __pgprot(prot);
+}
+
+#define __HAVE_PHYS_MEM_ACCESS_PROT
+extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+				     unsigned long size, pgprot_t vma_prot);
+
 /*
  * THP functions
  */
