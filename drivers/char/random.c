@@ -1118,15 +1118,11 @@ void add_device_randomness(const void *buf, unsigned int size)
 	unsigned long flags;
 
 	if (!crng_ready() && size) {
-    pr_info("crng_slow_load");
 		crng_slow_load(buf, size);
   }
 
-  pr_info("trace_add_device_randomness");
 	trace_add_device_randomness(size, _RET_IP_);
-  pr_info("spin_lock_irqsave");
 	spin_lock_irqsave(&input_pool.lock, flags);
-  pr_info("_mix_pool_bytes");
 	_mix_pool_bytes(&input_pool, buf, size);
 	_mix_pool_bytes(&input_pool, &time, sizeof(time));
   pr_info("spin_unlock_irqsave");
