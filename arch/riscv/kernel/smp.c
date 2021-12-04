@@ -170,6 +170,7 @@ void handle_IPI(struct pt_regs *regs)
 
 		if (ops & (1 << IPI_CPU_STOP)) {
 			stats[IPI_CPU_STOP]++;
+      pr_info("ipi_stop =======");
 			ipi_stop();
 		}
 

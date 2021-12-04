@@ -38,7 +38,9 @@ extern asmlinkage void ret_from_kernel_thread(void);
 
 void arch_cpu_idle(void)
 {
+  pr_info("cpu_do_idle");
 	cpu_do_idle();
+  pr_info("raw_local_irq_enable");
 	raw_local_irq_enable();
 }
 

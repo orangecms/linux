@@ -1058,8 +1058,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
   pr_info("SKIP rand_initialize");
 	// rand_initialize();
 	add_latent_entropy();
-  pr_info("SKIP add_device_randomness");
-	// add_device_randomness(command_line, strlen(command_line));
+  // pr_info("SKIP add_device_randomness");
+	add_device_randomness(command_line, strlen(command_line));
 	boot_init_stack_canary();
 
   pr_info("SKIP time_init");

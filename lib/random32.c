@@ -461,6 +461,7 @@ EXPORT_SYMBOL(prandom_seed);
  */
 static int __init prandom_init_early(void)
 {
+	return 0;
 	int i;
 	unsigned long v0, v1, v2, v3;
 

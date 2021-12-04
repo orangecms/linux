@@ -265,6 +265,7 @@ static void do_idle(void)
 	/*
 	 * Check if we need to update blocked load
 	 */
+  pr_info("nohz_run_idle_balance");
 	nohz_run_idle_balance(cpu);
 
 	/*
@@ -276,7 +277,9 @@ static void do_idle(void)
 	 * reschedule.
 	 */
 
+  pr_info("__current_set_polling");
 	__current_set_polling();
+  pr_info("tick_nohz_idle_enter");
 	tick_nohz_idle_enter();
 
 	while (!need_resched()) {
@@ -397,8 +400,11 @@ EXPORT_SYMBOL_GPL(play_idle_precise);
 
 void cpu_startup_entry(enum cpuhp_state state)
 {
+  pr_info("arch_cpu_idle_prepare");
 	arch_cpu_idle_prepare();
+  pr_info("cpuhp_online_idle");
 	cpuhp_online_idle(state);
+  pr_info("IDLE IDLE IDLE");
 	while (1)
 		do_idle();
 }

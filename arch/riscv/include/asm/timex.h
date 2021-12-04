@@ -22,7 +22,7 @@ static inline cycles_t get_cycles(void)
 #else /* !CONFIG_64BIT */
 static inline u32 get_cycles(void)
 {
-	return readl_relaxed(((u32 *)clint_time_val));
+	return 1; // readl_relaxed(((u32 *)clint_time_val));
 }
 #define get_cycles get_cycles
 

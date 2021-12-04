@@ -17,8 +17,10 @@ static inline void cpu_do_idle(void)
 	 * IO/MEM accesses are completed prior
 	 * to entering WFI.
 	 */
+  pr_info("mb");
 	mb();
-	wait_for_interrupt();
+  pr_info("WFI WFI WFI");
+	// wait_for_interrupt();
 }
 
 #endif
