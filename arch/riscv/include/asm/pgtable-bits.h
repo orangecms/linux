@@ -49,15 +49,18 @@ enum {
 };
 
 extern struct __riscv_pbmt_struct {
+	unsigned long cache;
 	unsigned long mask;
 	unsigned long mt[MT_MAX];
 } __riscv_pbmt;
 
+#define _PAGE_DMA_CACHE		__riscv_pbmt.cache
 #define _PAGE_DMA_MASK		__riscv_pbmt.mask
 #define _PAGE_DMA_PMA		__riscv_pbmt.mt[MT_PMA]
 #define _PAGE_DMA_NC		__riscv_pbmt.mt[MT_NC]
 #define _PAGE_DMA_IO		__riscv_pbmt.mt[MT_IO]
 #else
+#define _PAGE_DMA_CACHE		0
 #define _PAGE_DMA_MASK		0
 #define _PAGE_DMA_PMA		0
 #define _PAGE_DMA_NC		0

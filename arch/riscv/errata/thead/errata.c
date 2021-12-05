@@ -26,11 +26,13 @@
  * MT_NC   : (none)
  * MT_IO   : SO
  */
+#undef _PAGE_DMA_CACHE
 #undef _PAGE_MT_MASK
 #undef _PAGE_MT_PMA
 #undef _PAGE_MT_NC
 #undef _PAGE_MT_IO
 
+#define _PAGE_DMA_CACHE 0x7000000000000000
 #define _PAGE_MT_MASK	0xf800000000000000
 #define _PAGE_MT_PMA	0x5000000000000000
 #define _PAGE_MT_NC	0x0
@@ -40,6 +42,7 @@
 void __init thead_errata_setup_vm(unsigned long archid, unsigned long impid)
 {
 #ifdef CONFIG_64BIT
+	__riscv_pbmt.cache	= _PAGE_DMA_CACHE;
 	__riscv_pbmt.mask	= _PAGE_MT_MASK;
 	__riscv_pbmt.mt[MT_PMA]	= _PAGE_MT_PMA;
 	__riscv_pbmt.mt[MT_NC]	= _PAGE_MT_NC;
