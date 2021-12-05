@@ -468,13 +468,16 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 	const char *compress_name;
 	static __initdata char msg_buf[64];
 
+	printk(KERN_INFO "unpack_to_rootfs kmalloc\n");
 	header_buf = kmalloc(110, GFP_KERNEL);
 	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
 	name_buf = kmalloc(N_ALIGN(PATH_MAX), GFP_KERNEL);
+	printk(KERN_INFO "unpack_to_rootfs kmalloc done\n");
 
 	if (!header_buf || !symlink_buf || !name_buf)
 		panic_show_mem("can't allocate buffers");
 
+	printk(KERN_INFO "unpack_to_rootfs decompress detect\n");
 	state = Start;
 	this_header = 0;
 	message = NULL;
@@ -671,6 +674,8 @@ static void __init populate_initrd_image(char *err)
 static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 {
 	/* Load the built in initramfs */
+	pr_info("unpack_to_rootfs %x:%x\n", (int) __initramfs_start, (int) __initramfs_size);
+	printk(KERN_INFO "unpack_to_rootfs %x:%x\n", (int) __initramfs_start, (int) __initramfs_size);
 	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
 	if (err)
 		panic_show_mem("%s", err); /* Failed to decompress INTERNAL initramfs */
