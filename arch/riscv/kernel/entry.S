@@ -200,6 +200,10 @@ handle_syscall:
 	andi t0, t0, _TIF_SYSCALL_WORK
 	bnez t0, handle_syscall_trace_enter
 check_syscall_nr:
+  // mv t1, a7 # backup
+  // mv a1, a7
+  // li a7, 0x01 # SBI console
+  // mv a7, t1 # restore
 	/* Check to make sure we don't jump to a bogus syscall number. */
 	li t0, __NR_syscalls
 	la s0, sys_ni_syscall
@@ -543,11 +547,11 @@ ENTRY(__switch_to)
 	REG_L s9,  TASK_THREAD_S9_RA(a4)
 	REG_L s10, TASK_THREAD_S10_RA(a4)
 	REG_L s11, TASK_THREAD_S11_RA(a4)
-	/* Swap the CPU entry around. */
-	lw a3, TASK_TI_CPU(a0)
-	lw a4, TASK_TI_CPU(a1)
-	sw a3, TASK_TI_CPU(a1)
-	sw a4, TASK_TI_CPU(a0)
+	// /* Swap the CPU entry around. */
+	// lw a3, TASK_TI_CPU(a0)
+	// lw a4, TASK_TI_CPU(a1)
+	// sw a3, TASK_TI_CPU(a1)
+	// sw a4, TASK_TI_CPU(a0)
 	/* The offset of thread_info in task_struct is zero. */
 	move tp, a1
 	ret
