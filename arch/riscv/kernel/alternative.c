@@ -43,6 +43,11 @@ static void __init_or_module riscv_fill_cpu_mfr_info(struct cpu_manufacturer_inf
 		cpu_mfr_info->vendor_patch_func = sifive_errata_patch_func;
 		break;
 #endif
+#ifdef CONFIG_ERRATA_THEAD
+	case THEAD_VENDOR_ID:
+		cpu_mfr_info->vendor_patch_func = thead_errata_patch_func;
+		break;
+#endif
 	default:
 		cpu_mfr_info->vendor_patch_func = NULL;
 	}
@@ -80,6 +85,13 @@ void __init apply_boot_alternatives(void)
 	_apply_alternatives((struct alt_entry *)__alt_start,
 			    (struct alt_entry *)__alt_end,
 			    RISCV_ALTERNATIVES_BOOT);
+}
+
+void __init apply_early_boot_alternatives(void)
+{
+	_apply_alternatives((struct alt_entry *)__alt_start,
+			    (struct alt_entry *)__alt_end,
+			    RISCV_ALTERNATIVES_EARLY_BOOT);
 }
 
 #ifdef CONFIG_MODULES
