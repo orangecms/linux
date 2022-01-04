@@ -236,7 +236,11 @@
 
 			/omit-if-no-ref/
 			spi0_pins: spi0-pins {
-				pins = "PC2", "PC3", "PC4", "PC5", "PC6", "PC7";
+        /*
+         * PC2: CLK, PC3: CS0, PC4: MOSI, PC5: MISO
+         */
+				pins = "PC2", "PC3", "PC4";
+         /* "PC5"; */
 				function = "spi0";
 			};
 
