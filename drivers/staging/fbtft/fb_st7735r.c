@@ -2,6 +2,8 @@
 /*
  * FB driver for the ST7735R LCD Controller
  *
+ * see https://cdn-shop.adafruit.com/datasheets/ST7735R_V0.2.pdf
+ *
  * Copyright (C) 2013 Noralf Tronnes
  */
 
@@ -39,9 +41,16 @@ static const s16 default_init_sequence[] = {
 	-1, 0xB3, 0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D,
 
 	/* INVCTR - display inversion control
-	 * no inversion
 	 */
 	-1, 0xB4, 0x07,
+
+  /* INVOFF - display inversion off
+   */
+	// -1, 0x20,
+
+  /* INVON - display inversion on
+   */
+	-1, 0x21,
 
 	/* PWCTR1 - Power Control
 	 * -4.6V, AUTO mode
