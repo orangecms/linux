@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// Copyright (C) 2022 Jisheng Zhang <jszhang@kernel.org>
+// Copyright (C) 2022 Samuel Holland <samuel@sholland.org>
+
+#include <dt-bindings/input/input.h>
+
+#include "sun20i-d1-lichee-rv.dts"
+
+/ {
+	model = "Sipeed Lichee RV Dock";
+	compatible = "sipeed,lichee-rv-dock", "sipeed,lichee-rv",
+		     "allwinner,sun20i-d1";
+
+	aliases {
+		spi0 = &spi0;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x40200000 0x1fe00000>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+    cmdline = "console=tty0 console=ttyS0,115200 loglevel=7 earlycon cma=24M g_ether.dev_addr=02:3b:00:70:d1:0a g_ether.host_addr=02:3b:00:70:d1:0b";
+	};
+};
+
+&ohci0 {
+	status = "disabled";
+};
+
+&ehci0 {
+	status = "disabled";
+};
+
+&ehci1 {
+	status = "okay";
+};
+
+&lradc {
+	// vref-supply = <&reg_aldo>;
+	wakeup-source;
+	status = "okay";
+
+	button-160 {
+		label = "OK";
+		linux,code = <KEY_OK>;
+		channel = <0>;
+		voltage = <160000>;
+	};
+};
+
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+/*
+&reg_ldoa {
+	regulator-always-on;
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	ldo-in-supply = <&reg_vcc_3v3>;
+};
+*/
+&spi0 {
+	pinctrl-0 = <&spi0_tft_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	num-cs = <1>;
+
+	panel@0 {
+		compatible = "sitronix,st7789v";
+		buswidth = <0x8>;
+		reg = <0>;
+		dc-gpios = <&pio 2 5 GPIO_ACTIVE_HIGH>; // PC5
+		reset-gpios = <&pio 2 6 GPIO_ACTIVE_LOW>; // PC6
+		led-gpios = <&pio 3 18 GPIO_ACTIVE_HIGH>; // PD18
+		spi-max-frequency = <32000000>;
+		// FIXME: should have offsets; the screen really is 80x160
+		width = <110>;
+		height = <160>;
+		bgr = <1>;
+		txbuflen = <32768>;
+		spi-cpol;
+		spi-cpha;
+		rotate = <90>;
+		fps = <25>;
+		status = "okay";
+		debug = <1>;
+	};
+};
