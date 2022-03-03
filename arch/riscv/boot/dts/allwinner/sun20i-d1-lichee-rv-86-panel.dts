@@ -1,0 +1,229 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+// Copyright (C) 2022 Samuel Holland <samuel@sholland.org>
+
+#include <dt-bindings/input/input.h>
+
+#include "sun20i-d1-lichee-rv.dts"
+
+/ {
+	model = "Sipeed Lichee RV 86 Panel";
+	compatible = "sipeed,lichee-rv-86-panel", "sipeed,lichee-rv",
+		     "allwinner,sun20i-d1";
+
+	aliases {
+		ethernet0 = &emac;
+		mmc1 = &mmc1;
+		serial3 = &uart3;
+	};
+
+	amplifier: audio-amplifier {
+		compatible = "simple-audio-amplifier";
+		enable-gpios = <&gpio 1 10 GPIO_ACTIVE_HIGH>; /* PB10 */
+		sound-name-prefix = "Amplifier";
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		power-supply = <&reg_vcc>;
+		pwms = <&pwm 7 50000 0>;
+	};
+
+	dmic-card {
+		compatible = "simple-audio-card";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		simple-audio-card,dai-link@0 {
+			format = "pdm";
+			frame-master = <&link0_cpu>;
+			bitclock-master = <&link0_cpu>;
+
+			link0_cpu: cpu {
+				sound-dai = <&dmic>;
+			};
+
+			link0_codec: codec {
+				sound-dai = <&dmic_codec>;
+			};
+		};
+	};
+
+	dmic_codec: dmic-codec {
+		compatible = "dmic-codec";
+		num-channels = <1>;
+		#sound-dai-cells = <0>;
+	};
+
+	spi-gpio {
+		compatible = "spi-gpio";
+		cs-gpios = <&gpio 4 14 GPIO_ACTIVE_LOW>; /* PE14 */
+		mosi-gpios = <&gpio 4 12 GPIO_ACTIVE_HIGH>; /* PE12 */
+		sck-gpios = <&gpio 4 15 GPIO_ACTIVE_HIGH>; /* PE15 */
+		num-chipselects = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		panel@0 {
+			compatible = "sitronix,st7701s";
+			reg = <0>;
+			backlight = <&backlight>;
+			reset-gpios = <&gpio 6 13 GPIO_ACTIVE_LOW>; /* PG13 */
+
+			port {
+				panel_in_tcon_lcd0: endpoint {
+					remote-endpoint = <&tcon_lcd0_out_panel>;
+				};
+			};
+		};
+	};
+
+	wifi_pwrseq: wifi-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		clocks = <&ccu CLK_FANOUT1>;
+		clock-names = "ext_clock";
+		reset-gpios = <&gpio 6 12 GPIO_ACTIVE_LOW>; /* PG12 */
+		assigned-clocks = <&ccu CLK_FANOUT1>;
+		assigned-clock-rates = <32768>;
+		pinctrl-0 = <&clk_pg11_pin>;
+		pinctrl-names = "default";
+	};
+};
+
+&codec {
+	allwinner,aux-devs = <&amplifier>;
+	allwinner,routing = "Internal Speaker", "Amplifier OUTL",
+			    "Internal Speaker", "Amplifier OUTR",
+			    "Amplifier INL", "HPOUTL",
+			    "Amplifier INR", "HPOUTR",
+			    "LINEINL", "HPOUTL",
+			    "LINEINR", "HPOUTR",
+			    "MICIN3", "Internal Microphone",
+			    "Internal Microphone", "HBIAS";
+	allwinner,widgets = "Microphone", "Internal Microphone",
+			    "Speaker", "Internal Speaker";
+	status = "okay";
+};
+
+&dmic {
+	pinctrl-0 = <&dmic_pb11_d0_pin>, <&dmic_pe17_clk_pin>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&ehci1 {
+	status = "okay";
+};
+
+&emac {
+	pinctrl-0 = <&rmii_pe_pins>;
+	pinctrl-names = "default";
+	phy-handle = <&ext_rmii_phy>;
+	phy-mode = "rmii";
+	phy-supply = <&reg_vcc_3v3>;
+	status = "okay";
+};
+
+&gpio {
+	clk_pg11_pin: clk-pg11-pin {
+		pins = "PG11";
+		function = "clk";
+	};
+
+	dmic_pb11_d0_pin: dmic-pb11-d0-pin {
+		pins = "PB11";
+		function = "dmic";
+	};
+
+	dmic_pe17_clk_pin: dmic-pe17-clk-pin {
+		pins = "PE17";
+		function = "dmic";
+	};
+
+	pwm7_pd22_pin: pwm7-pd22-pin {
+		pins = "PD22";
+		function = "pwm";
+	};
+
+	uart3_pb_pins: uart3-pb-pins {
+		pins = "PB6", "PB7";
+		function = "uart3";
+	};
+};
+
+&i2c2 {
+	pinctrl-0 = <&i2c2_pb0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	touchscreen@48 {
+		compatible = "focaltech,ft6336u", "focaltech,ft6236";
+		reg = <0x48>;
+		interrupt-parent = <&gpio>;
+		interrupts = <6 14 IRQ_TYPE_LEVEL_LOW>; /* PG14 */
+		reset-gpios = <&gpio 6 15 GPIO_ACTIVE_LOW>; /* PG15 */
+		wakeup-source;
+		vcc-supply = <&reg_vcc_3v3>;
+		iovcc-supply = <&reg_vcc_3v3>;
+		touchscreen-size-x = <480>;
+		touchscreen-size-y = <480>;
+	};
+};
+
+&mdio {
+	ext_rmii_phy: ethernet-phy@1 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <1>;
+		reset-gpios = <&gpio 4 16 GPIO_ACTIVE_LOW>; /* PE16 */
+	};
+};
+
+&mmc1 {
+	bus-width = <4>;
+	mmc-pwrseq = <&wifi_pwrseq>;
+	non-removable;
+	vmmc-supply = <&reg_vcc_3v3>;
+	vqmmc-supply = <&reg_vcc_3v3>;
+	pinctrl-0 = <&mmc1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&ohci1 {
+	status = "okay";
+};
+
+&pwm {
+	pinctrl-0 = <&pwm7_pd22_pin>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&tcon_lcd0_out {
+	tcon_lcd0_out_panel: endpoint {
+		remote-endpoint = <&panel_in_tcon_lcd0>;
+	};
+};
+
+&uart1 {
+	pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	bluetooth {
+		compatible = "xradio,xr829-bt";
+		interrupt-parent = <&gpio>;
+		interrupts = <2 0 IRQ_TYPE_LEVEL_LOW>; /* PC0 */
+		device-wakeup-gpios = <&gpio 2 1 GPIO_ACTIVE_LOW>; /* PC1 */
+		reset-gpios = <&gpio 6 18 GPIO_ACTIVE_LOW>; /* PG18 */
+	};
+};
+
+&uart3 {
+	pinctrl-0 = <&uart3_pb_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&usbphy {
+	usb1_vbus-supply = <&reg_vcc>;
+};
