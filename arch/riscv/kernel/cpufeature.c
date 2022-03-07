@@ -199,6 +199,7 @@ void __init riscv_fill_hwcap(void)
 			} else {
 				SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
 				SET_ISA_EXT_MAP("svpbmt", RISCV_ISA_EXT_SVPBMT);
+				SET_ISA_EXT_MAP("zicbom", RISCV_ISA_EXT_ZICBOM);
 			}
 #undef SET_ISA_EXT_MAP
 		}
@@ -266,10 +267,26 @@ static bool __init_or_module cpufeature_svpbmt_check_func(unsigned int stage)
 	return ret;
 }
 
+static bool cpufeature_cmo_check_func(unsigned int stage)
+{
+	switch (stage) {
+	case RISCV_ALTERNATIVES_EARLY_BOOT:
+		return false;
+	default:
+		return riscv_isa_extension_available(NULL, ZICBOM);
+	}
+
+	return false;
+}
+
 static const struct cpufeature_info __initdata_or_module cpufeature_list[CPUFEATURE_NUMBER] = {
 	{
 		.name = "svpbmt",
 		.check_func = cpufeature_svpbmt_check_func
+	},
+	{
+		.name = "cmo",
+		.check_func = cpufeature_cmo_check_func
 	},
 };
 

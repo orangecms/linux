@@ -20,7 +20,8 @@
 #endif
 
 #define	CPUFEATURE_SVPBMT 0
-#define	CPUFEATURE_NUMBER 1
+#define	CPUFEATURE_CMO 1
+#define	CPUFEATURE_NUMBER 2
 
 #ifdef __ASSEMBLY__
 
@@ -85,6 +86,40 @@ asm volatile(ALTERNATIVE(								\
 #else
 #define ALT_THEAD_PMA(_val)
 #endif
+
+/*
+ * cbo.clean rs1
+ * | 31 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+ *    0...01     rs1       010      00000  0001111
+ *
+ * cbo.flush rs1
+ * | 31 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+ *    0...10     rs1       010      00000  0001111
+ *
+ * cbo.inval rs1
+ * | 31 - 20 | 19 - 15 | 14 - 12 | 11 - 7 | 6 - 0 |
+ *    0...00     rs1       010      00000  0001111
+ */
+#define CBO_INVAL_A0	".long 0x15200F"
+#define CBO_CLEAN_A0	".long 0x25200F"
+#define CBO_FLUSH_A0	".long 0x05200F"
+
+#define ALT_CMO_OP(_op, _start, _size)							\
+asm volatile(ALTERNATIVE(								\
+	"nop\n\t"									\
+	"nop\n\t"									\
+	"nop\n\t"									\
+	"nop\n\t"									\
+	"nop",										\
+	"mv a0, %1\n\t"									\
+	"j 2f\n\t"									\
+	"3:\n\t"									\
+	CBO_##_op##_A0 "\n\t"								\
+	"addi a0, a0, %0\n\t"								\
+	"2:\n\t"									\
+	"bltu a0, %2, 3b\n\t", 0, CPUFEATURE_CMO, CONFIG_RISCV_DMA_NONCOHERENT)		\
+	: : "I"(L1_CACHE_BYTES), "r"((_start) & ~(L1_CACHE_BYTES - 1)),			\
+	    "r"(ALIGN((_start) + (_size), L1_CACHE_BYTES)))
 
 #endif /* __ASSEMBLY__ */
 
