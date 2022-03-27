@@ -254,7 +254,7 @@
 			spi1_pd_pins: spi1-pd-pins {
 				// PD10: CS, PD11: CLK, PD12: MOSI, PD13: MISO, PD14: HOLD, PD15: WP
 				// pins = "PD11", "PD10", "PD12";
-				pins = "PD10", "PD11", "PD12";
+				pins = "PD10", "PD11", "PD12", "PD13";
         // , "PD13", "PD14", "PD15";
 				function = "spi1";
 			};
