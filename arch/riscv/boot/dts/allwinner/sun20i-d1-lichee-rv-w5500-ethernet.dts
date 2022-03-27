@@ -1,0 +1,204 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+// Copyright (C) 2021 Samuel Holland <samuel@sholland.org>
+
+/dts-v1/;
+
+#include "sun20i-d1.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+	model = "Sipeed Lichee RV";
+	compatible = "sipeed,lichee-rv", "allwinner,sun20i-d1";
+
+	aliases {
+		mmc0 = &mmc0;
+		serial0 = &uart0;
+		spi0 = &spi0;
+		spi1 = &spi1;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x20000000>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	reg_usbvbus: usbvbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usbvbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio 3 19 GPIO_ACTIVE_HIGH>; /* PD19 */
+		enable-active-high;
+		vin-supply = <&reg_vcc>;
+	};
+
+	reg_vcc: vcc {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	reg_vcc_3v3: vcc-3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc-3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&reg_vcc>;
+	};
+
+	reg_vdd_cpu: vdd-cpu {
+		compatible = "pwm-regulator";
+		pwms = <&pwm 0 50000 0>;
+		pwm-supply = <&reg_vcc>;
+		regulator-name = "vdd-cpu";
+		regulator-min-microvolt = <810000>;
+		regulator-max-microvolt = <1160000>;
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&reg_vdd_cpu>;
+};
+
+&ehci0 {
+	status = "okay";
+};
+
+&gpio {
+	vcc-pa-supply = <&reg_vcc_3v3>;
+	vcc-pb-supply = <&reg_vcc_3v3>;
+	vcc-pc-supply = <&reg_vcc_3v3>;
+	vcc-pd-supply = <&reg_vcc_3v3>;
+	vcc-pe-supply = <&reg_vcc_3v3>;
+	vcc-pf-supply = <&reg_vcc_3v3>;
+	vcc-pg-supply = <&reg_vcc_3v3>;
+};
+
+&lradc {
+	vref-supply = <&reg_aldo>;
+	wakeup-source;
+	status = "okay";
+
+	button-160 {
+		label = "OK";
+		linux,code = <KEY_OK>;
+		channel = <0>;
+		voltage = <160000>;
+	};
+};
+
+&mmc0 {
+	bus-width = <4>;
+	cd-gpios = <&gpio 5 6 GPIO_ACTIVE_HIGH>; /* PF6 */
+	disable-wp;
+	vmmc-supply = <&reg_vcc_3v3>;
+	vqmmc-supply = <&reg_vcc_3v3>;
+	pinctrl-0 = <&mmc0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&ohci0 {
+	status = "okay";
+};
+
+&reg_aldo {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	vdd33-supply = <&reg_vcc_3v3>;
+};
+
+&reg_hpldo {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	hpldoin-supply = <&reg_vcc_3v3>;
+};
+
+&reg_ldoa {
+	regulator-always-on;
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	ldo-in-supply = <&reg_vcc_3v3>;
+};
+
+&spi0 {
+	pinctrl-0 = <&spi0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	num-cs = <1>;
+
+	panel@0 {
+		compatible = "sitronix,st7789v";
+    buswidth = <0x8>;
+		reg = <0>;
+		reset-gpios = <&gpio 2 6 GPIO_ACTIVE_LOW>; /* PC6 */
+		dc-gpios = <&gpio 2 5 GPIO_ACTIVE_HIGH>; /* PC5 */
+		led-gpios = <&gpio 3 18 GPIO_ACTIVE_HIGH>; /* PD18 */
+		spi-max-frequency = <32000000>;
+    // FIXME: should have offsets; the screen really is 80x160
+    width = <110>;
+    height = <162>;
+    bgr = <1>;
+    txbuflen = <32768>;
+    spi-cpol;
+    spi-cpha;
+    rotate = <90>;
+    fps = <25>;
+		status = "okay";
+    debug = <0>;
+	};
+};
+
+// see also https://gist.github.com/renakim/60c4a86ac76520b694ccd377ce3ad007
+&spi1 {
+	pinctrl-0 = <&spi1_pd_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	num-cs = <1>;
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  w5500: ethernet@0 {
+    compatible = "wiznet,w5500";
+    reg = <0>;
+    spi-max-frequency = <30000000>;
+    mac-address = [00 08 DC 01 02 03];
+    // TODO: Do we need to configure reset like this?
+		// reset-gpios = <&gpio 3 14 GPIO_ACTIVE_LOW>;
+    interrupts = <3 15 IRQ_TYPE_EDGE_FALLING>;
+    interrupt-parent = <&gpio>;
+    status = "okay";
+  };
+};
+
+&ths {
+	vref-supply = <&reg_aldo>;
+};
+
+&uart0 {
+	pinctrl-0 = <&uart0_pb8_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&usb_otg {
+	dr_mode = "otg";
+	status = "okay";
+};
+
+&usbphy {
+	usb0_id_det-gpios = <&gpio 3 21 GPIO_ACTIVE_LOW>; /* PD21 */
+	usb0_vbus_det-gpios = <&gpio 3 20 GPIO_ACTIVE_HIGH>; /* PD20 */
+	usb0_vbus-supply = <&reg_usbvbus>;
+	usb1_vbus-supply = <&reg_vcc>;
+	status = "okay";
+};
