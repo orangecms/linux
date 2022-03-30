@@ -151,8 +151,10 @@
  *	scaler and 2 UI channels with scaler, bitmask would be 0xC.
  * @ccsc: select set of CCSC base addresses
  *	Set value to 0 if this is first mixer or second mixer with VEP support.
- *	Set value to 1 if this is second mixer without VEP support. Other values
- *	are invalid.
+ *	Set value to 1 if this is second mixer without VEP support.
+ *	Set value to 2 if this is first mixer or second mixer with VEP support,
+ *	and the SoC uses the MMIO layout found in the D1 SoC.
+ *	Other values are invalid.
  * @mod_rate: module clock rate that needs to be set in order to have
  *	a functional block.
  * @is_de3: true, if this is next gen display engine 3.0, false otherwise.

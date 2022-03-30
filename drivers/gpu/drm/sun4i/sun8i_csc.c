@@ -8,9 +8,10 @@
 #include "sun8i_csc.h"
 #include "sun8i_mixer.h"
 
-static const u32 ccsc_base[2][2] = {
+static const u32 ccsc_base[][2] = {
 	{CCSC00_OFFSET, CCSC01_OFFSET},
 	{CCSC10_OFFSET, CCSC11_OFFSET},
+	{CCSC00_OFFSET, CCSC01_OFFSET_D1},
 };
 
 /*
