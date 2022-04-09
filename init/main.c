@@ -939,16 +939,36 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
-
+  __asm__("li a7,0x01");
+  __asm__("li a0,'1'");
+  __asm__("ecall");
+	pr_warn("\n%s", linux_banner);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'2'");
+  __asm__("ecall");
+	pr_notice("\n%s", linux_banner);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'3'");
+  __asm__("ecall");
+// WE ARE GETTING HERE! \o/
 	/*
 	 * Interrupts are still disabled. Do necessary setups, then
 	 * enable them.
 	 */
 	boot_cpu_init();
+  __asm__("li a7,0x01");
+  __asm__("li a0,'7'");
+  __asm__("ecall");
 	page_address_init();
-	pr_notice("%s", linux_banner);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'0'");
+  __asm__("ecall");
+	pr_info("%s", linux_banner);
 	early_security_init();
 	setup_arch(&command_line);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'1'");
+  __asm__("ecall");
 	setup_boot_config();
 	setup_command_line(command_line);
 	setup_nr_cpu_ids();
@@ -958,6 +978,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	build_all_zonelists(NULL);
 	page_alloc_init();
+  __asm__("li a7,0x01");
+  __asm__("li a0,'2'");
+  __asm__("ecall");
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
 	/* parameters may set static keys */

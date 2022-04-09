@@ -222,7 +222,6 @@ static bool page_init_poisoning __read_mostly = true;
 static int __init setup_vm_debug(char *str)
 {
 	bool __page_init_poisoning = true;
-	pr_warn("you wanna 'vm_debug'\n");
 
 	/*
 	 * Calling vm_debug with no arguments is equivalent to requesting

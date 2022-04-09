@@ -2642,9 +2642,19 @@ void set_cpu_online(unsigned int cpu, bool online)
 	 * concurrent hotplug operations.
 	 */
 	if (online) {
-		if (!cpumask_test_and_set_cpu(cpu, &__cpu_online_mask))
+    __asm__("li a7,0x01");
+    __asm__("li a0,'O'");
+    __asm__("ecall");
+		if (!cpumask_test_and_set_cpu(cpu, &__cpu_online_mask)) {
+      __asm__("li a7,0x01");
+      __asm__("li a0,'!'");
+      __asm__("ecall");
 			atomic_inc(&__num_online_cpus);
+    }
 	} else {
+    __asm__("li a7,0x01");
+    __asm__("li a0,'-'");
+    __asm__("ecall");
 		if (cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask))
 			atomic_dec(&__num_online_cpus);
 	}
@@ -2658,10 +2668,22 @@ void __init boot_cpu_init(void)
 	int cpu = smp_processor_id();
 
 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
-	set_cpu_online(cpu, true);
-	set_cpu_active(cpu, true);
-	set_cpu_present(cpu, true);
-	set_cpu_possible(cpu, true);
+  //set_cpu_online(cpu, true);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'C'");
+  __asm__("ecall");
+  //set_cpu_active(cpu, true);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'D'");
+  __asm__("ecall");
+	//set_cpu_present(cpu, true);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'E'");
+  __asm__("ecall");
+	//set_cpu_possible(cpu, true);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'F'");
+  __asm__("ecall");
 
 #ifdef CONFIG_SMP
 	__boot_cpu_id = cpu;
