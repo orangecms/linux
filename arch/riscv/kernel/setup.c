@@ -263,7 +263,6 @@ static void __init parse_dtb(void)
 
 void __init setup_arch(char **cmdline_p)
 {
-	pr_info("let's C\n");
 	parse_dtb();
 	setup_initial_init_mm(_stext, _etext, _edata, _end);
 

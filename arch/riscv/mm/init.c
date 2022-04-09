@@ -916,11 +916,6 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 {
 	pmd_t __maybe_unused fix_bmap_spmd, fix_bmap_epmd;
 
-  __asm__("li a7,0x01");
-  __asm__("li a0,'L'");
-  __asm__("ecall");
-  // pr_info("MM MM MM MM"); // THIS causes illegal instruction traps -_-
-
 	kernel_map.virt_addr = KERNEL_LINK_ADDR;
 	kernel_map.page_offset = _AC(CONFIG_PAGE_OFFSET, UL);
 
@@ -955,10 +950,6 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	 */
 	memory_limit = KERN_VIRT_SIZE - (IS_ENABLED(CONFIG_64BIT) ? SZ_4G : 0);
 
-  __asm__("li a7,0x01");
-  __asm__("li a0,'I'");
-  __asm__("ecall");
-
 	/* Sanity check alignment and size */
 	BUG_ON((PAGE_OFFSET % PGDIR_SIZE) != 0);
 	BUG_ON((kernel_map.phys_addr % PMD_SIZE) != 0);
@@ -977,10 +968,6 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	/* Setup early PGD for fixmap */
 	create_pgd_mapping(early_pg_dir, FIXADDR_START,
 			   fixmap_pgd_next, PGDIR_SIZE, PAGE_TABLE);
-
-  __asm__("li a7,0x01");
-  __asm__("li a0,'N'");
-  __asm__("ecall");
 
 #ifndef __PAGETABLE_PMD_FOLDED
 	/* Setup fixmap P4D and PUD */
@@ -1022,10 +1009,6 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	 */
 	create_kernel_page_table(early_pg_dir, true);
 
-  __asm__("li a7,0x01");
-  __asm__("li a0,'U'");
-  __asm__("ecall");
-
 	/* Setup early mapping for FDT early scan */
 	create_fdt_early_page_table(early_pg_dir, dtb_pa);
 
@@ -1058,10 +1041,6 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 		pr_warn("FIX_BTMAP_BEGIN:     %d\n", FIX_BTMAP_BEGIN);
 	}
 #endif
-
-  __asm__("li a7,0x01");
-  __asm__("li a0,'X'");
-  __asm__("ecall");
 
 	pt_ops_set_fixmap();
 }
