@@ -100,8 +100,15 @@ relocate_enable_mmu:
 	XIP_FIXUP_OFFSET a0
 	srl a0, a0, PAGE_SHIFT
 	or a0, a0, a1
+	li  a7, 0x01
+	ecall
 	sfence.vma
+	li  a7, 0x01
+	ecall
 	csrw CSR_SATP, a0
+	li  a0, 'j'
+	li  a7, 0x01
+	ecall
 .align 2
 1:
 	/* Set trap vector to spin forever to help debug */
@@ -125,12 +132,21 @@ relocate_enable_mmu:
 
 	ret
 #endif /* CONFIG_MMU */
+	li  a0, 'j'
+	li  a7, 0x01
+	ecall
 #ifdef CONFIG_SMP
 	.global secondary_start_sbi
+	li  a0, 'j'
+	li  a7, 0x01
+	ecall
 secondary_start_sbi:
 	/* Mask all interrupts */
 	csrw CSR_IE, zero
 	csrw CSR_IP, zero
+	li  a0, 'j'
+	li  a7, 0x01
+	ecall
 
 	/* Load the global pointer */
 	.option push
@@ -148,6 +164,9 @@ secondary_start_sbi:
 	/* Set trap vector to spin forever to help debug */
 	la a3, .Lsecondary_park
 	csrw CSR_TVEC, a3
+	li  a0, 'j'
+	li  a7, 0x01
+	ecall
 
 	/* a0 contains the hartid & a1 contains boot data */
 	li a2, SBI_HART_BOOT_TASK_PTR_OFFSET
@@ -161,6 +180,9 @@ secondary_start_sbi:
 
 .Lsecondary_start_common:
 
+	li  a0, 'k'
+	li  a7, 0x01
+	ecall
 #ifdef CONFIG_MMU
 	/* Enable virtual memory and relocate to virtual address */
 	la a0, swapper_pg_dir
@@ -192,10 +214,23 @@ setup_trap_vector:
 
 END(_start)
 
+_halp:
+	.eqv TH, 0x0
+	.eqv IE, 0x4
+	li t0, 0x02500000
+	li  t2, 0x0
+	sw t2, IE(t0)
+_loop:
+	// li  t1, 0x42
+	sw t1, TH(t0)
+	// j _loop
+	ret
+
 ENTRY(_start_kernel)
 	/* Mask all interrupts */
 	csrw CSR_IE, zero
 	csrw CSR_IP, zero
+# GOOD
 
 #ifdef CONFIG_RISCV_M_MODE
 	/* flush the instruction cache */
@@ -238,6 +273,10 @@ pmp_done:
 	 */
 	li t0, SR_FS
 	csrc CSR_STATUS, t0
+	li  a0, 'b'
+	li  a7, 0x01
+	ecall
+# GOOD
 
 #ifdef CONFIG_RISCV_BOOT_SPINWAIT
 	li t0, CONFIG_NR_CPUS
@@ -266,6 +305,9 @@ pmp_done:
 
 #endif /* CONFIG_XIP */
 #endif /* CONFIG_RISCV_BOOT_SPINWAIT */
+	li  a0, 'c'
+	li  a7, 0x01
+	ecall
 
 #ifdef CONFIG_XIP_KERNEL
 	la sp, _end + THREAD_SIZE
@@ -289,12 +331,20 @@ clear_bss:
 clear_bss_done:
 #endif
 	/* Save hart ID and DTB physical address */
-	mv s0, a0
-	mv s1, a1
+	mv s0, a0 // hart ID
+	mv s1, a1 // DTB
+	li  a7, 0x01
+	ecall
+	li  a0, 'd'
+	li  a7, 0x01
+	ecall
 
 	la a2, boot_cpu_hartid
 	XIP_FIXUP_OFFSET a2
 	REG_S a0, (a2)
+	li  a0, 'e'
+	li  a7, 0x01
+	ecall
 
 	/* Initialize page tables and relocate to virtual addresses */
 	la sp, init_thread_union + THREAD_SIZE
@@ -305,23 +355,42 @@ clear_bss_done:
 #else
 	mv a0, s1
 #endif /* CONFIG_BUILTIN_DTB */
+# GOOD
 	call setup_vm
+	li  a0, 'g'
+	li  a7, 0x01
+	ecall
 #ifdef CONFIG_MMU
 	la a0, early_pg_dir
 	XIP_FIXUP_OFFSET a0
 	call relocate_enable_mmu
+	li  a0, '1'
+	li  a7, 0x01
+	ecall
 #endif /* CONFIG_MMU */
 
 	call setup_trap_vector
+	li  a0, '2'
+	li  a7, 0x01 # EID for sbi console putchar
+	ecall
 	/* Restore C environment */
 	la tp, init_task
 	la sp, init_thread_union + THREAD_SIZE
 
+	li  a0, '3'
+	li  a7, 0x01
+	ecall
 #ifdef CONFIG_KASAN
 	call kasan_early_init
 #endif
 	/* Start the kernel */
+	li  a0, '4'
+	li  a7, 0x01
+	ecall
 	call soc_early_init
+	li  a0, '5'
+	li  a7, 0x01
+	ecall
 	tail start_kernel
 
 #if CONFIG_RISCV_BOOT_SPINWAIT
