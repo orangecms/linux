@@ -1055,7 +1055,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 */
 	rand_initialize();
 	add_latent_entropy();
-	// add_device_randomness(command_line, strlen(command_line));
+	add_device_randomness(command_line, strlen(command_line));
 	boot_init_stack_canary();
 
 	time_init();
