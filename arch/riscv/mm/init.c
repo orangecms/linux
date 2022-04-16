@@ -855,43 +855,16 @@ void __init pt_ops_set_early(void)
  */
 void __init pt_ops_set_fixmap(void)
 {
-  __asm__("li a7,0x01");
-  __asm__("li a0,'_'");
-  __asm__("ecall");
 	pt_ops.alloc_pte = kernel_mapping_pa_to_va((uintptr_t)alloc_pte_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'M'");
-  __asm__("ecall");
 	pt_ops.get_pte_virt = kernel_mapping_pa_to_va((uintptr_t)get_pte_virt_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'_'");
-  __asm__("ecall");
 #ifndef __PAGETABLE_PMD_FOLDED
 	pt_ops.alloc_pmd = kernel_mapping_pa_to_va((uintptr_t)alloc_pmd_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'1'");
-  __asm__("ecall");
 	pt_ops.get_pmd_virt = kernel_mapping_pa_to_va((uintptr_t)get_pmd_virt_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'2'");
-  __asm__("ecall");
 	pt_ops.alloc_pud = kernel_mapping_pa_to_va((uintptr_t)alloc_pud_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'3'");
-  __asm__("ecall");
 	pt_ops.get_pud_virt = kernel_mapping_pa_to_va((uintptr_t)get_pud_virt_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'4'");
-  __asm__("ecall");
 	pt_ops.alloc_p4d = kernel_mapping_pa_to_va((uintptr_t)alloc_p4d_fixmap);
-  __asm__("li a7,0x01");
-  __asm__("li a0,'5'");
-  __asm__("ecall");
 	pt_ops.get_p4d_virt = kernel_mapping_pa_to_va((uintptr_t)get_p4d_virt_fixmap);
 #endif
-  __asm__("li a7,0x01");
-  __asm__("li a0,'M'");
-  __asm__("ecall");
 }
 
 /*

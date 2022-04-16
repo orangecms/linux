@@ -415,14 +415,11 @@ static void __init setup_boot_config(void)
 
 	/* Cut out the bootconfig data even if we have no bootconfig option */
 	data = get_boot_config_from_initrd(&size, &csum);
-  pr_info("\nCMDLINE: %s\n", boot_command_line);
 
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-  pr_info("parse_args");
 	err = parse_args("bootconfig", tmp_cmdline, NULL, 0, 0, 0, NULL,
 			 bootconfig_params);
 
-  pr_info("check for err");
 	if (IS_ERR(err) || !bootconfig_found)
 		return;
 
@@ -430,8 +427,6 @@ static void __init setup_boot_config(void)
 	if (err)
 		initargs_offs = err - tmp_cmdline;
 
-  pr_info("check for data");
-	if (IS_ERR(err) || !bootconfig_found)
 	if (!data) {
 		pr_err("'bootconfig' found on command line, but no bootconfig found\n");
 		return;
@@ -448,9 +443,7 @@ static void __init setup_boot_config(void)
 		return;
 	}
 
-  pr_info("xbc_init");
 	ret = xbc_init(data, size, &msg, &pos);
-  pr_info("xbc_init: %i", ret);
 	if (ret < 0) {
 		if (pos < 0)
 			pr_err("Failed to init bootconfig: %s.\n", msg);
@@ -638,7 +631,6 @@ static void __init setup_command_line(char *command_line)
 	if (!static_command_line)
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
-  pr_info("xlen %i,    ilen %i", xlen, ilen);
 	if (xlen) {
 		/*
 		 * We have to put extra_command_line before boot command
@@ -947,15 +939,14 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
+
 	/*
 	 * Interrupts are still disabled. Do necessary setups, then
 	 * enable them.
 	 */
 	boot_cpu_init();
 	page_address_init();
-	pr_warn("%s", linux_banner);
-	// pr_info("%s", linux_banner);
-	// pr_info("Kernel command line PRE: %s\n", command_line);
+	pr_notice("%s", linux_banner);
 	early_security_init();
 	setup_arch(&command_line);
 	setup_boot_config();
