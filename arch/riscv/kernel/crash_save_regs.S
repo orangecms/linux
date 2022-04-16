@@ -18,7 +18,7 @@ SYM_CODE_START(riscv_crash_save_regs)
 	REG_S t0,  PT_T0(a0)	/* x5 */
 	REG_S t1,  PT_T1(a0)	/* x6 */
 	REG_S t2,  PT_T2(a0)	/* x7 */
-	REG_S s0,  PT_S0(a0)	/* x8/fp */
+	// REG_S s0,  PT_S0(a0)	/* x8/fp */
 	REG_S s1,  PT_S1(a0)	/* x9 */
 	REG_S a0,  PT_A0(a0)	/* x10 */
 	REG_S a1,  PT_A1(a0)	/* x11 */

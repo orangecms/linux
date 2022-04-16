@@ -103,6 +103,7 @@
 
 #include <asm/io.h>
 #include <asm/bugs.h>
+#include <asm/sbi.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
@@ -930,22 +931,41 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *command_line;
 	char *after_dashes;
 
+  sbi_console_putchar('K');
+  sbi_console_putchar('K');
+  sbi_console_putchar('\n');
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
 	debug_objects_early_init();
 	init_vmlinux_build_id();
 
 	cgroup_init_early();
+  sbi_console_putchar('K');
+  sbi_console_putchar('1');
+  sbi_console_putchar('\n');
 
 	local_irq_disable();
+  sbi_console_putchar('K');
+  sbi_console_putchar('2');
+  sbi_console_putchar('\n');
 	early_boot_irqs_disabled = true;
 
+  sbi_console_putchar('K');
+  sbi_console_putchar('3');
+  sbi_console_putchar('\n');
 	/*
 	 * Interrupts are still disabled. Do necessary setups, then
 	 * enable them.
 	 */
 	boot_cpu_init();
+  sbi_console_putchar('K');
+  sbi_console_putchar('4');
+  sbi_console_putchar('\n');
 	page_address_init();
+  sbi_console_putchar('K');
+  sbi_console_putchar('5');
+  sbi_console_putchar('\n');
+	pr_info("%s", linux_banner);
 	pr_notice("%s", linux_banner);
 	early_security_init();
 	setup_arch(&command_line);

@@ -86,6 +86,10 @@ void __init apply_boot_alternatives(void)
 	/* If called on non-boot cpu things could go wrong */
 	WARN_ON(smp_processor_id() != 0);
 
+  sbi_console_putchar('B');
+  sbi_console_putchar('O');
+  sbi_console_putchar('\n');
+
 	_apply_alternatives((struct alt_entry *)__alt_start,
 			    (struct alt_entry *)__alt_end,
 			    RISCV_ALTERNATIVES_BOOT);
@@ -93,6 +97,9 @@ void __init apply_boot_alternatives(void)
 
 void __init apply_early_boot_alternatives(void)
 {
+  sbi_console_putchar('E');
+  sbi_console_putchar('A');
+  sbi_console_putchar('\n');
 	_apply_alternatives((struct alt_entry *)__alt_start,
 			    (struct alt_entry *)__alt_end,
 			    RISCV_ALTERNATIVES_EARLY_BOOT);
@@ -101,6 +108,10 @@ void __init apply_early_boot_alternatives(void)
 #ifdef CONFIG_MODULES
 void apply_module_alternatives(void *start, size_t length)
 {
+  sbi_console_putchar('M');
+  sbi_console_putchar('O');
+  sbi_console_putchar('D');
+  sbi_console_putchar('\n');
 	_apply_alternatives((struct alt_entry *)start,
 			    (struct alt_entry *)(start + length),
 			    RISCV_ALTERNATIVES_MODULE);

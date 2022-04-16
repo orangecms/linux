@@ -93,10 +93,11 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
   sbi_console_putchar('C');
   sbi_console_putchar(begin);
   sbi_console_putchar(end);
-  if (end - begin > 10) {
+  if (end - begin > 30) {
     sbi_console_putchar('X');
   }
 	for (alt = begin; alt < end; alt++) {
+    sbi_console_putchar('\n');
 		if (alt->vendor_id != THEAD_VENDOR_ID) {
       sbi_console_putchar('T');
 			continue;
@@ -125,6 +126,8 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
 		}
 	}
 
-	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
+	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT) {
+    sbi_console_putchar('F');
 		local_flush_icache_all();
+  }
 }

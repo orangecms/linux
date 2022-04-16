@@ -24,6 +24,7 @@
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/sections.h>
+#include <asm/sbi.h>
 #include <asm/soc.h>
 #include <asm/io.h>
 #include <asm/ptdump.h>
@@ -935,12 +936,28 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	BUG_ON((kernel_map.virt_addr + kernel_map.size) > ADDRESS_SPACE_END - SZ_4K);
 #endif
 
+  sbi_console_putchar('X');
+  sbi_console_putchar('X');
+  sbi_console_putchar('\n');
+
 	apply_early_boot_alternatives();
+  sbi_console_putchar('X');
+  sbi_console_putchar('1');
+  sbi_console_putchar('\n');
+
 	pt_ops_set_early();
+
+  sbi_console_putchar('X');
+  sbi_console_putchar('2');
+  sbi_console_putchar('\n');
 
 	/* Setup early PGD for fixmap */
 	create_pgd_mapping(early_pg_dir, FIXADDR_START,
 			   fixmap_pgd_next, PGDIR_SIZE, PAGE_TABLE);
+
+  sbi_console_putchar('X');
+  sbi_console_putchar('3');
+  sbi_console_putchar('\n');
 
 #ifndef __PAGETABLE_PMD_FOLDED
 	/* Setup fixmap P4D and PUD */
@@ -970,11 +987,18 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 			   kernel_map.phys_addr, PMD_SIZE, PAGE_KERNEL_EXEC);
 #endif
 #else
+  sbi_console_putchar('X');
+  sbi_console_putchar('4');
+  sbi_console_putchar('\n');
 	/* Setup trampoline PGD */
 	create_pgd_mapping(trampoline_pg_dir, kernel_map.virt_addr,
 			   kernel_map.phys_addr, PGDIR_SIZE, PAGE_KERNEL_EXEC);
+
 #endif
 
+  sbi_console_putchar('X');
+  sbi_console_putchar('5');
+  sbi_console_putchar('\n');
 	/*
 	 * Setup early PGD covering entire kernel which will allow
 	 * us to reach paging_init(). We map all memory banks later
@@ -982,6 +1006,9 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	 */
 	create_kernel_page_table(early_pg_dir, true);
 
+  sbi_console_putchar('X');
+  sbi_console_putchar('6');
+  sbi_console_putchar('\n');
 	/* Setup early mapping for FDT early scan */
 	create_fdt_early_page_table(early_pg_dir, dtb_pa);
 
@@ -992,6 +1019,10 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	BUG_ON((__fix_to_virt(FIX_BTMAP_BEGIN) >> PMD_SHIFT)
 		     != (__fix_to_virt(FIX_BTMAP_END) >> PMD_SHIFT));
 
+  sbi_console_putchar('X');
+  sbi_console_putchar('7');
+  sbi_console_putchar('\n');
+	// pr_info("WE ARE HERE\n");
 #ifndef __PAGETABLE_PMD_FOLDED
 	/*
 	 * Early ioremap fixmap is already created as it lies within first 2MB
@@ -1001,6 +1032,9 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	 */
 	fix_bmap_spmd = fixmap_pmd[pmd_index(__fix_to_virt(FIX_BTMAP_BEGIN))];
 	fix_bmap_epmd = fixmap_pmd[pmd_index(__fix_to_virt(FIX_BTMAP_END))];
+  sbi_console_putchar('X');
+  sbi_console_putchar('8');
+  sbi_console_putchar('\n');
 	if (pmd_val(fix_bmap_spmd) != pmd_val(fix_bmap_epmd)) {
 		WARN_ON(1);
 		pr_warn("fixmap btmap start [%08lx] != end [%08lx]\n",
@@ -1015,6 +1049,9 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	}
 #endif
 
+  sbi_console_putchar('X');
+  sbi_console_putchar('9');
+  sbi_console_putchar('\n');
 	pt_ops_set_fixmap();
 }
 
