@@ -55,22 +55,24 @@ static u32 thead_errata_probe(unsigned int stage, unsigned long archid, unsigned
 		info = &errata_list[idx];
     sbi_console_putchar('p');
     sbi_console_putchar(idx);
-    if (idx < ERRATA_THEAD_NUMBER) {
-      sbi_console_putchar('W');
-      continue;
-    }
+    sbi_console_putchar(archid);
+    sbi_console_putchar(impid);
 		if (stage == RISCV_ALTERNATIVES_MODULE || info->stage == stage) {
       sbi_console_putchar('x');
-      sbi_console_putchar(info->check_func);
-      if (!info->check_func) {
-        sbi_console_putchar('!');
-      } else {
-        sbi_console_putchar('o');
-        // PROBLEM HERE!
-        if (info->check_func(archid, impid)) {
-          sbi_console_putchar('a');
-          cpu_req_errata |= (1U << idx);
-        }
+      // sbi_console_putchar(((void*) &info->check_func) );
+      // sbi_console_putchar(((void*) &info->check_func) >> 8);
+      // sbi_console_putchar(((void*) &info->check_func) >> 16);
+      // sbi_console_putchar(((void*) &info->check_func) >> 24);
+      sbi_console_putchar('o');
+      // PROBLEM HERE!
+      // if (info->check_func(archid, impid)) {
+      bool doit;
+      // doit = info->check_func(archid, impid); // THIS CAUSES AN EXCEPTION
+      doit = errata_mt_check_func(archid, impid);
+      // doit = !(archid != 0 || impid != 0);
+      if (doit) {
+        sbi_console_putchar('a');
+        cpu_req_errata |= (1U << idx);
       }
     }
     sbi_console_putchar('b');
