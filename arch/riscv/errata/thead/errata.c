@@ -23,8 +23,10 @@ struct errata_info {
 
 static bool errata_mt_check_func(unsigned long  arch_id, unsigned long impid)
 {
+  sbi_console_putchar('c');
 	if (arch_id != 0 || impid != 0)
 		return false;
+  sbi_console_putchar('t');
 	return true;
 }
 
@@ -51,12 +53,27 @@ static u32 thead_errata_probe(unsigned int stage, unsigned long archid, unsigned
 	for (idx = 0; idx < ERRATA_THEAD_NUMBER; idx++) {
     sbi_console_putchar('6');
 		info = &errata_list[idx];
-
-		if ((stage == RISCV_ALTERNATIVES_MODULE ||
-		     info->stage == stage) && info->check_func(archid, impid)) {
-      sbi_console_putchar('6');
-			cpu_req_errata |= (1U << idx);
+    sbi_console_putchar('p');
+    sbi_console_putchar(idx);
+    if (idx < ERRATA_THEAD_NUMBER) {
+      sbi_console_putchar('W');
+      continue;
     }
+		if (stage == RISCV_ALTERNATIVES_MODULE || info->stage == stage) {
+      sbi_console_putchar('x');
+      sbi_console_putchar(info->check_func);
+      if (!info->check_func) {
+        sbi_console_putchar('!');
+      } else {
+        sbi_console_putchar('o');
+        // PROBLEM HERE!
+        if (info->check_func(archid, impid)) {
+          sbi_console_putchar('a');
+          cpu_req_errata |= (1U << idx);
+        }
+      }
+    }
+    sbi_console_putchar('b');
 	}
 
 	return cpu_req_errata;
