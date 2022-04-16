@@ -146,9 +146,9 @@ extern struct pt_alloc_ops pt_ops __initdata;
 #define USER_PTRS_PER_PGD   (TASK_SIZE / PGDIR_SIZE)
 
 /* Page protection bits */
-#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_USER)
+#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_USER | _PAGE_DMA_CACHE)
 
-#define PAGE_NONE		__pgprot(_PAGE_PROT_NONE | _PAGE_READ)
+#define PAGE_NONE		__pgprot(_PAGE_PROT_NONE | _PAGE_DMA_CACHE)
 #define PAGE_READ		__pgprot(_PAGE_BASE | _PAGE_READ)
 #define PAGE_WRITE		__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_WRITE)
 #define PAGE_EXEC		__pgprot(_PAGE_BASE | _PAGE_EXEC)
@@ -167,6 +167,7 @@ extern struct pt_alloc_ops pt_ops __initdata;
 				| _PAGE_PRESENT \
 				| _PAGE_ACCESSED \
 				| _PAGE_DIRTY \
+        | _PAGE_DMA_CACHE \
 				| _PAGE_GLOBAL)
 
 #define PAGE_KERNEL		__pgprot(_PAGE_KERNEL)

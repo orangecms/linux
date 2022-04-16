@@ -415,11 +415,14 @@ static void __init setup_boot_config(void)
 
 	/* Cut out the bootconfig data even if we have no bootconfig option */
 	data = get_boot_config_from_initrd(&size, &csum);
+  pr_info("\nCMDLINE: %s\n", boot_command_line);
 
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+  pr_info("parse_args");
 	err = parse_args("bootconfig", tmp_cmdline, NULL, 0, 0, 0, NULL,
 			 bootconfig_params);
 
+  pr_info("check for err");
 	if (IS_ERR(err) || !bootconfig_found)
 		return;
 
@@ -427,6 +430,8 @@ static void __init setup_boot_config(void)
 	if (err)
 		initargs_offs = err - tmp_cmdline;
 
+  pr_info("check for data");
+	if (IS_ERR(err) || !bootconfig_found)
 	if (!data) {
 		pr_err("'bootconfig' found on command line, but no bootconfig found\n");
 		return;
@@ -443,7 +448,9 @@ static void __init setup_boot_config(void)
 		return;
 	}
 
+  pr_info("xbc_init");
 	ret = xbc_init(data, size, &msg, &pos);
+  pr_info("xbc_init: %i", ret);
 	if (ret < 0) {
 		if (pos < 0)
 			pr_err("Failed to init bootconfig: %s.\n", msg);
@@ -616,21 +623,34 @@ static void __init setup_command_line(char *command_line)
 {
 	size_t len, xlen = 0, ilen = 0;
 
+  __asm__("li a7,0x01");
+  __asm__("li a0,'9'");
+  __asm__("ecall");
 	if (extra_command_line)
 		xlen = strlen(extra_command_line);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'9'");
+  __asm__("ecall");
 	if (extra_init_args)
 		ilen = strlen(extra_init_args) + 4; /* for " -- " */
 
 	len = xlen + strlen(boot_command_line) + 1;
 
-	saved_command_line = memblock_alloc(len + ilen, SMP_CACHE_BYTES);
-	if (!saved_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len + ilen);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'9'");
+  __asm__("ecall");
+	//saved_command_line = memblock_alloc(len + ilen, SMP_CACHE_BYTES);
+	//if (!saved_command_line)
+	//	panic("%s: Failed to allocate %zu bytes\n", __func__, len + ilen);
 
-	static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-	if (!static_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'9'");
+  __asm__("ecall");
+	//static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
+	//if (!static_command_line)
+	//	panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
+  // pr_info("xlen %i,    ilen %i", xlen, ilen);
 	if (xlen) {
 		/*
 		 * We have to put extra_command_line before boot command
@@ -931,40 +951,35 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *after_dashes;
 
 	set_task_stack_end_magic(&init_task);
-	pr_info("0001");
 	smp_setup_processor_id();
-	pr_info("0002");
 	debug_objects_early_init();
-	pr_info("0003");
 	init_vmlinux_build_id();
-	pr_info("0004");
 
 	cgroup_init_early();
-	pr_info("0005");
 
 	local_irq_disable();
-	pr_info("0006");
 	early_boot_irqs_disabled = true;
 	/*
 	 * Interrupts are still disabled. Do necessary setups, then
 	 * enable them.
 	 */
-	// boot_cpu_init();
-  __asm__("li a7,0x01");
-  __asm__("li a0,'P'");
-  __asm__("ecall");
+	boot_cpu_init();
 	page_address_init();
-  __asm__("li a7,0x01");
-  __asm__("li a0,'0'");
-  __asm__("ecall");
-	pr_notice("%s", linux_banner);
-	pr_notice("Kernel command line PRE: %s\n", command_line);
+	pr_warn("%s", linux_banner);
+	// pr_info("%s", linux_banner);
+	// pr_info("Kernel command line PRE: %s\n", command_line);
 	early_security_init();
-	//setup_arch(&command_line);
+  __asm__("li a7,0x01");
+  __asm__("li a0,'1'");
+  __asm__("ecall");
+	setup_arch(&command_line);
   __asm__("li a7,0x01");
   __asm__("li a0,'2'");
   __asm__("ecall");
 	setup_boot_config();
+  __asm__("li a7,0x01");
+  __asm__("li a0,'3'");
+  __asm__("ecall");
 	setup_command_line(command_line);
   __asm__("li a7,0x01");
   __asm__("li a0,'4'");
@@ -1082,7 +1097,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 */
 	rand_initialize();
 	add_latent_entropy();
-	add_device_randomness(command_line, strlen(command_line));
+	// add_device_randomness(command_line, strlen(command_line));
 	boot_init_stack_canary();
 
 	time_init();
