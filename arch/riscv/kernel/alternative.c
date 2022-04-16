@@ -66,15 +66,19 @@ static void __init_or_module _apply_alternatives(struct alt_entry *begin,
 
 	riscv_fill_cpu_mfr_info(&cpu_mfr_info);
 
+  sbi_console_putchar('1');
 	riscv_cpufeature_patch_func(begin, end, stage);
 
+  sbi_console_putchar('2');
 	if (!cpu_mfr_info.vendor_patch_func)
 		return;
 
+  sbi_console_putchar('3');
 	cpu_mfr_info.vendor_patch_func(begin, end,
 				   cpu_mfr_info.arch_id,
 				   cpu_mfr_info.imp_id,
 				   stage);
+  sbi_console_putchar('4');
 }
 
 void __init apply_boot_alternatives(void)

@@ -12,6 +12,7 @@
 #include <asm/cacheflush.h>
 #include <asm/errata_list.h>
 #include <asm/patch.h>
+#include <asm/sbi.h>
 #include <asm/vendorid_list.h>
 
 struct errata_info {
@@ -46,12 +47,16 @@ static u32 thead_errata_probe(unsigned int stage, unsigned long archid, unsigned
 	u32 cpu_req_errata = 0;
 	int idx;
 
+  sbi_console_putchar('5');
 	for (idx = 0; idx < ERRATA_THEAD_NUMBER; idx++) {
+    sbi_console_putchar('6');
 		info = &errata_list[idx];
 
 		if ((stage == RISCV_ALTERNATIVES_MODULE ||
-		     info->stage == stage) && info->check_func(archid, impid))
+		     info->stage == stage) && info->check_func(archid, impid)) {
+      sbi_console_putchar('6');
 			cpu_req_errata |= (1U << idx);
+    }
 	}
 
 	return cpu_req_errata;
@@ -62,23 +67,42 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
 					      unsigned int stage)
 {
 	struct alt_entry *alt;
+  sbi_console_putchar('P');
 	u32 cpu_req_errata = thead_errata_probe(stage, archid, impid);
 	u32 tmp;
 
+  sbi_console_putchar('C');
+  sbi_console_putchar(begin);
+  sbi_console_putchar(end);
+  if (end - begin > 10) {
+    sbi_console_putchar('X');
+  }
 	for (alt = begin; alt < end; alt++) {
-		if (alt->vendor_id != THEAD_VENDOR_ID)
+		if (alt->vendor_id != THEAD_VENDOR_ID) {
+      sbi_console_putchar('T');
 			continue;
-		if (alt->errata_id >= ERRATA_THEAD_NUMBER)
+    }
+		if (alt->errata_id >= ERRATA_THEAD_NUMBER) {
+      sbi_console_putchar('N');
 			continue;
+    }
+    sbi_console_putchar('Y');
 
 		tmp = (1U << alt->errata_id);
 		if (cpu_req_errata & tmp) {
+      sbi_console_putchar('E');
+
 			/* On vm-alternatives, the mmu isn't running yet */
-			if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
+			if (stage == RISCV_ALTERNATIVES_EARLY_BOOT) {
+        sbi_console_putchar('V');
+
 				memcpy((void *)__pa_symbol(alt->old_ptr),
 				       (void *)__pa_symbol(alt->alt_ptr), alt->alt_len);
-			else
+      } else {
+        sbi_console_putchar('S');
+
 				patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
+      }
 		}
 	}
 
