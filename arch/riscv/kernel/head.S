@@ -297,6 +297,7 @@ clear_bss_done:
 	REG_S a0, (a2)
 
 	/* Initialize page tables and relocate to virtual addresses */
+  // STACK POINTER HACKERY
 	la sp, init_thread_union + THREAD_SIZE
 	XIP_FIXUP_OFFSET sp
 #ifdef CONFIG_BUILTIN_DTB
@@ -315,6 +316,7 @@ clear_bss_done:
 	call setup_trap_vector
 	/* Restore C environment */
 	la tp, init_task
+  // STACK POINTER HACKERY
 	la sp, init_thread_union + THREAD_SIZE
 
 #ifdef CONFIG_KASAN

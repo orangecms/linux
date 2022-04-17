@@ -24,6 +24,7 @@
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/sections.h>
+#include <asm/sbi.h>
 #include <asm/soc.h>
 #include <asm/io.h>
 #include <asm/ptdump.h>
@@ -116,6 +117,7 @@ static void print_vm_layout(void) { }
 
 void __init mem_init(void)
 {
+  pr_info("mem_init begin\n");
 #ifdef CONFIG_FLATMEM
 	BUG_ON(!mem_map);
 #endif /* CONFIG_FLATMEM */
@@ -127,8 +129,10 @@ void __init mem_init(void)
 	else
 		swiotlb_force = SWIOTLB_NO_FORCE;
 #endif
+  pr_info("memblock_free_all\n");
 	memblock_free_all();
 
+  pr_info("vm_layout\n");
 	print_vm_layout();
 }
 
@@ -934,6 +938,10 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
 	 */
 	BUG_ON((kernel_map.virt_addr + kernel_map.size) > ADDRESS_SPACE_END - SZ_4K);
 #endif
+
+  sbi_console_putchar('X');
+  sbi_console_putchar('X');
+  sbi_console_putchar('\n');
 
 	apply_early_boot_alternatives();
 	pt_ops_set_early();
