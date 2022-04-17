@@ -24,6 +24,8 @@ Remarks:
 What works for me:
 - Ethernet
 - USB (USB2 and USB3 ports)
+- eMMC
+- SD card
 - 7 segment display (controller is FD6551). I created an experimental driver, controller programming
   information was derived from the openvfd project.
 - The bifrost GPU is detected by the panfrost driver.
