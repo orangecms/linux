@@ -835,9 +835,7 @@ static void __init mm_init(void)
 	init_mem_debugging_and_hardening();
 	kfence_alloc_pool();
 	report_meminit();
-  pr_info("stack_depot_early_init\n");
 	stack_depot_early_init();
-  pr_info("mem_init\n");
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();
@@ -937,7 +935,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	debug_objects_early_init();
 	init_vmlinux_build_id();
 
-	// cgroup_init_early();
+	cgroup_init_early();
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
@@ -946,11 +944,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * Interrupts are still disabled. Do necessary setups, then
 	 * enable them.
 	 */
-	// boot_cpu_init();
+	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
-  int p;
-  pr_notice("==> Where's the stack? %X <==", (void*)&p);
 	early_security_init();
 	setup_arch(&command_line);
 	setup_boot_config();

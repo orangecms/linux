@@ -286,24 +286,17 @@ void __init setup_arch(char **cmdline_p)
 
 	init_resources();
 	sbi_init();
-  pr_info("sbi_init done\n");
 
 #ifdef CONFIG_KASAN
-  pr_info("kasan_init\n");
 	kasan_init();
-  pr_info("kasan_init done\n");
 #endif
 
 #ifdef CONFIG_SMP
 	setup_smp();
 #endif
 
-  pr_info("riscv_fill_hwcap\n");
 	riscv_fill_hwcap();
-  pr_info("riscv_fill_hwcap done\n");
-  pr_info("apply_boot_alternatives\n");
 	apply_boot_alternatives();
-  pr_info("apply_boot_alternatives done\n");
 }
 
 static int __init topology_init(void)

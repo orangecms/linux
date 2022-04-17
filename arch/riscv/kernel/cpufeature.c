@@ -87,7 +87,6 @@ void __init riscv_fill_hwcap(void)
 
 	bitmap_zero(riscv_isa, RISCV_ISA_EXT_MAX);
 
-  pr_info("hwcap 1\n");
 	for_each_of_cpu_node(node) {
 		unsigned long this_hwcap = 0;
 		DECLARE_BITMAP(this_isa, RISCV_ISA_EXT_MAX);
@@ -100,7 +99,6 @@ void __init riscv_fill_hwcap(void)
 			pr_warn("Unable to find \"riscv,isa\" devicetree entry\n");
 			continue;
 		}
-    pr_info("hwcap isa %s\n", isa);
 
 		temp = isa;
 #if IS_ENABLED(CONFIG_32BIT)
@@ -186,9 +184,6 @@ void __init riscv_fill_hwcap(void)
 			if (*isa != '_')
 				--isa;
 
-    pr_info("ISA ext map\n");
-    // TROUBLE AHEAD
-      /*
 #define SET_ISA_EXT_MAP(name, bit)						\
 			do {							\
 				if ((ext_end - ext == sizeof(name) - 1) &&	\
@@ -207,10 +202,8 @@ void __init riscv_fill_hwcap(void)
 				SET_ISA_EXT_MAP("zicbom", RISCV_ISA_EXT_ZICBOM);
 			}
 #undef SET_ISA_EXT_MAP
-      */
 		}
 
-    pr_info("elf_hwcap\n");
 		/*
 		 * All "okay" hart should have same isa. Set HWCAP based on
 		 * common capabilities of every "okay" hart, in case they don't
@@ -227,7 +220,6 @@ void __init riscv_fill_hwcap(void)
 			bitmap_copy(riscv_isa, this_isa, RISCV_ISA_EXT_MAX);
 
 	}
-  pr_info("hwcap afterfor\n");
 
 	/* We don't support systems with F but without D, so mask those out
 	 * here. */
@@ -236,14 +228,12 @@ void __init riscv_fill_hwcap(void)
 		elf_hwcap &= ~COMPAT_HWCAP_ISA_F;
 	}
 
-  pr_info("hwcap memset1\n");
 	memset(print_str, 0, sizeof(print_str));
 	for (i = 0, j = 0; i < NUM_ALPHA_EXTS; i++)
 		if (riscv_isa[0] & BIT_MASK(i))
 			print_str[j++] = (char)('a' + i);
 	pr_info("riscv: base ISA extensions %s\n", print_str);
 
-  pr_info("hwcap memset2\n");
 	memset(print_str, 0, sizeof(print_str));
 	for (i = 0, j = 0; i < NUM_ALPHA_EXTS; i++)
 		if (elf_hwcap & BIT_MASK(i))
