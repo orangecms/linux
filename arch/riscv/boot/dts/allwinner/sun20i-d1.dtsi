@@ -814,6 +814,7 @@
 
 		// TODO: write a binding and driver.
 		mbus: dram-controller@3102000 {
+      status = "disabled";
 			compatible = "allwinner,sun20i-d1-mbus";
 			reg = <0x3102000 0x200000>;
 			#address-cells = <1>;
