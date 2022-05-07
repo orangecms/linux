@@ -18,10 +18,17 @@
 
 static struct irq_chip sun20i_intc_chip = {
 	.name			= "sun20i-intc",
+	.irq_enable		= irq_chip_enable_parent,
+	.irq_disable		= irq_chip_disable_parent,
 	.irq_mask		= irq_chip_mask_parent,
 	.irq_unmask		= irq_chip_unmask_parent,
 	.irq_eoi		= irq_chip_eoi_parent,
 	.irq_set_affinity	= irq_chip_set_affinity_parent,
+	.flags			= IRQCHIP_MASK_ON_SUSPEND |
+				  IRQCHIP_SKIP_SET_WAKE |
+				  IRQCHIP_ONESHOT_SAFE |
+				  IRQCHIP_EOI_THREADED |
+				  IRQCHIP_AFFINITY_PRE_STARTUP,
 };
 
 static int sun20i_intc_domain_translate(struct irq_domain *domain,
