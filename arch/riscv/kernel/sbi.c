@@ -9,10 +9,12 @@
 #include <linux/bits.h>
 #include <linux/init.h>
 #include <linux/pm.h>
+#include <linux/suspend.h>
 #include <linux/reboot.h>
 #include <asm/ipi-mux.h>
 #include <asm/sbi.h>
 #include <asm/smp.h>
+#include <asm/suspend.h>
 
 /* default SBI version is 0.1 */
 unsigned long sbi_spec_version __ro_after_init = SBI_SPEC_VERSION_DEFAULT;
@@ -657,6 +659,28 @@ void __init sbi_ipi_init(void)
 		pr_info("providing IPIs using SBI IPI extension\n");
 }
 
+static int sbi_system_suspend_finisher(unsigned long suspend_type,
+				       unsigned long resume_addr,
+				       unsigned long opaque)
+{
+	struct sbiret ret;
+
+	ret = sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_SUSPEND,
+			suspend_type, resume_addr, opaque, 0, 0, 0);
+
+	return (ret.error) ? sbi_err_map_linux_errno(ret.error) : 0;
+}
+
+static int sbi_system_suspend_enter(suspend_state_t state)
+{
+	return cpu_suspend(0x90000000, sbi_system_suspend_finisher);
+}
+
+static const struct platform_suspend_ops sbi_suspend_ops = {
+	.valid          = suspend_valid_only_mem,
+	.enter          = sbi_system_suspend_enter,
+};
+
 void __init sbi_init(void)
 {
 	int ret;
@@ -697,6 +721,7 @@ void __init sbi_init(void)
 			sbi_srst_reboot_nb.notifier_call = sbi_srst_reboot;
 			sbi_srst_reboot_nb.priority = 192;
 			register_restart_handler(&sbi_srst_reboot_nb);
+			suspend_set_ops(&sbi_suspend_ops);
 		}
 	} else {
 		__sbi_set_timer = __sbi_set_timer_v01;
