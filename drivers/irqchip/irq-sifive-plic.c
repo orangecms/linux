@@ -183,6 +183,8 @@ static struct irq_chip plic_chip = {
 #endif
 	.flags		= IRQCHIP_MASK_ON_SUSPEND |
 			  IRQCHIP_SKIP_SET_WAKE |
+			  IRQCHIP_ONESHOT_SAFE |
+			  IRQCHIP_EOI_THREADED |
 			  IRQCHIP_AFFINITY_PRE_STARTUP,
 };
 
