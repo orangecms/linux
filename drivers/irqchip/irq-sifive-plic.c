@@ -181,7 +181,9 @@ static struct irq_chip plic_chip = {
 #ifdef CONFIG_SMP
 	.irq_set_affinity = plic_set_affinity,
 #endif
-	.flags		= IRQCHIP_AFFINITY_PRE_STARTUP,
+	.flags		= IRQCHIP_MASK_ON_SUSPEND |
+			  IRQCHIP_SKIP_SET_WAKE |
+			  IRQCHIP_AFFINITY_PRE_STARTUP,
 };
 
 static int plic_irqdomain_map(struct irq_domain *d, unsigned int irq,
