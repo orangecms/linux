@@ -1569,6 +1569,7 @@ static void
 radix_tree_node_ctor(void *arg)
 {
 	struct radix_tree_node *node = arg;
+	pr_err("HI! %llx\n", (unsigned long long) arg);
 
 	memset(node, 0, sizeof(*node));
 	INIT_LIST_HEAD(&node->private_list);

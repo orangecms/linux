@@ -30,6 +30,7 @@
 
 #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
 #include <asm/page.h>
+#include <asm/sbi.h>
 
 #include "of_private.h"
 
@@ -1013,6 +1014,7 @@ int __init early_init_dt_scan_chosen_stdout(void)
 	const struct earlycon_id *match;
 	const void *fdt = initial_boot_params;
 
+    sbi_console_putchar('R');
 	offset = fdt_path_offset(fdt, "/chosen");
 	if (offset < 0)
 		offset = fdt_path_offset(fdt, "/chosen@0");
@@ -1020,8 +1022,10 @@ int __init early_init_dt_scan_chosen_stdout(void)
 		return -ENOENT;
 
 	p = fdt_getprop(fdt, offset, "stdout-path", &l);
+    sbi_console_putchar('R');
 	if (!p)
 		p = fdt_getprop(fdt, offset, "linux,stdout-path", &l);
+    sbi_console_putchar('R');
 	if (!p || !l)
 		return -ENOENT;
 
@@ -1114,8 +1118,10 @@ int __init early_init_dt_scan_memory(void)
 		endp = reg + (l / sizeof(__be32));
 		hotpluggable = of_get_flat_dt_prop(node, "hotpluggable", NULL);
 
+    /*
 		pr_debug("memory scan node %s, reg size %d,\n",
 			 fdt_get_name(fdt, node, NULL), l);
+    */
 
 		while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
 			u64 base, size;
@@ -1125,9 +1131,13 @@ int __init early_init_dt_scan_memory(void)
 
 			if (size == 0)
 				continue;
-			pr_debug(" - %llx, %llx\n", base, size);
+			// pr_debug(" - %llx, %llx\n", base, size);
 
-			early_init_dt_add_memory_arch(base, size);
+      for (int i = 0; i < 30; i++) {
+        sbi_console_putchar("early_init_dt_add_memory_arch\n"[i]);
+      }
+      // FIXME
+			// early_init_dt_add_memory_arch(base, size);
 
 			if (!hotpluggable)
 				continue;
@@ -1280,17 +1290,30 @@ void __init early_init_dt_scan_nodes(void)
 	int rc;
 
 	/* Initialize {size,address}-cells info */
+	for (int i = 0; i < 24; i++) {
+		sbi_console_putchar("early_init_dt_scan_root\n"[i]);
+	}
 	early_init_dt_scan_root();
 
 	/* Retrieve various information from the /chosen node */
+	for (int i = 0; i < 26; i++) {
+		sbi_console_putchar("early_init_dt_scan_chosen\n"[i]);
+	}
 	rc = early_init_dt_scan_chosen(boot_command_line);
+  /*
 	if (rc)
 		pr_warn("No chosen node found, continuing without\n");
-
+  */
 	/* Setup memory, calling early_init_dt_add_memory_arch */
+	for (int i = 0; i < 26; i++) {
+		sbi_console_putchar("early_init_dt_scan_memory\n"[i]);
+	}
 	early_init_dt_scan_memory();
 
 	/* Handle linux,usable-memory-range property */
+	for (int i = 0; i < 41; i++) {
+		sbi_console_putchar("early_init_dt_check_for_usable_mem_range\n"[i]);
+	}
 	early_init_dt_check_for_usable_mem_range();
 }
 
@@ -1298,10 +1321,16 @@ bool __init early_init_dt_scan(void *params)
 {
 	bool status;
 
+	for (int i = 0; i < 10; i++) {
+		sbi_console_putchar("dt_verify\n"[i]);
+	}
 	status = early_init_dt_verify(params);
 	if (!status)
 		return false;
 
+	for (int i = 0; i < 13; i++) {
+		sbi_console_putchar("dt_scan_nodes\n"[i]);
+	}
 	early_init_dt_scan_nodes();
 	return true;
 }

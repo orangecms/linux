@@ -51,6 +51,10 @@ void __show_regs(struct pt_regs *regs)
 		pr_cont(" ra : %pS\n", (void *)regs->ra);
 	}
 
+	for (int i = 0; i < 32; i++) {
+		unsigned long long *lp = ((unsigned long long*)(regs->epc) + i);
+		pr_cont("%llx: %llx\n", (unsigned long long)lp, *lp);
+	}
 	pr_cont("epc : " REG_FMT " ra : " REG_FMT " sp : " REG_FMT "\n",
 		regs->epc, regs->ra, regs->sp);
 	pr_cont(" gp : " REG_FMT " tp : " REG_FMT " t0 : " REG_FMT "\n",

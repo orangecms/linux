@@ -243,6 +243,7 @@ static void __init init_resources(void)
 
 static void __init parse_dtb(void)
 {
+	// pr_err("Scan for dtb_early_va @ %llx\n",  (unsigned long long)dtb_early_va);
 	/* Early scan of device tree from init memory */
 	if (early_init_dt_scan(dtb_early_va)) {
 		const char *name = of_flat_dt_get_machine_name();
@@ -254,26 +255,51 @@ static void __init parse_dtb(void)
 		return;
 	}
 
-	pr_err("No DTB passed to the kernel\n");
+	// pr_err("No DTB passed to the kernel\n");
 #ifdef CONFIG_CMDLINE_FORCE
 	strscpy(boot_command_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-	pr_info("Forcing kernel command line to: %s\n", boot_command_line);
+	// pr_info("Forcing kernel command line to: %s\n", boot_command_line);
 #endif
 }
 
 void __init setup_arch(char **cmdline_p)
 {
+	for (int i = 0; i < 10; i++) {
+		sbi_console_putchar("parse_dtb\n"[i]);
+	}
 	parse_dtb();
+	for (int i = 0; i < 17; i++) {
+		sbi_console_putchar("setup_initial_mm\n"[i]);
+	}
 	setup_initial_init_mm(_stext, _etext, _edata, _end);
 
 	*cmdline_p = boot_command_line;
 
+	for (int i = 0; i < 20; i++) {
+		sbi_console_putchar("early_ioremap_setup\n"[i]);
+	}
 	early_ioremap_setup();
+	for (int i = 0; i < 16; i++) {
+		sbi_console_putchar("jump_label_init\n"[i]);
+	}
 	jump_label_init();
+  // NOTE: earlycon=sbi is processed here
+  // see https://www.kernelconfig.io/config_serial_earlycon_riscv_sbi
+	for (int i = 0; i < 18; i++) {
+		sbi_console_putchar("parse_early_param\n"[i]);
+	}
 	parse_early_param();
 
+	for (int i = 0; i < 9; i++) {
+		sbi_console_putchar("EFI INIT\n"[i]);
+	}
 	efi_init();
+  // WE GET HERE
+	for (int i = 0; i < 12; i++) {
+		sbi_console_putchar("paging init\n"[i]);
+	}
 	paging_init();
+  sbi_console_putchar('p');
 #if IS_ENABLED(CONFIG_BUILTIN_DTB)
 	unflatten_and_copy_device_tree();
 #else
@@ -283,9 +309,12 @@ void __init setup_arch(char **cmdline_p)
 		pr_err("No DTB found in kernel mappings\n");
 #endif
 	misc_mem_init();
+  sbi_console_putchar('m');
 
 	init_resources();
+  sbi_console_putchar('r');
 	sbi_init();
+  sbi_console_putchar('s');
 
 #ifdef CONFIG_KASAN
 	kasan_init();
@@ -296,7 +325,9 @@ void __init setup_arch(char **cmdline_p)
 #endif
 
 	riscv_fill_hwcap();
+  sbi_console_putchar('c');
 	apply_boot_alternatives();
+  sbi_console_putchar('a');
 }
 
 static int __init topology_init(void)

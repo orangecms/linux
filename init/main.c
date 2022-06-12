@@ -103,10 +103,12 @@
 
 #include <asm/io.h>
 #include <asm/bugs.h>
+#include <asm/sbi.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 
+#include <asm/sbi.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/initcall.h>
 
@@ -747,8 +749,10 @@ static int __init do_early_param(char *param, char *val,
 
 void __init parse_early_options(char *cmdline)
 {
+  /*
 	parse_args("early options", cmdline, NULL, 0, 0, 0, NULL,
 		   do_early_param);
+  */
 }
 
 /* Arch code calls this early on, or if not, just before other parsing. */
@@ -761,7 +765,13 @@ void __init parse_early_param(void)
 		return;
 
 	/* All fall through to do_early_param. */
+	for (int i = 0; i < 8; i++) {
+		sbi_console_putchar("strlcpy\n"[i]);
+	}
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+	for (int i = 0; i < 20; i++) {
+		sbi_console_putchar("parse_early_options\n"[i]);
+	}
 	parse_early_options(tmp_cmdline);
 	done = 1;
 }
@@ -930,10 +940,16 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *command_line;
 	char *after_dashes;
 
+	for (int i = 0; i < 13; i++) {
+		sbi_console_putchar("START KERNEL\n"[i]);
+	}
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
 	debug_objects_early_init();
 	init_vmlinux_build_id();
+	for (int i = 0; i < 12; i++) {
+		sbi_console_putchar("CGROUP_INIT\n"[i]);
+	}
 
 	cgroup_init_early();
 
@@ -945,19 +961,58 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * enable them.
 	 */
 	boot_cpu_init();
+	for (int i = 0; i < 15; i++) {
+		sbi_console_putchar("PAGE ADDR INIT\n"[i]);
+	}
 	page_address_init();
-	pr_notice("%s", linux_banner);
+	for (int i = 0; i < 7; i++) {
+		sbi_console_putchar("BANNER\n"[i]);
+	}
+	// pr_notice("%s", linux_banner);
+
+	for (int i = 0; i < 20; i++) {
+		sbi_console_putchar("EARLY_SECURITY_INIT\n"[i]);
+	}
 	early_security_init();
+
+  // get lost...
+	extern uintptr_t where;
+  pr_err("WHERE ARE WE? %llx\n", (unsigned long long) where);
+  if (0) {
+    unsigned long long epc = 0xffffffff80386f00;
+    for (int i = 0; i < 32; i++) {
+      unsigned long long *lp = ((unsigned long long*)(epc) + i);
+      pr_cont("%llx: %llx\n", (unsigned long long)lp, *lp);
+    }
+  }
+
+  // WE GET HERE
+	for (int i = 0; i < 11; i++) {
+		sbi_console_putchar("SETUP ARCH\n"[i]);
+	}
 	setup_arch(&command_line);
+  sbi_console_putchar('2');
 	setup_boot_config();
+  sbi_console_putchar('3');
 	setup_command_line(command_line);
+  sbi_console_putchar('4');
 	setup_nr_cpu_ids();
+  sbi_console_putchar('5');
 	setup_per_cpu_areas();
+  sbi_console_putchar('6');
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+  sbi_console_putchar('7');
 	boot_cpu_hotplug_init();
+  sbi_console_putchar('8');
 
 	build_all_zonelists(NULL);
+	for (int i = 0; i < 16; i++) {
+		sbi_console_putchar("PAGE ALLOC INIT\n"[i]);
+	}
 	page_alloc_init();
+	for (int i = 0; i < 8; i++) {
+		sbi_console_putchar("CMDLINE\n"[i]);
+	}
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
 	/* parameters may set static keys */
