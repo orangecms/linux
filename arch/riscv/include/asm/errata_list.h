@@ -155,8 +155,8 @@ asm volatile(ALTERNATIVE_2(						\
 	THEAD_SYNC_S, THEAD_VENDOR_ID,					\
 			ERRATA_THEAD_CMO, CONFIG_ERRATA_THEAD_CMO)	\
 	: : "r"(_cachesize),						\
-	    "r"(ALIGN((_start), (_cachesize))),				\
-	    "r"(ALIGN((_start) + (_size), (_cachesize)))		\
+	    "r"((_start) & ~((_cachesize) - 1UL)),			\
+	    "r"((_start) + (_size))					\
 	: "a0")
 
 #endif /* __ASSEMBLY__ */

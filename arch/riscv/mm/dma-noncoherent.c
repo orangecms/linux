@@ -24,7 +24,6 @@ void arch_sync_dma_for_device(phys_addr_t paddr, size_t size, enum dma_data_dire
 		ALT_CMO_OP(CLEAN, (unsigned long)phys_to_virt(paddr), size, riscv_cbom_block_size);
 		break;
 	case DMA_FROM_DEVICE:
-		ALT_CMO_OP(INVAL, (unsigned long)phys_to_virt(paddr), size, riscv_cbom_block_size);
 		break;
 	case DMA_BIDIRECTIONAL:
 		ALT_CMO_OP(FLUSH, (unsigned long)phys_to_virt(paddr), size, riscv_cbom_block_size);
@@ -40,8 +39,10 @@ void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size, enum dma_data_directi
 	case DMA_TO_DEVICE:
 		break;
 	case DMA_FROM_DEVICE:
-	case DMA_BIDIRECTIONAL:
 		ALT_CMO_OP(INVAL, (unsigned long)phys_to_virt(paddr), size, riscv_cbom_block_size);
+		break;
+	case DMA_BIDIRECTIONAL:
+		ALT_CMO_OP(FLUSH, (unsigned long)phys_to_virt(paddr), size, riscv_cbom_block_size);
 		break;
 	default:
 		break;
@@ -52,7 +53,6 @@ void arch_dma_prep_coherent(struct page *page, size_t size)
 {
 	void *flush_addr = page_address(page);
 
-	memset(flush_addr, 0, size);
 	ALT_CMO_OP(FLUSH, (unsigned long)flush_addr, size, riscv_cbom_block_size);
 }
 
