@@ -77,6 +77,11 @@
 		};
 	};
 
+  memory@40000000 {
+    device_type = "memory";
+    reg = <0x40000000 0x20000000>;
+  };
+
 	de: display-engine {
 		compatible = "allwinner,sun20i-d1-display-engine";
 		// interrupts = <103 IRQ_TYPE_LEVEL_HIGH>;
