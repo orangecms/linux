@@ -6,9 +6,9 @@
 
 /dts-v1/;
 #include <dt-bindings/clock/starfive-jh7100.h>
-#include <dt-bindings/clock/starfive-jh7100-audio.h>
+// #include <dt-bindings/clock/starfive-jh7100-audio.h>
 #include <dt-bindings/reset/starfive-jh7100.h>
-#include <dt-bindings/reset/starfive-jh7100-audio.h>
+// #include <dt-bindings/reset/starfive-jh7100-audio.h>
 
 / {
 	compatible = "starfive,jh7100";
@@ -266,7 +266,7 @@
 			dmas = <&dma2p 28>;
 			dma-names = "rx";
 		};
-
+    /*
 		i2svad: i2svad@10420000 {
 			compatible = "starfive,sf-i2svad";
 			reg = <0x0 0x10420000 0x0 0x1000> ;
@@ -387,14 +387,13 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 
-			/* pwmdac */
+			// pwmdac
 			simple-audio-card,dai-link@0 {
 				reg = <0>;
 				status = "okay";
 				format = "left_j";
 				bitclock-master = <&sndcpu0>;
 				frame-master = <&sndcpu0>;
-
 				sndcpu0: cpu {
 					sound-dai = <&pwmdac>;
 				};
@@ -402,8 +401,10 @@
 				codec {
 					sound-dai = <&pwmdac_codec>;
 				};
+
 			};
 		};
+    */
 
 		usb3: usb@104c0000 {
 			compatible = "cdns,usb3";
