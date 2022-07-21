@@ -23,6 +23,7 @@
 	starfive,keep-gpiomux = <13 14 63>;
 };
 
+/*
 &i2c0 {
 	eeprom@50 {
 		compatible = "atmel,24c04";
@@ -30,3 +31,4 @@
 		pagesize = <16>;
 	};
 };
+*/
