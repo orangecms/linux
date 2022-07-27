@@ -56,6 +56,23 @@
 		compatible = "mmc-pwrseq-simple";
 		reset-gpios = <&gpio 6 12 GPIO_ACTIVE_LOW>; /* PG12 */
 	};
+
+	gpio-keys {
+			compatible = "gpio-keys";
+			autorepeat;
+
+			up {
+				label = "GPIO Key UP";
+				linux,code = <103>;
+				gpios = <&gpio 1 2 GPIO_ACTIVE_LOW>;
+			};
+
+			down {
+				label = "GPIO Key DOWN";
+				linux,code = <108>;
+				gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+			};
+  };
 };
 
 &codec {
