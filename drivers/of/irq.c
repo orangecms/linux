@@ -60,12 +60,7 @@ struct device_node *of_irq_find_parent(struct device_node *child)
 		return NULL;
 
 	do {
-		/*
-		 * interrupts-extended can reference multiple parent domains.
-		 * This only returns the first one.
-		 */
-		if (of_property_read_u32(child, "interrupt-parent", &parent) &&
-		    of_property_read_u32(child, "interrupts-extended", &parent)) {
+		if (of_property_read_u32(child, "interrupt-parent", &parent)) {
 			p = of_get_parent(child);
 		} else	{
 			if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
@@ -576,11 +571,6 @@ void __init of_irq_init(const struct of_device_id *matches)
 	 * The root irq controller is the one without an interrupt-parent.
 	 * That one goes first, followed by the controllers that reference it,
 	 * followed by the ones that reference the 2nd level controllers, etc.
-	 *
-	 * Controllers using the interrupts-extended property may have multiple
-	 * parents; interrupt_parent always references the first one. The order
-	 * used here assumes that other parents are no farther away from a root
-	 * irq controller than the first parent.
 	 */
 	while (!list_empty(&intc_desc_list)) {
 		/*
