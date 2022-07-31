@@ -293,6 +293,24 @@ clear_bss_done:
 	mv s0, a0
 	mv s1, a1
 
+  /* call to fancy oreboot method */
+  li a6, 0x023ADC52
+  li a7, 0x0A023B00
+  // MXSTATUS
+  li a0, 0x7c0
+  ecall
+  // MHCR
+  li a0, 0x7c1
+  ecall
+  // MCOR
+  li a0, 0x7c2
+  ecall
+  // MHINT
+  li a0, 0x7c5
+  ecall
+  li a6, 0
+  li a7, 0
+
 	la a2, boot_cpu_hartid
 	XIP_FIXUP_OFFSET a2
 	REG_S a0, (a2)
