@@ -3,6 +3,7 @@
  *
  * This code is licenced under the GPL.
  */
+#include <asm/sbi.h>
 #include <linux/sched/mm.h>
 #include <linux/proc_fs.h>
 #include <linux/smp.h>
@@ -2669,9 +2670,13 @@ void __init boot_cpu_init(void)
 	int cpu = smp_processor_id();
 
 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
+  sbi_console_putchar('o');
 	set_cpu_online(cpu, true);
+  sbi_console_putchar('a');
 	set_cpu_active(cpu, true);
+  sbi_console_putchar('p');
 	set_cpu_present(cpu, true);
+  sbi_console_putchar('b');
 	set_cpu_possible(cpu, true);
 
 #ifdef CONFIG_SMP

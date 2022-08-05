@@ -6633,6 +6633,7 @@ static void stmmac_service_task(struct work_struct *work)
 			service_task);
 
 	stmmac_reset_subtask(priv);
+	pr_info("       stmmac_service_task: clear STMMAC_SERVICE_SCHED");
 	clear_bit(STMMAC_SERVICE_SCHED, &priv->state);
 }
 
@@ -6957,6 +6958,7 @@ int stmmac_dvr_probe(struct device *device,
 		return -ENOMEM;
 	}
 
+	pr_info("INIT_WORK: stmmac_service_task");
 	INIT_WORK(&priv->service_task, stmmac_service_task);
 
 	/* Initialize Link Partner FPE workqueue */

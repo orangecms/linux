@@ -30,6 +30,7 @@
 
 #include "cgroup-internal.h"
 
+#include <asm/sbi.h>
 #include <linux/bpf-cgroup.h>
 #include <linux/cred.h>
 #include <linux/errno.h>
@@ -5229,15 +5230,17 @@ static void init_and_link_css(struct cgroup_subsys_state *css,
 	lockdep_assert_held(&cgroup_mutex);
 
 	cgroup_get_live(cgrp);
-
+  sbi_console_putchar('m');
 	memset(css, 0, sizeof(*css));
 	css->cgroup = cgrp;
 	css->ss = ss;
 	css->id = -1;
+  sbi_console_putchar('i');
 	INIT_LIST_HEAD(&css->sibling);
 	INIT_LIST_HEAD(&css->children);
 	INIT_LIST_HEAD(&css->rstat_css_node);
 	css->serial_nr = css_serial_nr_next++;
+  sbi_console_putchar('a');
 	atomic_set(&css->online_cnt, 0);
 
 	if (cgroup_parent(cgrp)) {
@@ -5248,6 +5251,7 @@ static void init_and_link_css(struct cgroup_subsys_state *css,
 	if (ss->css_rstat_flush)
 		list_add_rcu(&css->rstat_css_node, &cgrp->rstat_css_list);
 
+  sbi_console_putchar('f');
 	BUG_ON(cgroup_css(cgrp, ss));
 }
 
@@ -5747,20 +5751,26 @@ static struct kernfs_syscall_ops cgroup_kf_syscall_ops = {
 static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
 {
 	struct cgroup_subsys_state *css;
-
+  sbi_console_putchar('I');
 	pr_debug("Initializing cgroup subsys %s\n", ss->name);
 
+  sbi_console_putchar('M');
 	mutex_lock(&cgroup_mutex);
 
+  sbi_console_putchar('D');
 	idr_init(&ss->css_idr);
+  sbi_console_putchar('H');
 	INIT_LIST_HEAD(&ss->cfts);
 
 	/* Create the root cgroup state for this subsystem */
 	ss->root = &cgrp_dfl_root;
 	css = ss->css_alloc(NULL);
 	/* We don't handle early failures gracefully */
+  sbi_console_putchar('B');
 	BUG_ON(IS_ERR(css));
+  sbi_console_putchar('L');
 	init_and_link_css(css, ss, &cgrp_dfl_root.cgrp);
+  sbi_console_putchar('C');
 
 	/*
 	 * Root csses are never destroyed and we can't initialize
@@ -5772,6 +5782,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
 		/* allocation can't be done safely during early init */
 		css->id = 1;
 	} else {
+    sbi_console_putchar('A');
 		css->id = cgroup_idr_alloc(&ss->css_idr, css, 1, 2, GFP_KERNEL);
 		BUG_ON(css->id < 0);
 	}
@@ -5794,6 +5805,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
 
 	BUG_ON(online_css(css));
 
+  sbi_console_putchar('U');
 	mutex_unlock(&cgroup_mutex);
 }
 
@@ -5811,18 +5823,23 @@ int __init cgroup_init_early(void)
 
 	ctx.root = &cgrp_dfl_root;
 	init_cgroup_root(&ctx);
+  sbi_console_putchar('R');
 	cgrp_dfl_root.cgrp.self.flags |= CSS_NO_REF;
 
 	RCU_INIT_POINTER(init_task.cgroups, &init_css_set);
+  sbi_console_putchar('P');
 
 	for_each_subsys(ss, i) {
+    sbi_console_putchar('C');
+    sbi_console_putchar(i + 0x30);
+    /*
 		WARN(!ss->css_alloc || !ss->css_free || ss->name || ss->id,
 		     "invalid cgroup_subsys %d:%s css_alloc=%p css_free=%p id:name=%d:%s\n",
 		     i, cgroup_subsys_name[i], ss->css_alloc, ss->css_free,
 		     ss->id, ss->name);
 		WARN(strlen(cgroup_subsys_name[i]) > MAX_CGROUP_TYPE_NAMELEN,
 		     "cgroup_subsys_name %s too long\n", cgroup_subsys_name[i]);
-
+    */
 		ss->id = i;
 		ss->name = cgroup_subsys_name[i];
 		if (!ss->legacy_name)

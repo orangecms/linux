@@ -12,6 +12,7 @@
 
 #define DEBUG		/* Enable initcall_debug */
 
+#include <asm/sbi.h>
 #include <linux/types.h>
 #include <linux/extable.h>
 #include <linux/module.h>
@@ -930,14 +931,21 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *command_line;
 	char *after_dashes;
 
+  sbi_console_putchar('1');
 	set_task_stack_end_magic(&init_task);
+  sbi_console_putchar('2');
 	smp_setup_processor_id();
+  sbi_console_putchar('3');
 	debug_objects_early_init();
+  sbi_console_putchar('4');
 	init_vmlinux_build_id();
+  sbi_console_putchar('5');
 
 	cgroup_init_early();
+  sbi_console_putchar('6');
 
 	local_irq_disable();
+  sbi_console_putchar('7');
 	early_boot_irqs_disabled = true;
 
 	/*
@@ -945,8 +953,11 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * enable them.
 	 */
 	boot_cpu_init();
+  sbi_console_putchar('8');
 	page_address_init();
+  sbi_console_putchar('9');
 	pr_notice("%s", linux_banner);
+  sbi_console_putchar('0');
 	early_security_init();
 	setup_arch(&command_line);
 	setup_boot_config();

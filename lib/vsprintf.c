@@ -17,6 +17,7 @@
  * - scnprintf and vscnprintf
  */
 
+#include <asm/sbi.h>
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
 #include <linux/clk.h>
@@ -2635,7 +2636,14 @@ qualifier:
 		fallthrough;
 
 	default:
-		WARN_ONCE(1, "Please remove unsupported %%%c in format string\n", *fmt);
+		// WARN_ONCE(1, "Please remove unsupported %%%c in format string\n", *fmt);
+    sbi_console_putchar('=');
+    sbi_console_putchar('C');
+    sbi_console_putchar('R');
+    sbi_console_putchar('A');
+    sbi_console_putchar('P');
+    sbi_console_putchar('=');
+    sbi_console_putchar('\n');
 		spec->type = FORMAT_TYPE_INVALID;
 		return fmt - start;
 	}
