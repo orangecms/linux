@@ -17,8 +17,8 @@
 static bool errata_probe_pbmt(unsigned int stage,
 			      unsigned long arch_id, unsigned long impid)
 {
-	// if (arch_id != 0 || impid != 0)
-	//	return false;
+	if (arch_id != 0 || impid != 0)
+		return false;
 
 	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT ||
 	    stage == RISCV_ALTERNATIVES_MODULE)
@@ -30,8 +30,8 @@ static bool errata_probe_pbmt(unsigned int stage,
 static bool errata_probe_cmo(unsigned int stage,
 			     unsigned long arch_id, unsigned long impid)
 {
-	// if (arch_id != 0 || impid != 0)
-	//	return false;
+	if (arch_id != 0 || impid != 0)
+		return false;
 
 	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
 		return false;
