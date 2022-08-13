@@ -37,6 +37,7 @@ static void __init_or_module riscv_fill_cpu_mfr_info(struct cpu_manufacturer_inf
 	cpu_mfr_info->imp_id = sbi_get_mimpid();
 #endif
 
+  sbi_console_putchar('m');
 	switch (cpu_mfr_info->vendor_id) {
 #ifdef CONFIG_ERRATA_SIFIVE
 	case SIFIVE_VENDOR_ID:
@@ -45,6 +46,11 @@ static void __init_or_module riscv_fill_cpu_mfr_info(struct cpu_manufacturer_inf
 #endif
 #ifdef CONFIG_ERRATA_THEAD
 	case THEAD_VENDOR_ID:
+    sbi_console_putchar('T');
+    sbi_console_putchar('H');
+    sbi_console_putchar('E');
+    sbi_console_putchar('A');
+    sbi_console_putchar('D');
 		cpu_mfr_info->patch_func = thead_errata_patch_func;
 		break;
 #endif
@@ -102,6 +108,7 @@ void __init apply_boot_alternatives(void)
 void __init apply_early_boot_alternatives(void)
 {
 #ifdef CONFIG_RISCV_ALTERNATIVE_EARLY
+  sbi_console_putchar('_');
 	_apply_alternatives((struct alt_entry *)__alt_start,
 			    (struct alt_entry *)__alt_end,
 			    RISCV_ALTERNATIVES_EARLY_BOOT);
