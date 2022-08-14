@@ -246,3 +246,18 @@
 &usbphy {
 	usb1_vbus-supply = <&reg_vcc>;
 };
+
+&usb_otg {
+	dr_mode = "otg";
+	status = "okay";
+};
+/*
+&usbotg {
+        vbus-supply = <&reg_5p0v>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usbotg>;
+        disable-over-current;
+        dr_mode = "peripheral";
+        status = "okay";
+};
+*/
