@@ -273,12 +273,16 @@ int fb_deferred_io_init(struct fb_info *info)
 	unsigned long npagerefs, i;
 	int ret;
 
+  pr_info("%s fbdefio %p", __func__, fbdefio);
 	BUG_ON(!fbdefio);
 
+  pr_info("%s info->fix.smem_len %d", __func__, info->fix.smem_len);
 	if (WARN_ON(!info->fix.smem_len))
 		return -EINVAL;
 
+  pr_info("%s mutex_init", __func__);
 	mutex_init(&fbdefio->lock);
+  pr_info("%s INIT_DELAYED_WORK %p", __func__, info);
 	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
 	INIT_LIST_HEAD(&fbdefio->pagereflist);
 	if (fbdefio->delay == 0) /* set a default of 1 s */

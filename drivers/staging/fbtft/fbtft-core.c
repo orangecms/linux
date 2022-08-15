@@ -607,8 +607,10 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
 		height = display->height;
 	}
 
-	vmem_size = display->width * display->height * bpp / 8;
+  vmem_size = display->width * display->height * bpp / 8;
 	vmem = vzalloc(vmem_size);
+  pr_info("%s width %d height %d bpp %d vmem_size %d vmem %p", __func__,
+      display->width, display->height, bpp, vmem_size, vmem);
 	if (!vmem)
 		goto alloc_fail;
 
@@ -642,6 +644,8 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
 	info->fbops = fbops;
 	info->fbdefio = fbdefio;
 
+  fb_info(info, "fbtft-core fbdefio %p", fbdefio);
+
 	fbops->owner        =      dev->driver->owner;
 	fbops->fb_read      =      fb_sys_read;
 	fbops->fb_write     =      fbtft_fb_write;
@@ -655,7 +659,6 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
 	fbdefio->delay =            HZ / fps;
 	fbdefio->sort_pagereflist = true;
 	fbdefio->deferred_io =      fbtft_deferred_io;
-	fb_deferred_io_init(info);
 
 	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
@@ -686,6 +689,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
 	info->var.transp.length =  0;
 
 	info->flags =              FBINFO_FLAG_DEFAULT | FBINFO_VIRTFB;
+	fb_deferred_io_init(info);
 
 	par = info->par;
 	par->info = info;
