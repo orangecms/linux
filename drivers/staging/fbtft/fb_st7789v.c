@@ -30,6 +30,12 @@
 
 #define HSD20_IPS 1
 
+static u32 col_offset = 0;
+static u32 row_offset = 0;
+static u8 col_hack_fix_offset = 0;
+static short x_offset = 0;
+static short y_offset = 0;
+
 /**
  * enum st7789v_command - ST7789V display controller commands
  *
@@ -261,6 +267,22 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
 	return ret;
 }
 
+static void minipitft13_set_addr_win(struct fbtft_par *par, int xs, int ys,
+				     int xe, int ye)
+{
+	xs += x_offset;
+	xe += x_offset;
+	ys += y_offset;
+	ye += y_offset;
+	write_reg(par, MIPI_DCS_SET_COLUMN_ADDRESS,
+		  xs >> 8, xs & 0xFF, xe >> 8, xe & 0xFF);
+
+	write_reg(par, MIPI_DCS_SET_PAGE_ADDRESS,
+		  ys >> 8, ys & 0xFF, ye >> 8, ye & 0xFF);
+
+	write_reg(par, MIPI_DCS_WRITE_MEMORY_START);
+}
+
 /**
  * set_var() - apply LCD properties like rotation and BGR mode
  *
@@ -271,20 +293,32 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
 static int set_var(struct fbtft_par *par)
 {
 	u8 madctl_par = 0;
+	struct fbtft_display *display = &par->pdata->display;
+	u32 width = display->width;
+	u32 height = display->height;
 
 	if (par->bgr)
 		madctl_par |= MADCTL_BGR;
 	switch (par->info->var.rotate) {
 	case 0:
+		x_offset = 0;
+		y_offset = 0;
 		break;
 	case 90:
 		madctl_par |= (MADCTL_MV | MADCTL_MY);
+		x_offset = (320 - height) - row_offset;
+		y_offset = (240 - width) - col_offset;
 		break;
 	case 180:
 		madctl_par |= (MADCTL_MX | MADCTL_MY);
+		x_offset = (240 - width) - col_offset + col_hack_fix_offset;
+		// hack tweak to account for extra pixel width to make even
+		y_offset = (320 - height) - row_offset;
 		break;
 	case 270:
 		madctl_par |= (MADCTL_MV | MADCTL_MX);
+		x_offset = row_offset;
+		y_offset = col_offset;
 		break;
 	default:
 		return -EINVAL;
@@ -379,10 +413,24 @@ static struct fbtft_display display = {
 		.set_var = set_var,
 		.set_gamma = set_gamma,
 		.blank = blank,
+	  .set_addr_win = minipitft13_set_addr_win,
 	},
 };
 
 FBTFT_REGISTER_DRIVER(DRVNAME, "sitronix,st7789v", &display);
+
+/*
+int variant_minipitft13(struct fbtft_display *display)
+{
+	display->fbtftops.set_addr_win = minipitft13_set_addr_win;
+	return 0;
+}
+
+FBTFT_REGISTER_DRIVER_START(&display)
+FBTFT_COMPATIBLE("sitronix,st7789v")
+FBTFT_VARIANT_COMPATIBLE("fbtft,minipitft13", variant_minipitft13)
+FBTFT_REGISTER_DRIVER_END(DRVNAME, &display);
+*/
 
 MODULE_ALIAS("spi:" DRVNAME);
 MODULE_ALIAS("platform:" DRVNAME);
