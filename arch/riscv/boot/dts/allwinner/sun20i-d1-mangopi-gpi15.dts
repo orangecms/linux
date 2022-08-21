@@ -98,6 +98,8 @@
 		reset-gpios = <&gpio 6 12 GPIO_ACTIVE_LOW>; /* PG12 */
 	};
 
+  // see https://gist.github.com/rickyzhang82/8581a762c9f9fc6ddb8390872552c250
+  // for key code table (fbcon)
 	gpio-keys {
 			compatible = "gpio-keys";
 			autorepeat;
@@ -105,46 +107,74 @@
 			up {
 					label = "GPIO Key UP";
 					linux,code = <103>;
-					gpios = <&gpio 1 2 GPIO_ACTIVE_LOW>;
+					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
 			};
 
 			down {
 					label = "GPIO Key DOWN";
 					linux,code = <108>;
-					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+					gpios = <&gpio 1 11 GPIO_ACTIVE_LOW>;
 			};
-      // TODO :)
-      /*
+
       left {
           label = "GPIO Key LEFT";
           linux,code = <105>;
-					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+					gpios = <&gpio 1 2 GPIO_ACTIVE_LOW>;
       };
 
       right {
           label = "GPIO Key RIGHT";
           linux,code = <106>;
-					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+					gpios = <&gpio 1 12 GPIO_ACTIVE_LOW>;
       };
 
-      esc-key {
-          label = "GPIO Key ESC";
+      select {
+          label = "GPIO Key ESC / SELECT";
           linux,code = <1>;
-					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+					gpios = <&gpio 1 6 GPIO_ACTIVE_LOW>;
       };
 
-      ctrl-lft {
-          label = "GPIO Key LEFTCTRL";
-          linux,code = <29>;
-					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
-      };
-
-      enter {
-          label = "GPIO Key ENTER";
+      start {
+          label = "GPIO Key ENTER / START";
           linux,code = <28>;
-					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+					gpios = <&gpio 3 17 GPIO_ACTIVE_LOW>;
       };
-      */
+
+      a {
+          label = "GPIO Key A";
+          linux,code = <30>;
+					gpios = <&gpio 1 4 GPIO_ACTIVE_LOW>;
+      };
+
+      b {
+          label = "GPIO Key B";
+          linux,code = <48>;
+					gpios = <&gpio 1 3 GPIO_ACTIVE_LOW>;
+      };
+
+      x {
+          label = "GPIO Key X";
+          linux,code = <45>;
+					gpios = <&gpio 1 9 GPIO_ACTIVE_LOW>;
+      };
+
+      y {
+          label = "GPIO Key Y";
+          linux,code = <21>;
+					gpios = <&gpio 2 0 GPIO_ACTIVE_LOW>;
+      };
+
+      topleft {
+          label = "GPIO Key PAGE UP / TOP LEFT";
+          linux,code = <104>;
+					gpios = <&gpio 1 8 GPIO_ACTIVE_LOW>;
+      };
+
+      topright {
+          label = "GPIO Key PAGE DOWN / TOP RIGHT";
+          linux,code = <109>;
+					gpios = <&gpio 1 1 GPIO_ACTIVE_LOW>;
+      };
   };
 };
 
@@ -184,11 +214,6 @@
 		pins = "PE17";
 		function = "dmic";
 	};
-
-	ledc_pc0_pin: ledc-pc0-pin {
-		pins = "PC0";
-		function = "ledc";
-	};
 };
 
 &hdmi {
@@ -203,18 +228,6 @@
 
 &hdmi_phy {
 	status = "okay";
-};
-
-&ledc {
-	pinctrl-0 = <&ledc_pc0_pin>;
-	pinctrl-names = "default";
-	status = "okay";
-
-	led@0 {
-		reg = <0x0>;
-		color = <LED_COLOR_ID_RGB>;
-		function = LED_FUNCTION_STATUS;
-	};
 };
 
 &mmc1 {
@@ -240,23 +253,15 @@
 	status = "okay";
 };
 
+&uart0 {
+	status = "disabled";
+};
+
 &uart1 {
 	pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
-/*
-&tcon_lcd0 {
-	pinctrl-0 = <&lcd_rgb666_pins>;
-	pinctrl-names = "default";
-};
-
-&tcon_lcd0_out {
-	tcon_lcd0_out_panel: endpoint {
-		remote-endpoint = <&panel_in_tcon_lcd0>;
-	};
-};
-*/
 
 &spi1 {
   pinctrl-0 = <&spi1_pd_pins>;
@@ -266,7 +271,6 @@
 
   panel@0 {
     compatible = "sitronix,st7735r";
-    verbose = <3>;
     buswidth = <0x8>;
     reg = <0>;
     reset-gpios = <&gpio 3 22 GPIO_ACTIVE_LOW>; /* PD22 */
@@ -277,7 +281,7 @@
     txbuflen = <32768>;
     spi-cpol;
     spi-cpha;
-    rotate = <90>;
+    rotate = <270>;
     fps = <25>;
     status = "okay";
   };
