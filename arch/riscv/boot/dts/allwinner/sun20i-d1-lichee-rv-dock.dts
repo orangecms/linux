@@ -193,9 +193,3 @@
 	dr_mode = "peripheral";
 	status = "okay";
 };
-
-// &usbphy {
-//   usb0_vbus-supply = <&reg_vcc>;
-//   usb0_vbus_det-gpios = <&gpio 3 20 GPIO_ACTIVE_HIGH>; /* PD20 */
-//   status = "okay";
-// };
