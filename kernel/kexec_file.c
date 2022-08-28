@@ -74,6 +74,7 @@ static void *kexec_image_load_default(struct kimage *image)
 	if (!image->fops || !image->fops->load)
 		return ERR_PTR(-ENOEXEC);
 
+  pr_info("%s: fops->load\n", __func__);
 	return image->fops->load(image, image->kernel_buf,
 				 image->kernel_buf_len, image->initrd_buf,
 				 image->initrd_buf_len, image->cmdline_buf,
@@ -389,7 +390,7 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
 		struct kexec_segment *ksegment;
 
 		ksegment = &image->segment[i];
-		pr_debug("Loading segment %d: buf=0x%p bufsz=0x%zx mem=0x%lx memsz=0x%zx\n",
+		pr_info("Loading segment %d: buf=0x%p bufsz=0x%zx mem=0x%lx memsz=0x%zx\n",
 			 i, ksegment->buf, ksegment->bufsz, ksegment->mem,
 			 ksegment->memsz);
 
@@ -609,6 +610,7 @@ int kexec_locate_mem_hole(struct kexec_buf *kbuf)
 {
 	int ret;
 
+  pr_info("%s: %lu %lu \n", __func__, kbuf->mem, kbuf->memsz);
 	/* Arch knows where to place */
 	if (kbuf->mem != KEXEC_BUF_MEM_UNKNOWN)
 		return 0;
@@ -618,6 +620,9 @@ int kexec_locate_mem_hole(struct kexec_buf *kbuf)
 	else
 		ret = kexec_walk_memblock(kbuf, locate_mem_hole_callback);
 
+  if (ret == 0) {
+    pr_info("%s: trouble ahead! %lu \n", __func__, kbuf->mem);
+  }
 	return ret == 1 ? 0 : -EADDRNOTAVAIL;
 }
 

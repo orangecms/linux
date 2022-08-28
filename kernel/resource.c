@@ -336,6 +336,7 @@ static int find_next_iomem_res(resource_size_t start, resource_size_t end,
 
 	read_lock(&resource_lock);
 
+    pr_info("%s: searching... \n", __func__);
 	for (p = iomem_resource.child; p; p = next_resource(p)) {
 		/* If we passed the resource we are looking for, stop */
 		if (p->start > end) {
@@ -379,9 +380,11 @@ static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
 	struct resource res;
 	int ret = -EINVAL;
 
+  pr_info("%s: from %llu to %llu \n", __func__, start, end);
 	while (start < end &&
 	       !find_next_iomem_res(start, end, flags, desc, &res)) {
 		ret = (*func)(&res, arg);
+    pr_info("%s: ret %d, next %llu \n", __func__, ret, res.end + 1);
 		if (ret)
 			break;
 

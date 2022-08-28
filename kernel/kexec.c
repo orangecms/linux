@@ -145,6 +145,12 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 		goto out;
 
 	for (i = 0; i < nr_segments; i++) {
+		struct kexec_segment *ksegment;
+
+		ksegment = &image->segment[i];
+		pr_info("%s: Loading segment %lu: buf=0x%p bufsz=0x%zx mem=0x%lx memsz=0x%zx\n",
+			 __func__, i, ksegment->buf, ksegment->bufsz, ksegment->mem,
+			 ksegment->memsz);
 		ret = kimage_load_segment(image, &image->segment[i]);
 		if (ret)
 			goto out;

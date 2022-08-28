@@ -90,6 +90,7 @@ static int elf_find_pbase(struct kimage *image, unsigned long kernel_len,
 	kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
 	kbuf.memsz = ALIGN(kernel_len, PAGE_SIZE);
 	kbuf.top_down = false;
+  pr_info("%s: locate_mem_hole\n", __func__);
 	ret = arch_kexec_locate_mem_hole(&kbuf);
 	if (!ret) {
 		*old_pbase = lowest_paddr;
@@ -192,7 +193,7 @@ static void *elf_kexec_load(struct kimage *image, char *kernel_buf,
 	ret = kexec_build_elf_info(kernel_buf, kernel_len, &ehdr, &elf_info);
 	if (ret)
 		return ERR_PTR(ret);
-
+  pr_info("%s: elf_find_pbase\n", __func__);
 	ret = elf_find_pbase(image, kernel_len, &ehdr, &elf_info,
 			     &old_kernel_pbase, &new_kernel_pbase);
 	if (ret)
