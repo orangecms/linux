@@ -108,8 +108,16 @@
 			return val;		\
 	} while (0)
 
+struct st7789v;
+
+struct st7789_panel_info {
+	const struct drm_display_mode *mode;
+	int (*init_sequence)(struct st7789v *ctx);
+};
+
 struct st7789v {
 	struct drm_panel panel;
+	const struct st7789_panel_info *info;
 	struct spi_device *spi;
 	struct gpio_desc *reset;
 	struct regulator *power;
@@ -162,50 +170,12 @@ static const struct drm_display_mode default_mode = {
 	.vsync_start = 320 + 8,
 	.vsync_end = 320 + 8 + 4,
 	.vtotal = 320 + 8 + 4 + 4,
+	.width_mm = 61,
+	.height_mm = 103,
 };
 
-static int st7789v_get_modes(struct drm_panel *panel,
-			     struct drm_connector *connector)
-{
-	struct drm_display_mode *mode;
-
-	mode = drm_mode_duplicate(connector->dev, &default_mode);
-	if (!mode) {
-		dev_err(panel->dev, "failed to add mode %ux%ux@%u\n",
-			default_mode.hdisplay, default_mode.vdisplay,
-			drm_mode_vrefresh(&default_mode));
-		return -ENOMEM;
-	}
-
-	drm_mode_set_name(mode);
-
-	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
-	drm_mode_probed_add(connector, mode);
-
-	connector->display_info.width_mm = 61;
-	connector->display_info.height_mm = 103;
-
-	return 1;
-}
-
-static int st7789v_prepare(struct drm_panel *panel)
-{
-	struct st7789v *ctx = panel_to_st7789v(panel);
+static int init_sequence_default(struct st7789v *ctx) {
 	int ret;
-
-	ret = regulator_enable(ctx->power);
-	if (ret)
-		return ret;
-
-	gpiod_set_value(ctx->reset, 1);
-	msleep(30);
-	gpiod_set_value(ctx->reset, 0);
-	msleep(120);
-
-	ST7789V_TEST(ret, st7789v_write_command(ctx, MIPI_DCS_EXIT_SLEEP_MODE));
-
-	/* We need to wait 120ms after a sleep out command */
-	msleep(120);
 
 	ST7789V_TEST(ret, st7789v_write_command(ctx,
 						MIPI_DCS_SET_ADDRESS_MODE));
@@ -313,6 +283,58 @@ static int st7789v_prepare(struct drm_panel *panel)
 	return 0;
 }
 
+struct st7789_panel_info default_panel = {
+	.mode = &default_mode,
+	.init_sequence = init_sequence_default,
+};
+
+static int st7789v_get_modes(struct drm_panel *panel,
+			     struct drm_connector *connector)
+{
+	struct st7789v *ctx = panel_to_st7789v(panel);
+	struct drm_display_mode *mode;
+
+	mode = drm_mode_duplicate(connector->dev, ctx->info->mode);
+	if (!mode) {
+		dev_err(panel->dev, "failed to add mode %ux%u@%u\n",
+			ctx->info->mode->hdisplay, ctx->info->mode->vdisplay,
+			drm_mode_vrefresh(ctx->info->mode));
+		return -ENOMEM;
+	}
+
+	drm_mode_set_name(mode);
+
+	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
+	drm_mode_probed_add(connector, mode);
+
+	connector->display_info.width_mm = ctx->info->mode->width_mm;
+	connector->display_info.height_mm = ctx->info->mode->height_mm;
+
+	return 1;
+}
+
+static int st7789v_prepare(struct drm_panel *panel)
+{
+	struct st7789v *ctx = panel_to_st7789v(panel);
+	int ret;
+
+	ret = regulator_enable(ctx->power);
+	if (ret)
+		return ret;
+
+	gpiod_set_value(ctx->reset, 1);
+	msleep(30);
+	gpiod_set_value(ctx->reset, 0);
+	msleep(120);
+
+	ST7789V_TEST(ret, st7789v_write_command(ctx, MIPI_DCS_EXIT_SLEEP_MODE));
+
+	/* We need to wait 120ms after a sleep out command */
+	msleep(120);
+
+	return ctx->info->init_sequence(ctx);
+}
+
 static int st7789v_enable(struct drm_panel *panel)
 {
 	struct st7789v *ctx = panel_to_st7789v(panel);
@@ -362,6 +384,8 @@ static int st7789v_probe(struct spi_device *spi)
 	spi_set_drvdata(spi, ctx);
 	ctx->spi = spi;
 
+	ctx->info = device_get_match_data(&spi->dev);
+
 	drm_panel_init(&ctx->panel, &spi->dev, &st7789v_drm_funcs,
 		       DRM_MODE_CONNECTOR_DPI);
 
@@ -392,13 +416,13 @@ static void st7789v_remove(struct spi_device *spi)
 }
 
 static const struct spi_device_id st7789v_spi_id[] = {
-	{ "st7789v" },
+	{ "st7789v", (unsigned long) &default_panel },
 	{ }
 };
 MODULE_DEVICE_TABLE(spi, st7789v_spi_id);
 
 static const struct of_device_id st7789v_of_match[] = {
-	{ .compatible = "sitronix,st7789v" },
+	{ .compatible = "sitronix,st7789v", .data = &default_panel },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, st7789v_of_match);
