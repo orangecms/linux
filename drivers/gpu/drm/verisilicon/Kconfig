@@ -11,3 +11,14 @@ config DRM_VERISILICON
 	  This driver provides VeriSilicon kernel mode
 	  setting and buffer management. It does not
 	  provide 2D or 3D acceleration.
+
+config STARFIVE_HDMI
+	bool "Starfive specific extensions HDMI"
+	help
+	   This selects support for StarFive SoC specific extensions
+	   for the Innosilicon HDMI driver. If you want to enable
+	   HDMI on JH7110 based SoC, you should select this option.
+
+	   To compile this driver as a module, choose M here.
+
+

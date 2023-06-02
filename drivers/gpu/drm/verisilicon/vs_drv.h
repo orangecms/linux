@@ -45,4 +45,8 @@ static inline bool is_iommu_enabled(struct drm_device *dev)
 	return priv->domain ? true : false;
 }
 
+#ifdef CONFIG_STARFIVE_HDMI
+extern struct platform_driver starfive_hdmi_driver;
+#endif
+
 #endif /* __VS_DRV_H__ */
