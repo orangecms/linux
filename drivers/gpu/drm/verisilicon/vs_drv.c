@@ -31,6 +31,7 @@
 #include <drm/drm_vblank.h>
 
 #include "vs_drv.h"
+#include "vs_fb.h"
 #include "vs_gem.h"
 
 #define DRV_NAME	"starfive"
@@ -118,6 +119,8 @@ static int vs_drm_bind(struct device *dev)
 	ret = component_bind_all(dev, drm_dev);
 	if (ret)
 		goto err_mode;
+
+	vs_mode_config_init(drm_dev);
 
 	ret = drm_vblank_init(drm_dev, drm_dev->mode_config.num_crtc);
 	if (ret)
