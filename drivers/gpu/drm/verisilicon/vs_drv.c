@@ -31,6 +31,7 @@
 #include <drm/drm_vblank.h>
 
 #include "vs_drv.h"
+#include "vs_gem.h"
 
 #define DRV_NAME	"starfive"
 #define DRV_DESC	"Starfive DRM driver"
@@ -48,6 +49,7 @@ static const struct file_operations fops = {
 	.compat_ioctl	= drm_compat_ioctl,
 	.poll			= drm_poll,
 	.read			= drm_read,
+	.mmap			= vs_gem_mmap,
 };
 
 static struct drm_driver vs_drm_driver = {
@@ -55,6 +57,10 @@ static struct drm_driver vs_drm_driver = {
 	.lastclose		= drm_fb_helper_lastclose,
 	.prime_handle_to_fd = drm_gem_prime_handle_to_fd,
 	.prime_fd_to_handle = drm_gem_prime_fd_to_handle,
+	.gem_prime_import	= vs_gem_prime_import,
+	.gem_prime_import_sg_table = vs_gem_prime_import_sg_table,
+	.gem_prime_mmap		= vs_gem_prime_mmap,
+	.dumb_create		= vs_gem_dumb_create,
 	.fops			= &fops,
 	.name			= DRV_NAME,
 	.desc			= DRV_DESC,
