@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+// Copyright (C) 2022 Jisheng Zhang <jszhang@kernel.org>
+// Copyright (C) 2022 Samuel Holland <samuel@sholland.org>
+
+#include <dt-bindings/input/input.h>
+
+#include "sun20i-d1-lichee-rv-dock.dts"
+
+/ {
+	model = "Sipeed Lichee RV Dock Pro";
+	compatible = "sipeed,lichee-rv-dock", "sipeed,lichee-rv",
+		     "allwinner,sun20i-d1";
+
+	aliases {
+		ethernet1 = &rtl8723ds;
+	};
+
+  /*
+	hdmi_connector: connector {
+		compatible = "hdmi-connector";
+		type = "a";
+
+		port {
+			hdmi_con_in: endpoint {
+				remote-endpoint = <&hdmi_out_con>;
+			};
+		};
+	};
+  */
+};
+
+/*
+&hdmi {
+	status = "okay";
+
+	port {
+		hdmi_out_con: endpoint {
+			remote-endpoint = <&hdmi_con_in>;
+		};
+	};
+};
+
+&hdmi_phy {
+	status = "okay";
+};
+*/
+
+&usb_otg {
+	dr_mode = "peripheral";
+};
+
+&usbphy {
+	usb0_id_det-gpios = <&pio 3 21 GPIO_ACTIVE_LOW>; /* PD21 */
+	usb1_vbus-supply = <&reg_vcc>;
+};
+
+&spi0 {
+  pinctrl-0 = <&spi0_tft_pins>;
+  pinctrl-names = "default";
+  status = "okay";
+  num-cs = <1>;
+
+  panel@0 {
+    compatible = "sitronix,st7789v";
+    buswidth = <0x8>;
+    reg = <0>;
+    reset-gpios = <&pio 2 6 GPIO_ACTIVE_LOW>; /* PC6 */
+    dc-gpios = <&pio 2 5 GPIO_ACTIVE_HIGH>; /* PC5 */
+    led-gpios = <&pio 3 18 GPIO_ACTIVE_HIGH>; /* PD18 */
+    spi-max-frequency = <32000000>;
+    // FIXME: should have offsets; the screen really is 80x160
+    width = <80>;
+    height = <160>;
+    bgr = <1>;
+    txbuflen = <16384>;
+    spi-cpol;
+    spi-cpha;
+    rotate = <90>;
+    fps = <25>;
+    debug = <0>;
+    status = "okay";
+  };
+};
