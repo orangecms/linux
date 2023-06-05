@@ -45,12 +45,19 @@
 };
 */
 
+&ohci0 {
+  status = "disabled";
+};
+
+&ehci0 {
+  status = "disabled";
+};
+
 &usb_otg {
 	dr_mode = "peripheral";
 };
 
 &usbphy {
-	usb0_id_det-gpios = <&pio 3 21 GPIO_ACTIVE_LOW>; /* PD21 */
 	usb1_vbus-supply = <&reg_vcc>;
 };
 
@@ -69,7 +76,7 @@
     led-gpios = <&pio 3 18 GPIO_ACTIVE_HIGH>; /* PD18 */
     spi-max-frequency = <32000000>;
     // FIXME: should have offsets; the screen really is 80x160
-    width = <80>;
+    width = <110>;
     height = <160>;
     bgr = <1>;
     txbuflen = <16384>;
