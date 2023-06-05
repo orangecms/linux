@@ -1,0 +1,303 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+// Copyright (C) 2022 Jisheng Zhang <jszhang@kernel.org>
+// Copyright (C) 2022 Samuel Holland <samuel@sholland.org>
+
+#include <dt-bindings/input/input.h>
+
+#include "sun20i-d1-lichee-rv.dts"
+
+/ {
+	model = "MangoPi MQ-Pro";
+	compatible = "mangopi,mq-pro",
+		     "allwinner,sun20i-d1";
+
+	aliases {
+		mmc1 = &mmc1;
+		ethernet0 = &emac;
+	};
+
+  memory@40000000 {
+    device_type = "memory";
+    reg = <0x40000000 0x20000000>;
+  };
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		power-supply = <&reg_vcc>;
+		pwms = <&pwm 7 50000 0>;
+	};
+
+	dmic-card {
+		compatible = "simple-audio-card";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		simple-audio-card,dai-link@0 {
+			format = "pdm";
+			frame-master = <&link0_cpu>;
+			bitclock-master = <&link0_cpu>;
+
+			link0_cpu: cpu {
+				sound-dai = <&dmic>;
+			};
+
+			link0_codec: codec {
+				sound-dai = <&dmic_codec>;
+			};
+		};
+	};
+
+	dmic_codec: dmic-codec {
+		compatible = "dmic-codec";
+		num-channels = <2>;
+		#sound-dai-cells = <0>;
+	};
+
+  /*
+	spi-gpio {
+		compatible = "spi-gpio";
+		cs-gpios = <&gpio 3 10 GPIO_ACTIVE_LOW>; // PD10
+		mosi-gpios = <&gpio 3 12 GPIO_ACTIVE_HIGH>; // PD12
+		sck-gpios = <&gpio 3 11 GPIO_ACTIVE_HIGH>; // PD11
+		num-chipselects = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		panel@0 {
+			compatible = "sitronix,st7789v";
+			reg = <0>;
+			backlight = <&backlight>;
+			reset-gpios = <&gpio 3 14 GPIO_ACTIVE_LOW>; // PD14
+			spi-3wire;
+      width = <240>;
+      height = <240>;
+      txbuflen = <32768>;
+      // from d1-lichee-rv-86-panel.dts
+      // port {
+      //   panel_in_tcon_lcd0: endpoint {
+      //     remote-endpoint = <&tcon_lcd0_out_panel>;
+      //   };
+      // };
+		};
+	};
+  */
+
+	hdmi_connector: connector {
+		compatible = "hdmi-connector";
+		type = "a";
+
+		port {
+			hdmi_con_in: endpoint {
+				remote-endpoint = <&hdmi_out_con>;
+			};
+		};
+	};
+
+	wifi_pwrseq: wifi-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&gpio 6 12 GPIO_ACTIVE_LOW>; /* PG12 */
+	};
+
+  // see https://gist.github.com/rickyzhang82/8581a762c9f9fc6ddb8390872552c250
+  // for key code table (fbcon)
+	gpio-keys {
+			compatible = "gpio-keys";
+			autorepeat;
+
+			up {
+					label = "GPIO Key UP";
+					linux,code = <103>;
+					gpios = <&gpio 1 10 GPIO_ACTIVE_LOW>;
+			};
+
+			down {
+					label = "GPIO Key DOWN";
+					linux,code = <108>;
+					gpios = <&gpio 1 11 GPIO_ACTIVE_LOW>;
+			};
+
+      left {
+          label = "GPIO Key LEFT";
+          linux,code = <105>;
+					gpios = <&gpio 1 2 GPIO_ACTIVE_LOW>;
+      };
+
+      right {
+          label = "GPIO Key RIGHT";
+          linux,code = <106>;
+					gpios = <&gpio 1 12 GPIO_ACTIVE_LOW>;
+      };
+
+      select {
+          label = "GPIO Key ESC / SELECT";
+          linux,code = <1>;
+					gpios = <&gpio 1 6 GPIO_ACTIVE_LOW>;
+      };
+
+      start {
+          label = "GPIO Key ENTER / START";
+          linux,code = <28>;
+					gpios = <&gpio 3 17 GPIO_ACTIVE_LOW>;
+      };
+
+      a {
+          label = "GPIO Key A";
+          linux,code = <30>;
+					gpios = <&gpio 1 4 GPIO_ACTIVE_LOW>;
+      };
+
+      b {
+          label = "GPIO Key B";
+          linux,code = <48>;
+					gpios = <&gpio 1 3 GPIO_ACTIVE_LOW>;
+      };
+
+      x {
+          label = "GPIO Key X";
+          linux,code = <45>;
+					gpios = <&gpio 1 9 GPIO_ACTIVE_LOW>;
+      };
+
+      y {
+          label = "GPIO Key Y";
+          linux,code = <21>;
+					gpios = <&gpio 2 0 GPIO_ACTIVE_LOW>;
+      };
+
+      topleft {
+          label = "GPIO Key PAGE UP / TOP LEFT";
+          linux,code = <104>;
+					gpios = <&gpio 1 8 GPIO_ACTIVE_LOW>;
+      };
+
+      topright {
+          label = "GPIO Key PAGE DOWN / TOP RIGHT";
+          linux,code = <109>;
+					gpios = <&gpio 1 1 GPIO_ACTIVE_LOW>;
+      };
+  };
+};
+
+&codec {
+	allwinner,routing = "Internal Speaker", "HPOUTL",
+			    "Internal Speaker", "HPOUTR",
+			    "LINEINL", "HPOUTL",
+			    "LINEINR", "HPOUTR",
+			    "MICIN3", "Internal Microphone",
+			    "Internal Microphone", "HBIAS";
+	allwinner,widgets = "Microphone", "Internal Microphone",
+			    "Speaker", "Internal Speaker";
+	status = "okay";
+};
+
+&de {
+	status = "okay";
+};
+
+&dmic {
+	pinctrl-0 = <&dmic_pb11_d0_pin>, <&dmic_pe17_clk_pin>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&ehci1 {
+	status = "okay";
+};
+
+&gpio {
+	dmic_pb11_d0_pin: dmic-pb11-d0-pin {
+		pins = "PB11";
+		function = "dmic";
+	};
+
+	dmic_pe17_clk_pin: dmic-pe17-clk-pin {
+		pins = "PE17";
+		function = "dmic";
+	};
+};
+
+&hdmi {
+	status = "okay";
+
+	port {
+		hdmi_out_con: endpoint {
+			remote-endpoint = <&hdmi_con_in>;
+		};
+	};
+};
+
+&hdmi_phy {
+	status = "okay";
+};
+
+&mmc1 {
+	bus-width = <4>;
+	mmc-pwrseq = <&wifi_pwrseq>;
+	non-removable;
+	vmmc-supply = <&reg_vcc_3v3>;
+	vqmmc-supply = <&reg_vcc_3v3>;
+	pinctrl-0 = <&mmc1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&ohci0 {
+	status = "disabled";
+};
+
+&ehci0 {
+	status = "disabled";
+};
+
+&ohci1 {
+	status = "okay";
+};
+
+&uart0 {
+	status = "disabled";
+};
+
+&uart1 {
+	pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&spi1 {
+  pinctrl-0 = <&spi1_pd_pins>;
+  pinctrl-names = "default";
+  status = "okay";
+  num-cs = <1>;
+
+  panel@0 {
+    compatible = "sitronix,st7789v";
+    buswidth = <0x8>;
+    reg = <0>;
+    reset-gpios = <&gpio 3 22 GPIO_ACTIVE_LOW>; /* PD22 */
+    dc-gpios = <&gpio 3 16 GPIO_ACTIVE_HIGH>; /* PD16 */
+    spi-max-frequency = <24000000>;
+    width = <240>;
+    height = <240>;
+    txbuflen = <32768>;
+    spi-cpol;
+    spi-cpha;
+    rotate = <180>;
+    fps = <25>;
+    status = "okay";
+  };
+};
+
+&usbphy {
+	usb1_vbus-supply = <&reg_vcc>;
+};
+
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbphy {
+	usb0_vbus-supply = <&reg_vcc>;
+	usb0_vbus_det-gpios = <&gpio 3 20 GPIO_ACTIVE_HIGH>; /* PD20 */
+	status = "okay";
+};

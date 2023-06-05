@@ -92,6 +92,11 @@
 	};
 };
 
+&usb_otg {
+	dr_mode = "peripheral";
+};
+
 &usbphy {
+	usb0_id_det-gpios = <&pio 3 21 GPIO_ACTIVE_LOW>; /* PD21 */
 	usb1_vbus-supply = <&reg_vcc>;
 };
