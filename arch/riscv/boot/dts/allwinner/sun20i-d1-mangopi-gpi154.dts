@@ -1,0 +1,276 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+// Copyright (C) 2022 Samuel Holland <samuel@sholland.org>
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+
+/dts-v1/;
+
+#include "sun20i-d1.dtsi"
+#include "sun20i-common-regulators.dtsi"
+
+/ {
+	model = "MangoPi MQ Pro";
+	compatible = "widora,mangopi-mq-pro", "allwinner,sun20i-d1";
+
+	aliases {
+		ethernet0 = &rtl8723ds;
+		serial0 = &uart0;
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		power-supply = <&reg_vcc>;
+		// pwms = <&pwm 7 50000 0>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led-0 {
+			color = <LED_COLOR_ID_BLUE>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&pio 3 18 GPIO_ACTIVE_HIGH>; /* PD18 */
+		};
+	};
+
+	reg_avdd2v8: avdd2v8 {
+		compatible = "regulator-fixed";
+		regulator-name = "avdd2v8";
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <2800000>;
+		vin-supply = <&reg_vcc_3v3>;
+	};
+
+	reg_dvdd: dvdd {
+		compatible = "regulator-fixed";
+		regulator-name = "dvdd";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		vin-supply = <&reg_vcc_3v3>;
+	};
+
+	reg_vdd_cpu: vdd-cpu {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd-cpu";
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		vin-supply = <&reg_vcc>;
+	};
+
+	wifi_pwrseq: wifi-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&pio 6 17 GPIO_ACTIVE_LOW>; /* PG17 */
+	};
+
+  // see https://gist.github.com/rickyzhang82/8581a762c9f9fc6ddb8390872552c250
+  // for key code table (fbcon)
+	gpio-keys {
+			compatible = "gpio-keys";
+			autorepeat;
+
+			up {
+					label = "GPIO Key UP";
+					linux,code = <103>;
+					gpios = <&pio 1 10 GPIO_ACTIVE_LOW>;
+			};
+
+			down {
+					label = "GPIO Key DOWN";
+					linux,code = <108>;
+					gpios = <&pio 1 11 GPIO_ACTIVE_LOW>;
+			};
+
+      left {
+          label = "GPIO Key LEFT";
+          linux,code = <105>;
+					gpios = <&pio 1 2 GPIO_ACTIVE_LOW>;
+      };
+
+      right {
+          label = "GPIO Key RIGHT";
+          linux,code = <106>;
+					gpios = <&pio 1 12 GPIO_ACTIVE_LOW>;
+      };
+
+      select {
+          label = "GPIO Key ESC / SELECT";
+          linux,code = <1>;
+					gpios = <&pio 1 6 GPIO_ACTIVE_LOW>;
+      };
+
+      start {
+          label = "GPIO Key ENTER / START";
+          linux,code = <28>;
+					gpios = <&pio 3 17 GPIO_ACTIVE_LOW>;
+      };
+
+      a {
+          label = "GPIO Key A";
+          linux,code = <30>;
+					gpios = <&pio 1 4 GPIO_ACTIVE_LOW>;
+      };
+
+      b {
+          label = "GPIO Key B";
+          linux,code = <48>;
+					gpios = <&pio 1 3 GPIO_ACTIVE_LOW>;
+      };
+
+      x {
+          label = "GPIO Key X";
+          linux,code = <45>;
+					gpios = <&pio 1 9 GPIO_ACTIVE_LOW>;
+      };
+
+      y {
+          label = "GPIO Key Y";
+          linux,code = <21>;
+					gpios = <&pio 2 0 GPIO_ACTIVE_LOW>;
+      };
+
+      topleft {
+          label = "GPIO Key PAGE UP / TOP LEFT";
+          linux,code = <104>;
+					gpios = <&pio 1 8 GPIO_ACTIVE_LOW>;
+      };
+
+      topright {
+          label = "GPIO Key PAGE DOWN / TOP RIGHT";
+          linux,code = <109>;
+					gpios = <&pio 1 1 GPIO_ACTIVE_LOW>;
+      };
+  };
+
+  /*
+	spi-gpio {
+		compatible = "spi-gpio";
+		cs-gpios = <&pio 3 10 GPIO_ACTIVE_LOW>; // PD10
+		mosi-gpios = <&pio 3 12 GPIO_ACTIVE_HIGH>; // PD12
+		sck-gpios = <&pio 3 11 GPIO_ACTIVE_HIGH>; // PD11
+		num-chipselects = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		panel@0 {
+			compatible = "sitronix,st7789v";
+			reg = <0>;
+			backlight = <&backlight>;
+			reset-gpios = <&pio 3 14 GPIO_ACTIVE_LOW>; // PD14
+			spi-3wire;
+      width = <240>;
+      height = <240>;
+      txbuflen = <32768>;
+      // from d1-lichee-rv-86-panel.dts
+      // port {
+      //   panel_in_tcon_lcd0: endpoint {
+      //     remote-endpoint = <&tcon_lcd0_out_panel>;
+      //   };
+      // };
+		};
+	};
+  */
+};
+
+&cpu0 {
+	cpu-supply = <&reg_vdd_cpu>;
+};
+
+&dcxo {
+	clock-frequency = <24000000>;
+};
+
+&ehci1 {
+	status = "okay";
+};
+
+&mmc0 {
+	bus-width = <4>;
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_HIGH>; /* PF6 */
+	disable-wp;
+	vmmc-supply = <&reg_vcc_3v3>;
+	vqmmc-supply = <&reg_vcc_3v3>;
+	pinctrl-0 = <&mmc0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&mmc1 {
+	bus-width = <4>;
+	mmc-pwrseq = <&wifi_pwrseq>;
+	non-removable;
+	vmmc-supply = <&reg_vcc_3v3>;
+	vqmmc-supply = <&reg_vcc_3v3>;
+	pinctrl-0 = <&mmc1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	rtl8723ds: wifi@1 {
+		reg = <1>;
+		interrupt-parent = <&pio>;
+		interrupts = <6 10 IRQ_TYPE_LEVEL_LOW>; /* PG10 */
+		interrupt-names = "host-wake";
+	};
+};
+
+&ohci1 {
+	status = "okay";
+};
+
+&pio {
+	vcc-pe-supply = <&reg_avdd2v8>;
+};
+
+&uart0 {
+	pinctrl-0 = <&uart0_pb8_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&uart1 {
+	uart-has-rtscts;
+	pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	bluetooth {
+		compatible = "realtek,rtl8723ds-bt";
+		device-wake-gpios = <&pio 6 18 GPIO_ACTIVE_HIGH>; /* PG18 */
+		enable-gpios = <&pio 6 15 GPIO_ACTIVE_HIGH>; /* PG15 */
+		host-wake-gpios = <&pio 6 14 GPIO_ACTIVE_HIGH>; /* PG14 */
+	};
+};
+
+&spi1 {
+  pinctrl-0 = <&spi1_pd_pins>;
+  pinctrl-names = "default";
+  status = "okay";
+  num-cs = <1>;
+
+  panel@0 {
+    compatible = "sitronix,st7789v";
+    buswidth = <0x8>;
+    reg = <0>;
+    reset-gpios = <&pio 3 22 GPIO_ACTIVE_LOW>; /* PD22 */
+    dc-gpios = <&pio 2 1 GPIO_ACTIVE_HIGH>; /* PC1 */
+    spi-max-frequency = <24000000>;
+    width = <240>;
+    height = <240>;
+    txbuflen = <32768>;
+    spi-cpol;
+    spi-cpha;
+    rotate = <180>;
+    fps = <25>;
+    status = "okay";
+  };
+};
+
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usbphy {
+	usb1_vbus-supply = <&reg_vcc>;
+	status = "okay";
+};
