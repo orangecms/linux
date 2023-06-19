@@ -19,6 +19,7 @@
 #include <media/v4l2-device.h>
 
 #include "stf_isp.h"
+#include "stf_vin.h"
 
 #define STF_DVP_NAME "stf_dvp"
 #define STF_CSI_NAME "cdns_csi2rx"
@@ -67,6 +68,7 @@ struct stfcamss {
 	struct media_device media_dev;
 	struct media_pipeline pipe;
 	struct device *dev;
+	struct stf_vin_dev vin_dev;
 	struct stf_isp_dev isp_dev;
 	struct v4l2_async_notifier notifier;
 	void __iomem *syscon_base;
