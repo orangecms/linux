@@ -3,6 +3,8 @@
 # Makefile for StarFive Camera Subsystem driver
 #
 
-starfive-camss-objs += stf_camss.o
+starfive-camss-objs += \
+		stf_camss.o \
+		stf_video.o
 
 obj-$(CONFIG_VIDEO_STARFIVE_CAMSS) += starfive-camss.o
