@@ -116,6 +116,7 @@ config SND_SOC_ALL_CODECS
 	imply SND_SOC_IDT821034
 	imply SND_SOC_INNO_RK3036
 	imply SND_SOC_ISABELLE
+	imply SND_SOC_JH7110_PWMDAC_DIT
 	imply SND_SOC_JZ4740_CODEC
 	imply SND_SOC_JZ4725B_CODEC
 	imply SND_SOC_JZ4760_CODEC
@@ -916,6 +917,9 @@ config SND_SOC_CX2072X
 	depends on I2C
 	help
 	  Enable support for Conexant CX20721 and CX20723 codec chips.
+
+config SND_SOC_JH7110_PWMDAC_DIT
+	tristate "StarFive JH7110 dummy PWM-DAC transmitter"
 
 config SND_SOC_JZ4740_CODEC
 	depends on MACH_INGENIC || COMPILE_TEST
