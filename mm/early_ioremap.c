@@ -136,6 +136,11 @@ __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
 	 * Mappings have to fit in the FIX_BTMAP area.
 	 */
 	nrpages = size >> PAGE_SHIFT;
+  // !!!!!!!!! NR_FIX_BTMAPS should be 32 (see arch/riscv/include/asm/fixmap.h)
+  // #define NR_FIX_BTMAPS                (SZ_256K / PAGE_SIZE)
+  // and arch/riscv/include/asm/page.h
+  // #define PAGE_SHIFT	(12)
+  // #define PAGE_SIZE	(_AC(1, UL) << PAGE_SHIFT)
 	if (WARN_ON(nrpages > NR_FIX_BTMAPS))
 		return NULL;
 
