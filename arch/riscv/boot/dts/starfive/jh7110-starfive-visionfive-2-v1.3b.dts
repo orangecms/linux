@@ -10,6 +10,19 @@
 / {
 	model = "StarFive VisionFive 2 v1.3B";
 	compatible = "starfive,visionfive-2-v1.3b", "starfive,jh7110";
+
+	chosen {
+		bootargs = "earlycon console=ttyS0";
+		stdout-path = "serial0:115200n8";
+	};
+
+  memory@80000000 {
+    device_type = "memory";
+    // 2 cells each; 2*32 bit make up 64 bit
+    // first two are base address, split in upper and lower half
+    // second two are size, split in upper and lower half
+    reg = <0x00000000 0x80000000 0x00000001 0x00000000>;
+  };
 };
 
 &gmac0 {
