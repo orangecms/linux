@@ -182,6 +182,14 @@
 				regulator-name = "vdd-cpu";
 			};
 
+			vcc_phy: dcdc6 {
+				regulator-boot-on;
+				regulator-always-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc_phy";
+			};
+
 			emmc_vdd: aldo4 {
 				regulator-boot-on;
 				regulator-always-on;
@@ -261,8 +269,8 @@
 			uboot@100000 {
 				reg = <0x100000 0x400000>;
 			};
-			reserved-data@600000 {
-				reg = <0x600000 0xa00000>;
+			reserved-data@400000 {
+				reg = <0x400000 0xc00000>;
 			};
 		};
 	};
