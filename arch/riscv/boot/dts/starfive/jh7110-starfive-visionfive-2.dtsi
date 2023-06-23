@@ -32,11 +32,6 @@
 		timebase-frequency = <4000000>;
 	};
 
-	memory@40000000 {
-		device_type = "memory";
-		reg = <0x0 0x40000000 0x1 0x0>;
-	};
-
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -440,8 +435,8 @@
 			uboot@100000 {
 				reg = <0x100000 0x400000>;
 			};
-			reserved-data@600000 {
-				reg = <0x600000 0x1000000>;
+			reserved-data@400000 {
+				reg = <0x400000 0xc00000>;
 			};
 		};
 	};
