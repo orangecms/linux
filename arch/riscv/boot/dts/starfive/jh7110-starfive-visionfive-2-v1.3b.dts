@@ -10,18 +10,39 @@
 / {
 	model = "StarFive VisionFive 2 v1.3B";
 	compatible = "starfive,visionfive-2-v1.3b", "starfive,jh7110";
+
+	chosen {
+		bootargs = "earlycon console=ttyS0,115200 debug loglevel=5";
+		stdout-path = "serial0:115200n8";
+	};
+
+  // first 2 megabytes are taken by SBI
+  memory@40200000 {
+    device_type = "memory";
+    // 2 cells each; 2*32 bit make up 64 bit
+    // first two are base address, split in upper and lower half
+    // second two are size, split in upper and lower half
+    reg = <0x00000000 0x40200000 0x00000000 0x7fe00000>;
+  };
 };
 
 &gmac0 {
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&aoncrg JH7110_AONCLK_GMAC0_TX>;
 	assigned-clock-parents = <&aoncrg JH7110_AONCLK_GMAC0_RMII_RTX>;
+	mac-address = [ 46 43 4B 45 46 49 ];
+	// Power to the People, Hell Yea (um PHY)!
+	phy-supply = <&vcc_3v3>;
+	status = "disabled";
 };
 
 &gmac1 {
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&syscrg JH7110_SYSCLK_GMAC1_TX>;
 	assigned-clock-parents = <&syscrg JH7110_SYSCLK_GMAC1_RMII_RTX>;
+	mac-address = [ 46 43 4B 53 42 49 ];
+	phy-supply = <&vcc_3v3>;
+	status = "disabled";
 };
 
 &phy0 {
@@ -41,4 +62,24 @@
 	motorcomm,rx-data-drv-microamp = <2910>;
 	rx-internal-delay-ps = <300>;
 	tx-internal-delay-ps = <0>;
+};
+
+// save power
+&usb0 {
+	status = "disabled";
+};
+
+// oopses
+&crypto {
+	status = "disabled";
+};
+
+// hangs
+&sfctemp {
+	status = "disabled";
+};
+
+// hangs
+&qspi {
+	status = "disabled";
 };
