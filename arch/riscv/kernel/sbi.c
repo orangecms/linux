@@ -250,11 +250,14 @@ static int __sbi_rfence_v02_call(unsigned long fid, unsigned long hmask,
 				 unsigned long arg5)
 {
 	struct sbiret ret = {0};
+  // see arch/riscv/include/asm/sbi.h
+  // SBI_EXT_RFENCE = 0x52464E43
 	int ext = SBI_EXT_RFENCE;
 	int result = 0;
 
 	switch (fid) {
 	case SBI_EXT_RFENCE_REMOTE_FENCE_I:
+    // WE GET HERE
 		ret = sbi_ecall(ext, fid, hmask, hbase, 0, 0, 0, 0);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA:
