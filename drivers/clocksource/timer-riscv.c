@@ -172,7 +172,7 @@ static int __init riscv_timer_init_dt(struct device_node *n)
 		pr_err("Failed to map timer interrupt for node [%pOF]\n", n);
 		return -ENODEV;
 	}
-
+  // WE SEE THIS
 	pr_info("%s: Registering clocksource cpuid [%d] hartid [%lu]\n",
 	       __func__, cpuid, hartid);
 	error = clocksource_register_hz(&riscv_clocksource, riscv_timebase);
@@ -182,6 +182,7 @@ static int __init riscv_timer_init_dt(struct device_node *n)
 		return error;
 	}
 
+  // CHECK HERE kernel/time/sched_clock.c L169
 	sched_clock_register(riscv_sched_clock, 64, riscv_timebase);
 
 	error = request_percpu_irq(riscv_clock_event_irq,

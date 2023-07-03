@@ -1100,6 +1100,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 {
 	u64 sec;
 
+  pr_info("__clocksource_update_freq_scale\n");
 	/*
 	 * Default clocksources are *special* and self-define their mult/shift.
 	 * But, you're not special, so you should specify a freq value.
@@ -1167,6 +1168,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 
 	clocksource_update_max_deferment(cs);
 
+  // WE GET HERE!!!!!!
 	pr_info("%s: mask: 0x%llx max_cycles: 0x%llx, max_idle_ns: %lld ns\n",
 		cs->name, cs->mask, cs->max_cycles, cs->max_idle_ns);
 }
@@ -1200,7 +1202,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 
 	/* Initialize mult/shift and max_idle_ns */
 	__clocksource_update_freq_scale(cs, scale, freq);
-
+  // CHECK HERE
 	/* Add clocksource to the clocksource list */
 	mutex_lock(&clocksource_mutex);
 

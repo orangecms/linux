@@ -1407,10 +1407,15 @@ static void __init do_initcalls(void)
  */
 static void __init do_basic_setup(void)
 {
+  pr_info("cpuset_init_smp\n");
 	cpuset_init_smp();
+  pr_info("driver_init\n");
 	driver_init();
+  pr_info("init_irq_proc\n");
 	init_irq_proc();
+  pr_info("do_ctors\n");
 	do_ctors();
+  pr_info("do_initcalls\n");
 	do_initcalls();
 }
 
@@ -1631,11 +1636,15 @@ static noinline void __init kernel_init_freeable(void)
 	if (deferred_struct_pages)
 		page_ext_init();
 
+  pr_info("do_basic_setup\n");
 	do_basic_setup();
 
+  pr_info("kunit_run_all_tests\n");
 	kunit_run_all_tests();
 
+  pr_info("wait_for_initramfs\n");
 	wait_for_initramfs();
+  pr_info("console_on_rootfs\n");
 	console_on_rootfs();
 
 	/*
