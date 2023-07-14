@@ -52,6 +52,52 @@ properties:
       for a timer.
     type: boolean
 
+  motorcomm,rx-clk-driver-strength:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description: |
+      drive strength of rx_clk rgmii pad.
+      |----------------------------------|
+      |        rx_clk ds map table       |
+      |----------------------------------|
+      | DS(3b) |  wol@1.8v  |  wol@3.3v  |
+      |________|_________________________|
+      |        | current(uA)| current(uA)|
+      |   000  |     1200   |    3070    |
+      |   001  |     2100   |    4080    |
+      |   010  |     2700   |    4370    |
+      |   011  |     2910   |    4680    |
+      |   100  |     3110   |    5020    |
+      |   101  |     3600   |    5450    |
+      |   110  |     3970   |    5740    |
+      |   111  |     4350   |    6140    |
+      |--------|------------|------------|
+    enum: [ 1200, 2100, 2700, 2910, 3070, 3110, 3600, 3970,
+            4080, 4350, 4370, 4680, 5020, 5450, 5740, 6140 ]
+    default: 2910
+
+  motorcomm,rx-data-driver-strength:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    description: |
+      drive strength of rx_data/rx_ctl rgmii pad.
+      |----------------------------------|
+      |        rx_data ds map table      |
+      |----------------------------------|
+      | DS(3b) |  wol@1.8v  |  wol@3.3v  |
+      |________|_________________________|
+      |        | current(uA)| current(uA)|
+      |   000  |     1200   |    3070    |
+      |   001  |     2100   |    4080    |
+      |   010  |     2700   |    4370    |
+      |   011  |     2910   |    4680    |
+      |   100  |     3110   |    5020    |
+      |   101  |     3600   |    5450    |
+      |   110  |     3970   |    5740    |
+      |   111  |     4350   |    6140    |
+      |--------|------------|------------|
+    enum: [ 1200, 2100, 2700, 2910, 3070, 3110, 3600, 3970,
+            4080, 4350, 4370, 4680, 5020, 5450, 5740, 6140 ]
+    default: 2910
+
   motorcomm,tx-clk-adj-enabled:
     description: |
       This configuration is mainly to adapt to VF2 with JH7110 SoC.
