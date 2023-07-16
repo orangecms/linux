@@ -89,6 +89,19 @@
 	 *  x24        __primary_switch() .. relocate_kernel()  current RELR displacement
 	 */
 SYM_CODE_START(primary_entry)
+  # WE START HERE
+  ldr x0, =0xfe07a000
+  mov x1, #0x4C
+  str x1, [x0]
+  mov x1, #0x4F
+  str x1, [x0]
+  mov x1, #0x4C
+  str x1, [x0]
+  mov x1, #0x0D
+  str x1, [x0]
+  mov x1, #0x0A
+  str x1, [x0]
+
 	bl	preserve_boot_args
 	bl	init_kernel_el			// w0=cpu_boot_mode
 	adrp	x23, __PHYS_OFFSET
