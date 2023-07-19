@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0
+
+menu "PLDA PCIe controllers support"
+	depends on PCI
+
+config PCIE_PLDA_HOST
+	bool "PLDA PCIe host controller"
+	depends on OF && PCI_MSI
+	select IRQ_DOMAIN
+
+endmenu
