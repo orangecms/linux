@@ -157,6 +157,7 @@ struct plda_evt {
 	int msi_evt;
 };
 
+void __iomem *plda_pcie_map_bus(struct pci_bus *bus, unsigned int devfn, int where);
 void plda_pcie_enable_msi(struct plda_pcie *port);
 void plda_pcie_setup_window(void __iomem *bridge_base_addr, u32 index,
 			    phys_addr_t axi_addr, phys_addr_t pci_addr,
@@ -164,6 +165,8 @@ void plda_pcie_setup_window(void __iomem *bridge_base_addr, u32 index,
 int plda_pcie_setup_iomems(struct plda_pcie *port, struct pci_host_bridge *host_bridge);
 int plda_pcie_init_irq(struct plda_pcie *port, struct platform_device *pdev,
 		       struct plda_evt *evt);
+int plda_pcie_host_init(struct plda_pcie *pcie, struct pci_ops *ops);
+void plda_pcie_host_deinit(struct plda_pcie *pcie);
 
 static inline void plda_set_default_msi(struct plda_msi *msi)
 {

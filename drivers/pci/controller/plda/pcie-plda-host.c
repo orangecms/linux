@@ -20,6 +20,15 @@
 
 #include "pcie-plda.h"
 
+void __iomem *plda_pcie_map_bus(struct pci_bus *bus, unsigned int devfn,
+				int where)
+{
+	struct plda_pcie *pcie = bus->sysdata;
+
+	return pcie->config_base + PCIE_ECAM_OFFSET(bus->number, devfn, where);
+}
+EXPORT_SYMBOL_GPL(plda_pcie_map_bus);
+
 void plda_pcie_enable_msi(struct plda_pcie *port)
 {
 	struct plda_msi *msi = &port->msi;
@@ -552,3 +561,105 @@ int plda_pcie_setup_iomems(struct plda_pcie *port, struct pci_host_bridge *bridg
 	return 0;
 }
 EXPORT_SYMBOL_GPL(plda_pcie_setup_iomems);
+
+static void plda_pcie_irq_domain_deinit(struct plda_pcie *pcie)
+{
+	irq_set_chained_handler_and_data(pcie->irq, NULL, NULL);
+	irq_set_chained_handler_and_data(pcie->msi_irq, NULL, NULL);
+	irq_set_chained_handler_and_data(pcie->intx_irq, NULL, NULL);
+
+	irq_domain_remove(pcie->msi.msi_domain);
+	irq_domain_remove(pcie->msi.dev_domain);
+
+	irq_domain_remove(pcie->intx_domain);
+	irq_domain_remove(pcie->event_domain);
+}
+
+int plda_pcie_host_init(struct plda_pcie *pcie, struct pci_ops *ops)
+{
+	struct resource *cfg_res;
+	struct device *dev = pcie->dev;
+	int ret;
+	struct pci_host_bridge *bridge;
+	struct platform_device *pdev = to_platform_device(dev);
+	struct plda_evt evt = {NULL, NULL, EVENT_PM_MSI_INT_INTX,
+			       EVENT_PM_MSI_INT_MSI};
+
+	pcie->bridge_addr =
+		devm_platform_ioremap_resource_byname(pdev, "host");
+
+	if (IS_ERR(pcie->bridge_addr))
+		return dev_err_probe(dev, PTR_ERR(pcie->bridge_addr),
+			"Failed to map reg memory\n");
+
+	cfg_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "cfg");
+	if (!cfg_res)
+		return dev_err_probe(dev, -ENODEV,
+			"Failed to get config memory\n");
+
+	pcie->config_base = devm_ioremap_resource(dev, cfg_res);
+	if (IS_ERR(pcie->config_base))
+		return dev_err_probe(dev, PTR_ERR(pcie->config_base),
+			"Failed to map config memory\n");
+
+	pcie->phy = devm_phy_optional_get(dev, NULL);
+	if (IS_ERR(pcie->phy))
+		return dev_err_probe(dev, PTR_ERR(pcie->phy),
+			"Failed to get pcie phy\n");
+
+	bridge = devm_pci_alloc_host_bridge(dev, 0);
+	if (!bridge)
+		return dev_err_probe(dev, -ENOMEM,
+			"Failed to alloc bridge\n");
+
+	pcie->bridge = bridge;
+
+	if (pcie->ops->host_init) {
+		ret = pcie->ops->host_init(pcie);
+		if (ret)
+			return ret;
+	}
+
+	plda_pcie_setup_window(pcie->bridge_addr, 0, cfg_res->start, 0,
+			       resource_size(cfg_res));
+	plda_pcie_setup_iomems(pcie, bridge);
+	plda_set_default_msi(&pcie->msi);
+	ret = plda_pcie_init_irq(pcie, pdev, &evt);
+	if (ret)
+		goto err_host;
+
+	/* Set default bus ops */
+	bridge->ops = ops;
+	bridge->sysdata = pcie;
+
+	plda_pcie_enable_msi(pcie);
+
+	ret = pci_host_probe(bridge);
+	if (ret < 0) {
+		dev_err(dev, "Failed to pci host probe: %d\n", ret);
+		goto err_probe;
+	}
+
+	return ret;
+
+err_probe:
+	plda_pcie_irq_domain_deinit(pcie);
+err_host:
+	if (pcie->ops->host_deinit)
+		pcie->ops->host_deinit(pcie);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(plda_pcie_host_init);
+
+void plda_pcie_host_deinit(struct plda_pcie *pcie)
+{
+	pci_stop_root_bus(pcie->bridge->bus);
+	pci_remove_root_bus(pcie->bridge->bus);
+
+	plda_pcie_irq_domain_deinit(pcie);
+
+	if (pcie->ops->host_deinit)
+		pcie->ops->host_deinit(pcie);
+}
+EXPORT_SYMBOL_GPL(plda_pcie_host_deinit);

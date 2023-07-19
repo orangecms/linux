@@ -8,6 +8,14 @@ config PCIE_PLDA_HOST
 	depends on OF && PCI_MSI
 	select IRQ_DOMAIN
 
+config PCIE_PLDA_PLAT_HOST
+	bool "PLDA PCIe platform host controller"
+	select PCIE_PLDA_HOST
+	help
+	  Say Y here if you want to support the PLDA PCIe platform controller in
+	  host mode. This PCIe controller may be embedded into many different
+	  vendors SoCs.
+
 config PCIE_MICROCHIP_HOST
 	bool "Microchip AXI PCIe controller"
 	select PCI_HOST_COMMON
