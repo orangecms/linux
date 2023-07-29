@@ -1300,6 +1300,7 @@ static void __init do_initcalls(void)
 	size_t len = saved_command_line_len + 1;
 	char *command_line;
 
+  pr_info("allocate memory for cmdline\n");
 	command_line = kzalloc(len, GFP_KERNEL);
 	if (!command_line)
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
@@ -1307,9 +1308,11 @@ static void __init do_initcalls(void)
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
 		/* Parser modifies command_line, restore it each time */
 		strcpy(command_line, saved_command_line);
+    pr_info("do_initcall_level for %s\n", command_line);
 		do_initcall_level(level, command_line);
 	}
 
+  pr_info("free memory for cmdline\n");
 	kfree(command_line);
 }
 
@@ -1439,27 +1442,42 @@ static int __ref kernel_init(void *unused)
 	async_synchronize_full();
 
 	system_state = SYSTEM_FREEING_INITMEM;
+  pr_info("kprobe_free_init_mem\n");
 	kprobe_free_init_mem();
+  pr_info("kprobe_free_init_mem\n");
+	kprobe_free_init_mem();
+  pr_info("ftrace_free_init_mem\n");
 	ftrace_free_init_mem();
+  pr_info("kgdb_free_init_mem\n");
 	kgdb_free_init_mem();
+  pr_info("exit_boot_config\n");
 	exit_boot_config();
+  pr_info("free_initmem\n");
 	free_initmem();
+  /*
+  // This calls `rcu_barrier`.
+  pr_info("mark_readonly\n");
 	mark_readonly();
-
+  */
 	/*
 	 * Kernel mappings are now finalized - update the userspace page-table
 	 * to finalize PTI.
 	 */
+  pr_info("pti_finalize\n");
 	pti_finalize();
 
 	system_state = SYSTEM_RUNNING;
+  pr_info("numa_default_policy\n");
 	numa_default_policy();
 
+  pr_info("rcu_end_inkernel_boot\n");
 	rcu_end_inkernel_boot();
 
+  pr_info("do_sysctl_args\n");
 	do_sysctl_args();
 
 	if (ramdisk_execute_command) {
+    pr_info("run_init_process\n");
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)
 			return 0;
