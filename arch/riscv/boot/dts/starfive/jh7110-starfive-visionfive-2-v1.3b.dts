@@ -30,12 +30,14 @@
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&aoncrg JH7110_AONCLK_GMAC0_TX>;
 	assigned-clock-parents = <&aoncrg JH7110_AONCLK_GMAC0_RMII_RTX>;
+  status = "disabled";
 };
 
 &gmac1 {
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&syscrg JH7110_SYSCLK_GMAC1_TX>;
 	assigned-clock-parents = <&syscrg JH7110_SYSCLK_GMAC1_RMII_RTX>;
+  status = "disabled";
 };
 
 &phy0 {
@@ -44,6 +46,7 @@
 	motorcomm,tx-clk-1000-inverted;
 	rx-internal-delay-ps = <1900>;
 	tx-internal-delay-ps = <1500>;
+  status = "disabled";
 };
 
 &phy1 {
@@ -51,4 +54,5 @@
 	motorcomm,tx-clk-100-inverted;
 	rx-internal-delay-ps = <0>;
 	tx-internal-delay-ps = <0>;
+  status = "disabled";
 };
