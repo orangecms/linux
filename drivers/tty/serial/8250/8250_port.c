@@ -406,6 +406,7 @@ static unsigned int mem32be_serial_in(struct uart_port *p, int offset)
 static unsigned int io_serial_in(struct uart_port *p, int offset)
 {
 	offset = offset << p->regshift;
+  // FIXME: Does this here cause page faults?!
 	return inb(p->iobase + offset);
 }
 
