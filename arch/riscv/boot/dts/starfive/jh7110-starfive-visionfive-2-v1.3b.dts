@@ -13,7 +13,7 @@
 
 	chosen {
 		// bootargs = "earlycon console=ttyS0 loglevel=8 rootwait debug ignore_loglevel quiet kgdbwait kgdboc=ttyS0";
-		bootargs = "earlycon console=ttyS0 rootwait debug loglevel=8 ignore_loglevel initcall_debug nosmp";
+		bootargs = "earlycon console=ttyS0,115200 rootwait debug loglevel=8 nosmp";
 		stdout-path = "serial0:115200n8";
 	};
 
