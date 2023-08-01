@@ -27,7 +27,7 @@
 			i-cache-sets = <64>;
 			i-cache-size = <16384>;
 			next-level-cache = <&ccache>;
-			riscv,isa = "rv64imac_zba_zbb";
+			riscv,isa = "rv64imafdc_zba_zbb";
 			status = "disabled";
 
 			cpu0_intc: interrupt-controller {

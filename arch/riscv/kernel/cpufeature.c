@@ -153,6 +153,7 @@ void __init riscv_fill_hwcap(void)
 			}
 		}
 
+		pr_info("Parsing ISA for hart %d: %s\n", cpu, isa);
 		/*
 		 * For all possible cpus, we have already validated in
 		 * the boot process that they at least contain "rv" and
