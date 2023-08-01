@@ -136,10 +136,14 @@ static int starfive_dwmac_probe(struct platform_device *pdev)
 	plat_dat->dma_cfg->dche = true;
 
 	err = starfive_dwmac_set_mode(plat_dat);
-	if (err)
+	if (err) {
+		dev_err(&pdev->dev, "dwmac set mode failed.\n");
 		return err;
+	}
 
+  printk("start   probe StarFive STM MAC\n");
 	err = stmmac_dvr_probe(&pdev->dev, plat_dat, &stmmac_res);
+  printk("done    probe StarFive STM MAC\n");
 	if (err) {
 		stmmac_remove_config_dt(pdev, plat_dat);
 		return err;
