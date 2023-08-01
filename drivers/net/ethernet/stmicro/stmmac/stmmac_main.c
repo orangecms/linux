@@ -7149,6 +7149,7 @@ int stmmac_dvr_probe(struct device *device,
 	u32 rxq;
 	int i, ret = 0;
 
+  printk("STM MAC probe     alloc\n");
 	ndev = devm_alloc_etherdev_mqs(device, sizeof(struct stmmac_priv),
 				       MTL_MAX_TX_QUEUES, MTL_MAX_RX_QUEUES);
 	if (!ndev)
@@ -7160,6 +7161,7 @@ int stmmac_dvr_probe(struct device *device,
 	priv->device = device;
 	priv->dev = ndev;
 
+  printk("STM MAC probe     ops\n");
 	stmmac_set_ethtool_ops(ndev);
 	priv->pause = pause;
 	priv->plat = plat_dat;
@@ -7180,9 +7182,11 @@ int stmmac_dvr_probe(struct device *device,
 	if (!is_zero_ether_addr(res->mac))
 		eth_hw_addr_set(priv->dev, res->mac);
 
+  printk("STM MAC probe     dev_set_drvdata\n");
 	dev_set_drvdata(device, priv->dev);
 
 	/* Verify driver arguments */
+  printk("STM MAC probe     verify driver args\n");
 	stmmac_verify_args();
 
 	priv->af_xdp_zc_qps = bitmap_zalloc(MTL_MAX_TX_QUEUES, GFP_KERNEL);
@@ -7190,6 +7194,7 @@ int stmmac_dvr_probe(struct device *device,
 		return -ENOMEM;
 
 	/* Allocate workqueue */
+  printk("STM MAC probe     alloc work queue\n");
 	priv->wq = create_singlethread_workqueue("stmmac_wq");
 	if (!priv->wq) {
 		dev_err(priv->device, "failed to create workqueue\n");
@@ -7197,9 +7202,11 @@ int stmmac_dvr_probe(struct device *device,
 		goto error_wq_init;
 	}
 
+  printk("STM MAC probe     init work\n");
 	INIT_WORK(&priv->service_task, stmmac_service_task);
 
 	/* Initialize Link Partner FPE workqueue */
+  printk("STM MAC probe     init work\n");
 	INIT_WORK(&priv->fpe_task, stmmac_fpe_lp_task);
 
 	/* Override with kernel parameters if supplied XXX CRS XXX
@@ -7218,12 +7225,14 @@ int stmmac_dvr_probe(struct device *device,
 			reset_control_reset(priv->plat->stmmac_rst);
 	}
 
+  printk("STM MAC probe     deassert\n");
 	ret = reset_control_deassert(priv->plat->stmmac_ahb_rst);
 	if (ret == -ENOTSUPP)
 		dev_err(priv->device, "unable to bring out of ahb reset: %pe\n",
 			ERR_PTR(ret));
 
 	/* Init MAC and get the capabilities */
+  printk("STM MAC probe     HW init\n");
 	ret = stmmac_hw_init(priv);
 	if (ret)
 		goto error_hw_init;
@@ -7233,6 +7242,7 @@ int stmmac_dvr_probe(struct device *device,
 	if (priv->synopsys_id < DWMAC_CORE_5_20)
 		priv->plat->dma_cfg->dche = false;
 
+  printk("STM MAC probe     check address\n");
 	stmmac_check_ether_addr(priv);
 
 	ndev->netdev_ops = &stmmac_netdev_ops;
@@ -7244,6 +7254,7 @@ int stmmac_dvr_probe(struct device *device,
 	ndev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
 			     NETDEV_XDP_ACT_XSK_ZEROCOPY;
 
+  printk("STM MAC probe     tc init\n");
 	ret = stmmac_tc_init(priv, priv);
 	if (!ret) {
 		ndev->hw_features |= NETIF_F_HW_TC;
