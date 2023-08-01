@@ -17,12 +17,12 @@
 		stdout-path = "serial0:115200n8";
 	};
 
-  memory@80000000 {
+  memory@40200000 {
     device_type = "memory";
     // 2 cells each; 2*32 bit make up 64 bit
     // first two are base address, split in upper and lower half
     // second two are size, split in upper and lower half
-    reg = <0x00000000 0x80000000 0x00000001 0x00000000>;
+    reg = <0x00000000 0x40200000 0x00000000 0x7fd00000>;
   };
 };
 
