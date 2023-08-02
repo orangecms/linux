@@ -543,6 +543,7 @@ int stmmac_mdio_register(struct net_device *ndev)
 	if (!mdio_bus_data)
 		return 0;
 
+  printk("STM MAC MDIO     alloc\n");
 	new_bus = mdiobus_alloc();
 	if (!new_bus)
 		return -ENOMEM;
@@ -553,6 +554,7 @@ int stmmac_mdio_register(struct net_device *ndev)
 	new_bus->name = "stmmac";
 
 	if (priv->plat->has_xgmac) {
+    printk("STM MAC MDIO     XGMAC\n");
 		new_bus->read = &stmmac_xgmac2_mdio_read_c22;
 		new_bus->write = &stmmac_xgmac2_mdio_write_c22;
 		new_bus->read_c45 = &stmmac_xgmac2_mdio_read_c45;
@@ -571,6 +573,7 @@ int stmmac_mdio_register(struct net_device *ndev)
 			max_addr = PHY_MAX_ADDR;
 		}
 	} else {
+    printk("STM MAC MDIO     not XGMAC\n");
 		new_bus->read = &stmmac_mdio_read_c22;
 		new_bus->write = &stmmac_mdio_write_c22;
 		if (priv->plat->has_gmac4) {
@@ -584,12 +587,14 @@ int stmmac_mdio_register(struct net_device *ndev)
 	if (mdio_bus_data->needs_reset)
 		new_bus->reset = &stmmac_mdio_reset;
 
+  printk("STM MAC MDIO     bus ID\n");
 	snprintf(new_bus->id, MII_BUS_ID_SIZE, "%s-%x",
 		 new_bus->name, priv->plat->bus_id);
 	new_bus->priv = ndev;
 	new_bus->phy_mask = mdio_bus_data->phy_mask;
 	new_bus->parent = priv->device;
 
+  printk("STM MAC MDIO     bus register\n");
 	err = of_mdiobus_register(new_bus, mdio_node);
 	if (err != 0) {
 		dev_err_probe(dev, err, "Cannot register the MDIO bus\n");
@@ -605,6 +610,7 @@ int stmmac_mdio_register(struct net_device *ndev)
 	if (!fwnode)
 		fwnode = dev_fwnode(priv->device);
 
+  printk("STM MAC MDIO     recheck FW node\n");
 	if (fwnode) {
 		fixed_node = fwnode_get_named_child_node(fwnode, "fixed-link");
 		if (fixed_node) {
@@ -617,6 +623,7 @@ int stmmac_mdio_register(struct net_device *ndev)
 		goto bus_register_done;
 
 	found = 0;
+  printk("STM MAC MDIO     check PHYs\n");
 	for (addr = 0; addr < max_addr; addr++) {
 		struct phy_device *phydev = mdiobus_get_phy(new_bus, addr);
 
@@ -641,6 +648,7 @@ int stmmac_mdio_register(struct net_device *ndev)
 		if (priv->plat->phy_addr == -1)
 			priv->plat->phy_addr = addr;
 
+    printk("STM MAC MDIO     PHY info\n");
 		phy_attached_info(phydev);
 		found = 1;
 	}
