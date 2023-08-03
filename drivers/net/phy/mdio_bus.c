@@ -814,6 +814,7 @@ static void mdiobus_stats_acct(struct mdio_bus_stats *stats, bool op, int ret)
 	preempt_disable();
 	u64_stats_update_begin(&stats->syncp);
 
+  printk("    MDIO stats acct     inc\n");
 	u64_stats_inc(&stats->transfers);
 	if (ret < 0) {
 		u64_stats_inc(&stats->errors);
@@ -843,14 +844,20 @@ int __mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
 {
 	int retval;
 
+  printk("    MDIO bus read      assert lock\n");
 	lockdep_assert_held_once(&bus->mdio_lock);
 
-	if (bus->read)
+	if (bus->read) {
+    printk("    MDIO bus read      read from bus %p @%u:%u\n", bus->read, addr, regnum);
+    // WE GET HERE
 		retval = bus->read(bus, addr, regnum);
-	else
+  } else
 		retval = -EOPNOTSUPP;
 
+  // WE DO NOT GET HERE !!!!!!!!
+  printk("    MDIO bus read      trace\n");
 	trace_mdio_access(bus, 1, addr, regnum, retval, retval);
+  printk("    MDIO bus read      stats acct\n");
 	mdiobus_stats_acct(&bus->stats[addr], true, retval);
 
 	return retval;
@@ -1050,8 +1057,11 @@ int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
 {
 	int retval;
 
+  printk("    MDIO bus read      mutex lock\n");
 	mutex_lock(&bus->mdio_lock);
+  printk("    MDIO bus read      read\n");
 	retval = __mdiobus_read(bus, addr, regnum);
+  printk("    MDIO bus read      mutex unlock\n");
 	mutex_unlock(&bus->mdio_lock);
 
 	return retval;

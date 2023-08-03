@@ -594,8 +594,10 @@ int stmmac_mdio_register(struct net_device *ndev)
 		stmmac_xgmac2_mdio_read_c45(new_bus, 0, 0, 0);
 
 	/* If fixed-link is set, skip PHY scanning */
-	if (!fwnode)
+	if (!fwnode) {
+    printk("STM MAC MDIO     no FW node\n");
 		fwnode = dev_fwnode(priv->device);
+  }
 
   printk("STM MAC MDIO     recheck FW node\n");
 	if (fwnode) {

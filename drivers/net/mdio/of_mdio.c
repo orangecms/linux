@@ -55,6 +55,7 @@ static int of_mdiobus_register_device(struct mii_bus *mdio,
 	struct mdio_device *mdiodev;
 	int rc;
 
+  printk(" MDIO bus register dev   crate\n");
 	mdiodev = mdio_device_create(mdio, addr);
 	if (IS_ERR(mdiodev))
 		return PTR_ERR(mdiodev);
@@ -154,9 +155,11 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 	bool scanphys = false;
 	int addr, rc;
 
+  printk("OF MDIO BUS    np %p\n", np);
 	if (!np)
 		return __mdiobus_register(mdio, owner);
 
+  printk("OF MDIO BUS    check availability\n");
 	/* Do not continue if the node is disabled */
 	if (!of_device_is_available(np))
 		return -ENODEV;
@@ -165,30 +168,37 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 	 * the device tree are populated after the bus has been registered */
 	mdio->phy_mask = ~0;
 
+  printk("OF MDIO BUS    set node\n");
 	device_set_node(&mdio->dev, of_fwnode_handle(np));
 
+  printk("OF MDIO BUS    get PHY reset details\n");
 	/* Get bus level PHY reset GPIO details */
 	mdio->reset_delay_us = DEFAULT_GPIO_RESET_DELAY;
 	of_property_read_u32(np, "reset-delay-us", &mdio->reset_delay_us);
 	mdio->reset_post_delay_us = 0;
 	of_property_read_u32(np, "reset-post-delay-us", &mdio->reset_post_delay_us);
 
+  printk("OF MDIO BUS    register\n");
 	/* Register the MDIO bus */
 	rc = __mdiobus_register(mdio, owner);
 	if (rc)
 		return rc;
 
+  printk("OF MDIO BUS    loop over nodes\n");
 	/* Loop over the child nodes and register a phy_device for each phy */
 	for_each_available_child_of_node(np, child) {
+    printk("OF MDIO BUS    node\n");
 		addr = of_mdio_parse_addr(&mdio->dev, child);
 		if (addr < 0) {
 			scanphys = true;
 			continue;
 		}
 
-		if (of_mdiobus_child_is_phy(child))
+		if (of_mdiobus_child_is_phy(child)) {
+      printk("OF MDIO BUS    is PHY\n");
 			rc = of_mdiobus_register_phy(mdio, child, addr);
-		else
+    } else
+      printk("OF MDIO BUS    is device\n");
 			rc = of_mdiobus_register_device(mdio, child, addr);
 
 		if (rc == -ENODEV)
@@ -202,6 +212,7 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 	if (!scanphys)
 		return 0;
 
+  printk("OF MDIO BUS    scan children\n");
 	/* auto scan for PHYs with empty reg property */
 	for_each_available_child_of_node(np, child) {
 		/* Skip PHYs with reg property set */
@@ -222,6 +233,7 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 				 * standardized on to indicate that bus
 				 * scanning should continue.
 				 */
+        printk("OF MDIO BUS    register PHY\n");
 				rc = of_mdiobus_register_phy(mdio, child, addr);
 				if (!rc)
 					break;
@@ -234,6 +246,7 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 	return 0;
 
 unregister:
+  printk("OF MDIO BUS    error, unregister\n");
 	of_node_put(child);
 	mdiobus_unregister(mdio);
 	return rc;
