@@ -73,7 +73,7 @@ kernel_sec_end:
 _yolo:
  ldr r7, =0x01C28000
 _loop:
- str r0, [r7]
+ str r6, [r7]
  bx lr
 
 /*
@@ -99,7 +99,7 @@ _loop:
 	__HEAD
 ENTRY(stext)
  ARM_BE8(setend	be )			@ ensure we are in BE8 mode
- mov r0, #0x42
+ mov r6, #0x42
  bl _yolo
 
  THUMB(	badr	r9, 1f		)	@ Kernel is always entered in ARM.
@@ -127,7 +127,7 @@ ENTRY(stext)
 	blo	__error_lpae			@ only classic page table format
 #endif
 
- mov r0, #0x43
+ mov r6, #0x43
  bl _yolo
 
 #ifndef CONFIG_XIP_KERNEL
@@ -141,28 +141,28 @@ ENTRY(stext)
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	 */
- mov r0, #0x44
+ mov r6, #0x44
  bl _yolo
 
 	bl	__vet_atags
- mov r0, #0x45
+ mov r6, #0x45
  bl _yolo
 
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp
 #endif
- mov r0, #0x46
+ mov r6, #0x46
  bl _yolo
 
 #ifdef CONFIG_ARM_PATCH_PHYS_VIRT
 	bl	__fixup_pv_table
 #endif
- mov r0, #0x47
+ mov r6, #0x47
  bl _yolo
 
 	bl	__create_page_tables
 
- mov r0, #0x48
+ mov r6, #0x48
  bl _yolo
 
 	/*

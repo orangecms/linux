@@ -22,7 +22,7 @@
 _hack:
  ldr r7, =0x01C28000
 _loop:
- str r0, [r7]
+ str r11, [r7]
  bx lr
 
 /*
@@ -39,7 +39,7 @@ ENTRY(__fixup_pv_table)
 	mov	r0, r8, lsr #PAGE_SHIFT	@ convert to PFN
 	str_l	r0, __pv_phys_pfn_offset, r3
 
- mov r0, #0x30
+ mov r11, #0x30
  bl _hack
 
 	adr_l	r0, __pv_offset
@@ -48,26 +48,27 @@ ENTRY(__fixup_pv_table)
 	strcc	ip, [r0, #HIGH_OFFSET]	@ save to __pv_offset high bits
 	str	r3, [r0, #LOW_OFFSET]	@ save to __pv_offset low bits
 
- mov r0, #0x31
+ mov r11, #0x31
  bl _hack
 
 	mov	r0, r3, lsr #21		@ constant for add/sub instructions
 	teq	r3, r0, lsl #21 	@ must be 2 MiB aligned
 	bne	0f
 
- mov r0, #0x32
+ mov r11, #0x32
  bl _hack
 
 	adr_l	r4, __pv_table_begin
 	adr_l	r5, __pv_table_end
- mov r0, #0x33
+ mov r11, #0x33
  bl _hack
 
 	b	__fixup_a_pv_table
 
-0:	mov	r0, r0			@ deadloop on error
- mov r0, #0x41
+0:
+ mov r11, #0x41
  bl _hack
+0:	mov	r0, r0			@ deadloop on error
 	b	0b
 ENDPROC(__fixup_pv_table)
 
@@ -75,7 +76,7 @@ ENDPROC(__fixup_pv_table)
 __fixup_a_pv_table:
 	adr_l	r6, __pv_offset
 
- mov r0, #0x34
+ mov r11, #0x34
  bl _hack
 
 	ldr	r0, [r6, #HIGH_OFFSET]	@ pv_offset high word
