@@ -180,16 +180,27 @@ __lookup_processor_type:
 	 * Look in <asm/procinfo.h> for information about the __proc_info
 	 * structure.
 	 */
-	adr_l	r5, __proc_info_begin
+	adr_l	r10, __proc_info_begin
 	adr_l	r6, __proc_info_end
-1:	ldmia	r5, {r3, r4}			@ value, mask
-	and	r4, r4, r9			@ mask wanted bits
-	teq	r3, r4
+1:	ldmia	r10, {r11, r12}			@ value, mask
+	and	r12, r12, r9			@ mask wanted bits
+#ifdef DEBUG_PROC_INFO
+	mov	r0, r10
+	bl	printhex8
+	mov	r0, r11
+	bl	printhex8
+	mov	r0, r12
+	bl	printhex8
+	adr	r0, str_test
+	bl	printascii
+#endif
+	teq	r11, r12 @ compare proc info CPU ID against masked actual cpu ID
 	beq	2f
-	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
-	cmp	r5, r6
+	add	r10, r10, #PROC_INFO_SZ		@ sizeof(proc_info_list)
+	cmp	r10, r6
 	blo	1b
-	mov	r5, #0				@ unknown processor
+	mov	r10, #0				@ unknown processor
+str_test: .asciz "\nTest against ID with mask "
 2:	ret	lr
 ENDPROC(__lookup_processor_type)
 

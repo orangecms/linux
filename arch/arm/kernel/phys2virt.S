@@ -20,9 +20,9 @@
 
   .arm
 _hack:
- ldr r7, =0x01C28000
+ ldr r12, =0x01C28000
 _loop:
- str r11, [r7]
+ str r11, [r12]
  bx lr
 
 /*
@@ -39,35 +39,30 @@ ENTRY(__fixup_pv_table)
 	mov	r0, r8, lsr #PAGE_SHIFT	@ convert to PFN
 	str_l	r0, __pv_phys_pfn_offset, r3
 
- mov r11, #0x30
- bl _hack
-
 	adr_l	r0, __pv_offset
 	subs	r3, r8, #PAGE_OFFSET	@ PHYS_OFFSET - PAGE_OFFSET
 	mvn	ip, #0
 	strcc	ip, [r0, #HIGH_OFFSET]	@ save to __pv_offset high bits
 	str	r3, [r0, #LOW_OFFSET]	@ save to __pv_offset low bits
 
- mov r11, #0x31
- bl _hack
-
 	mov	r0, r3, lsr #21		@ constant for add/sub instructions
 	teq	r3, r0, lsl #21 	@ must be 2 MiB aligned
 	bne	0f
 
- mov r11, #0x32
- bl _hack
-
 	adr_l	r4, __pv_table_begin
 	adr_l	r5, __pv_table_end
- mov r11, #0x33
+#ifdef DEBUG_PV_TABLE
+ mov r11, #0x30
  bl _hack
+#endif
 
 	b	__fixup_a_pv_table
 
+#ifdef DEBUG_PV_TABLE
 0:
  mov r11, #0x41
  bl _hack
+#endif
 0:	mov	r0, r0			@ deadloop on error
 	b	0b
 ENDPROC(__fixup_pv_table)
@@ -76,8 +71,10 @@ ENDPROC(__fixup_pv_table)
 __fixup_a_pv_table:
 	adr_l	r6, __pv_offset
 
- mov r11, #0x34
+#ifdef DEBUG_PV_TABLE
+ mov r11, #0x31
  bl _hack
+#endif
 
 	ldr	r0, [r6, #HIGH_OFFSET]	@ pv_offset high word
 	ldr	r6, [r6, #LOW_OFFSET]	@ pv_offset low word
@@ -237,7 +234,16 @@ ARM_BE8(rev	ip, ip)
 .Lnext:
 	cmp	r4, r5
 	ldrcc	r7, [r4]		@ use branch for delay slot
+#ifdef DEBUG_PV_TABLE
+ mov r11, #0x37
+ bl _hack
+#endif
+
 	bcc	.Lloop
+#ifdef DEBUG_PV_TABLE
+ mov r11, #0x38
+ bl _hack
+#endif
 	ret	lr
 ENDPROC(__fixup_a_pv_table)
 

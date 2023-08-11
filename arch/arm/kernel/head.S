@@ -70,10 +70,10 @@ kernel_sec_end:
 	.endm
 
   .arm
-_yolo:
- ldr r7, =0x01C28000
+_hack:
+ ldr r12, =0x01C28000
 _loop:
- str r6, [r7]
+ str r11, [r12]
  bx lr
 
 /*
@@ -99,8 +99,8 @@ _loop:
 	__HEAD
 ENTRY(stext)
  ARM_BE8(setend	be )			@ ensure we are in BE8 mode
- mov r6, #0x42
- bl _yolo
+ mov r11, #0x42
+ bl _hack
 
  THUMB(	badr	r9, 1f		)	@ Kernel is always entered in ARM.
  THUMB(	bx	r9		)	@ If this is a Thumb-2 kernel,
@@ -127,8 +127,8 @@ ENTRY(stext)
 	blo	__error_lpae			@ only classic page table format
 #endif
 
- mov r6, #0x43
- bl _yolo
+ mov r11, #0x43
+ bl _hack
 
 #ifndef CONFIG_XIP_KERNEL
 	adr_l	r8, _text			@ __pa(_text)
@@ -141,29 +141,29 @@ ENTRY(stext)
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	 */
- mov r6, #0x44
- bl _yolo
+ mov r11, #0x44
+ bl _hack
 
 	bl	__vet_atags
- mov r6, #0x45
- bl _yolo
+ mov r11, #0x45
+ bl _hack
 
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp
 #endif
- mov r6, #0x46
- bl _yolo
+ mov r11, #0x46
+ bl _hack
 
 #ifdef CONFIG_ARM_PATCH_PHYS_VIRT
 	bl	__fixup_pv_table
 #endif
- mov r6, #0x47
- bl _yolo
+ mov r11, #0x47
+ bl _hack
 
 	bl	__create_page_tables
 
- mov r6, #0x48
- bl _yolo
+// mov r11, #0x48
+// bl _hack
 
 	/*
 	 * The following calls CPU specific code in a position independent
