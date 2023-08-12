@@ -227,6 +227,9 @@ __create_page_tables:
 	teq	r0, r6
 	bne	1b
 
+   mov r11, #0x48
+   bl _hack
+
 #ifdef CONFIG_ARM_LPAE
 	/*
 	 * Build the PGD table (first level) to point to the PMD table. A PGD
@@ -255,16 +258,31 @@ __create_page_tables:
 #endif
 #endif
 
+   mov r11, #0x49
+   bl _hack
+// WE ARE HERE
+
+// load from memory address R10 + 8 (what PROCINFO_MM_MMUFLAGS resolves to)
 	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
+   mov r11, #0x4A
+   bl _hack
 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.
 	 * This identity mapping will be removed by paging_init().
 	 */
 	adr_l	r5, __turn_mmu_on		@ _pa(__turn_mmu_on)
+   mov r11, #0x4B
+   bl _hack
 	adr_l	r6, __turn_mmu_on_end		@ _pa(__turn_mmu_on_end)
+   mov r11, #0x4C
+   bl _hack
 	mov	r5, r5, lsr #SECTION_SHIFT
 	mov	r6, r6, lsr #SECTION_SHIFT
+
+// WE DO NOT GET HERE
+   mov r11, #0x61
+   bl _hack
 
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
 	str	r3, [r4, r5, lsl #PMD_ENTRY_ORDER]	@ identity mapping
@@ -299,6 +317,9 @@ __create_page_tables:
 	str	r3, [r5]			@ Save physical end of kernel (LE)
 #endif
 
+   mov r11, #0x62
+   bl _hack
+
 #ifdef CONFIG_XIP_KERNEL
 	/*
 	 * Map the kernel image separately as it is not located in RAM.
@@ -318,6 +339,9 @@ __create_page_tables:
 	bls	1b
 #endif
 
+   mov r11, #0x63
+   bl _hack
+
 	/*
 	 * Then map boot params address in r2 if specified.
 	 * We map 2 sections in case the ATAGs/DTB crosses a section boundary.
@@ -330,6 +354,9 @@ __create_page_tables:
 	strne	r6, [r3], #1 << PMD_ENTRY_ORDER
 	addne	r6, r6, #1 << SECTION_SHIFT
 	strne	r6, [r3]
+
+   mov r11, #0x64
+   bl _hack
 
 #if defined(CONFIG_ARM_LPAE) && defined(CONFIG_CPU_ENDIAN_BE8)
 	sub	r4, r4, #4			@ Fixup page table pointer
@@ -344,6 +371,9 @@ __create_page_tables:
 	 * via a serial console before paging_init.
 	 */
 	addruart r7, r3, r0
+
+   mov r11, #0x65
+   bl _hack
 
 	mov	r3, r3, lsr #SECTION_SHIFT
 	mov	r3, r3, lsl #PMD_ENTRY_ORDER
