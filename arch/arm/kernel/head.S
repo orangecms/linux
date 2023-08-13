@@ -101,6 +101,7 @@ ENTRY(stext)
  ARM_BE8(setend	be )			@ ensure we are in BE8 mode
  mov r11, #0x42
  bl _hack
+ ldr r2, =0x40a08000
 
  THUMB(	badr	r9, 1f		)	@ Kernel is always entered in ARM.
  THUMB(	bx	r9		)	@ If this is a Thumb-2 kernel,
@@ -162,8 +163,8 @@ ENTRY(stext)
 
 	bl	__create_page_tables
 
-// mov r11, #0x48
-// bl _hack
+   mov r11, #0x4A
+   bl _hack
 
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -193,9 +194,18 @@ ENTRY(stext)
 #else
 	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
 #endif
+
+#  mov r11, #0x4F
+#  bl _hack
+# mov	r0, r10
+# bl	printhex8
+
 	ldr	r12, [r10, #PROCINFO_INITFUNC]
 	add	r12, r12, r10
 	ret	r12
+// WE SHOULD GET HERE
+  mov r0, #0xee
+  bl printhex2
 1:	b	__enable_mmu
 ENDPROC(stext)
 	.ltorg
@@ -227,8 +237,10 @@ __create_page_tables:
 	teq	r0, r6
 	bne	1b
 
+#ifdef HACK_DEBUG
    mov r11, #0x48
    bl _hack
+#endif
 
 #ifdef CONFIG_ARM_LPAE
 	/*
@@ -258,31 +270,23 @@ __create_page_tables:
 #endif
 #endif
 
+#ifdef HACK_DEBUG
    mov r11, #0x49
    bl _hack
-// WE ARE HERE
+#endif
+// WE GET HERE
 
 // load from memory address R10 + 8 (what PROCINFO_MM_MMUFLAGS resolves to)
 	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
-   mov r11, #0x4A
-   bl _hack
 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.
 	 * This identity mapping will be removed by paging_init().
 	 */
 	adr_l	r5, __turn_mmu_on		@ _pa(__turn_mmu_on)
-   mov r11, #0x4B
-   bl _hack
 	adr_l	r6, __turn_mmu_on_end		@ _pa(__turn_mmu_on_end)
-   mov r11, #0x4C
-   bl _hack
 	mov	r5, r5, lsr #SECTION_SHIFT
 	mov	r6, r6, lsr #SECTION_SHIFT
-
-// WE DO NOT GET HERE
-   mov r11, #0x61
-   bl _hack
 
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
 	str	r3, [r4, r5, lsl #PMD_ENTRY_ORDER]	@ identity mapping
@@ -317,9 +321,6 @@ __create_page_tables:
 	str	r3, [r5]			@ Save physical end of kernel (LE)
 #endif
 
-   mov r11, #0x62
-   bl _hack
-
 #ifdef CONFIG_XIP_KERNEL
 	/*
 	 * Map the kernel image separately as it is not located in RAM.
@@ -339,9 +340,6 @@ __create_page_tables:
 	bls	1b
 #endif
 
-   mov r11, #0x63
-   bl _hack
-
 	/*
 	 * Then map boot params address in r2 if specified.
 	 * We map 2 sections in case the ATAGs/DTB crosses a section boundary.
@@ -354,9 +352,6 @@ __create_page_tables:
 	strne	r6, [r3], #1 << PMD_ENTRY_ORDER
 	addne	r6, r6, #1 << SECTION_SHIFT
 	strne	r6, [r3]
-
-   mov r11, #0x64
-   bl _hack
 
 #if defined(CONFIG_ARM_LPAE) && defined(CONFIG_CPU_ENDIAN_BE8)
 	sub	r4, r4, #4			@ Fixup page table pointer
@@ -372,16 +367,28 @@ __create_page_tables:
 	 */
 	addruart r7, r3, r0
 
+#ifdef HACK_DEBUG
    mov r11, #0x65
    bl _hack
+#endif
+// WE GET HERE
 
 	mov	r3, r3, lsr #SECTION_SHIFT
 	mov	r3, r3, lsl #PMD_ENTRY_ORDER
 
 	add	r0, r4, r3
 	mov	r3, r7, lsr #SECTION_SHIFT
+#ifdef HACK_DEBUG
+   mov r11, #0x66
+   bl _hack
+#endif
 	ldr	r7, [r10, #PROCINFO_IO_MMUFLAGS] @ io_mmuflags
 	orr	r3, r7, r3, lsl #SECTION_SHIFT
+
+#ifdef HACK_DEBUG
+   mov r11, #0x67
+   bl _hack
+#endif
 #ifdef CONFIG_ARM_LPAE
 	mov	r7, #1 << (54 - 32)		@ XN
 #ifdef CONFIG_CPU_ENDIAN_BE8
@@ -390,6 +397,10 @@ __create_page_tables:
 #else
 	str	r3, [r0], #4
 	str	r7, [r0], #4
+#endif
+#ifdef HACK_DEBUG
+   mov r11, #0x68
+   bl _hack
 #endif
 #else
 	orr	r3, r3, #PMD_SECT_XN
@@ -426,6 +437,11 @@ __create_page_tables:
 #ifdef CONFIG_ARM_LPAE
 	sub	r4, r4, #0x1000		@ point to the PGD table
 #endif
+#ifdef HACK_DEBUG
+   mov r11, #0x69
+   bl _hack
+#endif
+# WE GET HERE
 	ret	lr
 ENDPROC(__create_page_tables)
 	.ltorg
@@ -514,6 +530,10 @@ ENDPROC(__secondary_switched)
  *  r13 = *virtual* address to jump to upon completion
  */
 __enable_mmu:
+#ifdef HACK_DEBUG
+   mov r11, #0x4B @ K
+   bl _hack
+#endif
 #if defined(CONFIG_ALIGNMENT_TRAP) && __LINUX_ARM_ARCH__ < 6
 	orr	r0, r0, #CR_A
 #else
@@ -539,6 +559,7 @@ __enable_mmu:
 ENDPROC(__enable_mmu)
 
 /*
+ * LOL - put this on a slide
  * Enable the MMU.  This completely changes the structure of the visible
  * memory space.  You will not be able to trace execution through this.
  * If you have an enquiry about this, *please* check the linux-arm-kernel
@@ -555,6 +576,11 @@ ENDPROC(__enable_mmu)
 	.align	5
 	.pushsection	.idmap.text, "ax"
 ENTRY(__turn_mmu_on)
+#ifdef HACK_DEBUG
+   mov r11, #0x4C
+   bl _hack
+#endif
+// WE GET HERE
 	mov	r0, r0
 	instr_sync
 	mcr	p15, 0, r0, c1, c0, 0		@ write control reg

@@ -487,6 +487,7 @@ __v7_setup:
 	do_invalidate_l1
 
 __v7_setup_cont:
+// WE GET HERE
 	and	r0, r9, #0xff000000		@ ARM?
 	teq	r0, #0x41000000
 	bne	__errata_finish
@@ -555,6 +556,7 @@ __errata_finish:
 	bic	r0, r0, r3			@ clear bits them
 	orr	r0, r0, r6			@ set them
  THUMB(	orr	r0, r0, #1 << 30	)	@ Thumb exceptions
+// WE GET HERE
 	ret	lr				@ return to head.S:__ret
 ENDPROC(__v7_setup)
 

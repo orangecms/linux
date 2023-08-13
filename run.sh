@@ -1,26 +1,25 @@
 #!/bin/sh
 
 FEL=sunxi-fel
-KERNEL=arch/arm/boot/Image
-BIN=head.bin
+BDIR=arch/arm/boot
+KERNEL=$BDIR/Image
+DTB=$BDIR/dts/sun8i-v40-sharevdi-r1-256m.dtb
+
 # NOTE: Arm default text offset is 0x8000, see  `linux/arch/arm/Makefile`
-ADDR=0x40008000
-
-ONE_AND_A_HALF_MB=1572864
-TWO_MB=2097152
-
-# for testing around to decrease the transfer time
-head -c $TWO_MB $KERNEL > $BIN
-
-BIN=$KERNEL
+KER_ADDR=0x40008000
+# 10 MB offset for DTB
+DTB_ADDR=0x40a08000
 
 echo Chip ID:
 $FEL sid
 $FEL sid
 $FEL sid
 
-echo Transfer binary...
-$FEL write $ADDR $BIN
+echo Transfer binary, takes ~60 seconds...
+$FEL write $KER_ADDR $KERNEL
+sleep 1
+echo Transfer DTB...
+$FEL write $DTB_ADDR $DTB
 echo Run
-$FEL exec $ADDR
+$FEL exec $KER_ADDR
 echo Done.
