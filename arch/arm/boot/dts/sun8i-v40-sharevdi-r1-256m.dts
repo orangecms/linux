@@ -49,7 +49,7 @@
 // command line like https://gist.github.com/apritzel/c128b29c601d180d32d68ee4c9ed8f47
 
 / {
-	model = "Banana Pi M2 Berry";
+	model = "ShareVDI R1";
 	compatible = "sinovoip,bpi-m2-berry", "allwinner,sun8i-r40";
 
 	aliases {
