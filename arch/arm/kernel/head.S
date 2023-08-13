@@ -101,7 +101,7 @@ ENTRY(stext)
  ARM_BE8(setend	be )			@ ensure we are in BE8 mode
  mov r11, #0x42
  bl _hack
- ldr r2, =0x40c08000
+ ldr r2, =0x40f08000
 
  THUMB(	badr	r9, 1f		)	@ Kernel is always entered in ARM.
  THUMB(	bx	r9		)	@ If this is a Thumb-2 kernel,
