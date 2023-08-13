@@ -1322,5 +1322,7 @@
 			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+    clock-frequency = <27000000>;
+// https://lore.kernel.org/linux-arm-kernel/25965de3-cc82-7fe6-6b3d-5754c329ac07@suse.de/
 	};
 };
