@@ -126,6 +126,13 @@ struct plda_pcie_rp {
 	int num_events;
 };
 
+struct plda_evt {
+	const struct irq_domain_ops *domain_ops;
+	int (*request_evt_irq)(struct plda_pcie_rp *pcie, int evt_irq, int event);
+	int intx_evt;
+	int msi_evt;
+};
+
 void plda_handle_msi(struct irq_desc *desc);
 int plda_allocate_msi_domains(struct plda_pcie_rp *port);
 irqreturn_t plda_event_handler(int irq, void *dev_id);
