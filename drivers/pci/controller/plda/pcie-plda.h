@@ -90,6 +90,23 @@
 /* PCIe Config space MSI capability structure */
 #define MC_MSI_CAP_CTRL_OFFSET			0xe0u
 
+#define EVENT_A_ATR_EVT_POST_ERR		0
+#define EVENT_A_ATR_EVT_FETCH_ERR		1
+#define EVENT_A_ATR_EVT_DISCARD_ERR		2
+#define EVENT_A_ATR_EVT_DOORBELL		3
+#define EVENT_P_ATR_EVT_POST_ERR		4
+#define EVENT_P_ATR_EVT_FETCH_ERR		5
+#define EVENT_P_ATR_EVT_DISCARD_ERR		6
+#define EVENT_P_ATR_EVT_DOORBELL		7
+#define EVENT_PM_MSI_INT_INTX			8
+#define EVENT_PM_MSI_INT_MSI			9
+#define EVENT_PM_MSI_INT_AER_EVT		10
+#define EVENT_PM_MSI_INT_EVENTS			11
+#define EVENT_PM_MSI_INT_SYS_ERR		12
+#define NUM_PLDA_EVENTS				13
+
+#define PM_MSI_TO_MASK_OFFSET			19
+
 struct plda_msi {
 	struct mutex lock;		/* Protect used bitmap */
 	struct irq_domain *msi_domain;
@@ -106,10 +123,12 @@ struct plda_pcie_rp {
 	raw_spinlock_t lock;
 	struct plda_msi msi;
 	void __iomem *bridge_addr;
+	int num_events;
 };
 
 void plda_handle_msi(struct irq_desc *desc);
 int plda_allocate_msi_domains(struct plda_pcie_rp *port);
+irqreturn_t plda_event_handler(int irq, void *dev_id);
 void plda_handle_intx(struct irq_desc *desc);
 int plda_pcie_intx_map(struct irq_domain *domain, unsigned int irq,
 		       irq_hw_number_t hwirq);
