@@ -107,6 +107,12 @@
 
 #define PM_MSI_TO_MASK_OFFSET			19
 
+struct plda_pcie_rp;
+
+struct plda_pcie_ops {
+	u32 (*get_events)(struct plda_pcie_rp *pcie);
+};
+
 struct plda_msi {
 	struct mutex lock;		/* Protect used bitmap */
 	struct irq_domain *msi_domain;
@@ -122,6 +128,7 @@ struct plda_pcie_rp {
 	struct irq_domain *event_domain;
 	raw_spinlock_t lock;
 	struct plda_msi msi;
+	const struct plda_pcie_ops *ops;
 	void __iomem *bridge_addr;
 	int num_events;
 };
@@ -133,12 +140,8 @@ struct plda_evt {
 	int msi_evt;
 };
 
-void plda_handle_msi(struct irq_desc *desc);
-int plda_allocate_msi_domains(struct plda_pcie_rp *port);
-irqreturn_t plda_event_handler(int irq, void *dev_id);
-void plda_handle_intx(struct irq_desc *desc);
-int plda_pcie_intx_map(struct irq_domain *domain, unsigned int irq,
-		       irq_hw_number_t hwirq);
+int plda_init_interrupts(struct platform_device *pdev,
+			 struct plda_pcie_rp *port, struct plda_evt *evt);
 void plda_pcie_setup_window(void __iomem *bridge_base_addr, u32 index,
 			    phys_addr_t axi_addr, phys_addr_t pci_addr,
 			    size_t size);
