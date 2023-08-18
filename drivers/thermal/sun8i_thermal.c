@@ -190,6 +190,8 @@ static irqreturn_t sun8i_irq_thread(int irq, void *data)
 	int i;
 
 	for_each_set_bit(i, &irq_bitmap, tmdev->chip->sensor_num) {
+    if (IS_ERR(tmdev->sensor[i].tzd))
+      continue;
 		thermal_zone_device_update(tmdev->sensor[i].tzd,
 					   THERMAL_EVENT_UNSPECIFIED);
 	}
@@ -465,8 +467,11 @@ static int sun8i_ths_register(struct ths_device *tmdev)
 						      i,
 						      &tmdev->sensor[i],
 						      &ths_ops);
-		if (IS_ERR(tmdev->sensor[i].tzd))
-			return PTR_ERR(tmdev->sensor[i].tzd);
+		if (IS_ERR(tmdev->sensor[i].tzd)) {
+      if (PTR_ERR(tmdev->sensor[i].tzd) == -EPROBE_DEFER)
+			  return PTR_ERR(tmdev->sensor[i].tzd);
+      continue;
+    }
 
 		if (devm_thermal_add_hwmon_sysfs(tmdev->dev, tmdev->sensor[i].tzd))
 			dev_warn(tmdev->dev,
