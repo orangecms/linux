@@ -121,9 +121,11 @@ bool of_mdiobus_child_is_phy(struct device_node *child)
 	if (of_device_is_compatible(child, "ethernet-phy-ieee802.3-c45"))
 		return true;
 
+  pr_info("Probe C22 compat\n");
 	if (of_device_is_compatible(child, "ethernet-phy-ieee802.3-c22"))
 		return true;
 
+  pr_info("Probe PHY compat\n");
 	if (of_match_node(whitelist_phys, child)) {
 		pr_warn(FW_WARN
 			"%pOF: Whitelisted compatible string. Please remove\n",
@@ -154,6 +156,8 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 	bool scanphys = false;
 	int addr, rc;
 
+  pr_info("Try registering MII bus and PHY device\n");
+
 	if (!np)
 		return __mdiobus_register(mdio, owner);
 
@@ -167,17 +171,20 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 
 	device_set_node(&mdio->dev, of_fwnode_handle(np));
 
+  pr_info("configure PHY bus level\n");
 	/* Get bus level PHY reset GPIO details */
 	mdio->reset_delay_us = DEFAULT_GPIO_RESET_DELAY;
 	of_property_read_u32(np, "reset-delay-us", &mdio->reset_delay_us);
 	mdio->reset_post_delay_us = 0;
 	of_property_read_u32(np, "reset-post-delay-us", &mdio->reset_post_delay_us);
 
+  pr_info("register MDIO bus\n");
 	/* Register the MDIO bus */
 	rc = __mdiobus_register(mdio, owner);
 	if (rc)
 		return rc;
 
+  pr_info("traverse for PHYs\n");
 	/* Loop over the child nodes and register a phy_device for each phy */
 	for_each_available_child_of_node(np, child) {
 		addr = of_mdio_parse_addr(&mdio->dev, child);

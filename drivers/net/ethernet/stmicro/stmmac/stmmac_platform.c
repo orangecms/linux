@@ -335,8 +335,10 @@ static int stmmac_dt_phy(struct plat_stmmacenet_data *plat,
 		 */
 		for_each_child_of_node(np, plat->mdio_node) {
 			if (of_device_is_compatible(plat->mdio_node,
-						    "snps,dwmac-mdio"))
-				break;
+						    "snps,dwmac-mdio")) {
+				pr_info("We have a snps,dwmac-mdio\n");
+        break;
+      }
 		}
 	}
 
@@ -401,6 +403,8 @@ stmmac_probe_config_dt(struct platform_device *pdev, u8 *mac)
 	int phy_mode;
 	void *ret;
 	int rc;
+
+  pr_info("  stmmac_probe_config_dt\n");
 
 	plat = devm_kzalloc(&pdev->dev, sizeof(*plat), GFP_KERNEL);
 	if (!plat)

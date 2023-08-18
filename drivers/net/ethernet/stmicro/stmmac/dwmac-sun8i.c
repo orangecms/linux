@@ -300,6 +300,7 @@ static int sun8i_dwmac_dma_reset(void __iomem *ioaddr)
 static void sun8i_dwmac_dma_init(void __iomem *ioaddr,
 				 struct stmmac_dma_cfg *dma_cfg, int atds)
 {
+  pr_info(" ==== sun8i_dwmac_dma_init\n");
 	writel(EMAC_RX_INT | EMAC_TX_INT, ioaddr + EMAC_INT_EN);
 	writel(0x1FFFFFF, ioaddr + EMAC_INT_STA);
 }
@@ -582,6 +583,8 @@ static int sun8i_dwmac_init(struct platform_device *pdev, void *priv)
 	struct sunxi_priv_data *gmac = priv;
 	int ret;
 
+  pr_info("sun8i_dwmac_init\n");
+
 	if (gmac->regulator) {
 		ret = regulator_enable(gmac->regulator);
 		if (ret) {
@@ -590,10 +593,14 @@ static int sun8i_dwmac_init(struct platform_device *pdev, void *priv)
 		}
 	}
 
+  pr_info("         use internal PHY: %d\n", gmac->use_internal_phy);
+
 	if (gmac->use_internal_phy) {
 		ret = sun8i_dwmac_power_internal_phy(netdev_priv(ndev));
-		if (ret)
+		if (ret) {
+      pr_info("   sun8i_dwmac_power_internal_phy failed\n");
 			goto err_disable_regulator;
+    }
 	}
 
 	return 0;
@@ -794,6 +801,7 @@ static int get_ephy_nodes(struct stmmac_priv *priv)
 		gmac->rst_ephy = of_reset_control_get_exclusive(iphynode, NULL);
 		if (IS_ERR(gmac->rst_ephy)) {
 			ret = PTR_ERR(gmac->rst_ephy);
+      // THIS?!?
 			if (ret == -EPROBE_DEFER) {
 				of_node_put(iphynode);
 				of_node_put(mdio_internal);
@@ -1126,6 +1134,7 @@ static struct regmap *sun8i_dwmac_get_syscon_from_dev(struct device_node *node)
 		return ERR_PTR(-ENODEV);
 
 	syscon_pdev = of_find_device_by_node(syscon_node);
+  // THIS?!?
 	if (!syscon_pdev) {
 		/* platform device might not be probed yet */
 		regmap = ERR_PTR(-EPROBE_DEFER);
@@ -1155,20 +1164,24 @@ static int sun8i_dwmac_probe(struct platform_device *pdev)
 	struct net_device *ndev;
 	struct regmap *regmap;
 
+  pr_info("sun8i_dwmac_probe\n");
 	ret = stmmac_get_platform_resources(pdev, &stmmac_res);
 	if (ret)
 		return ret;
 
+  pr_info("sun8i_dwmac_probe   alloc\n");
 	gmac = devm_kzalloc(dev, sizeof(*gmac), GFP_KERNEL);
 	if (!gmac)
 		return -ENOMEM;
 
+  pr_info("sun8i_dwmac_probe   variant\n");
 	gmac->variant = of_device_get_match_data(&pdev->dev);
 	if (!gmac->variant) {
 		dev_err(&pdev->dev, "Missing dwmac-sun8i variant\n");
 		return -EINVAL;
 	}
 
+  pr_info("sun8i_dwmac_probe   regulator\n");
 	/* Optional regulator for PHY */
 	gmac->regulator = devm_regulator_get_optional(dev, "phy");
 	if (IS_ERR(gmac->regulator)) {
@@ -1195,6 +1208,7 @@ static int sun8i_dwmac_probe(struct platform_device *pdev)
 	 * To support old device trees, we fall back to using the syscon
 	 * interface if possible.
 	 */
+  pr_info("sun8i_dwmac_probe   clock...\n");
 	regmap = sun8i_dwmac_get_syscon_from_dev(pdev->dev.of_node);
 	if (IS_ERR(regmap))
 		regmap = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,

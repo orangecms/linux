@@ -218,7 +218,7 @@ config DWMAC_SUN8I
 	depends on OF && (ARCH_SUNXI || COMPILE_TEST)
 	select MDIO_BUS_MUX
 	help
-	  Support for Allwinner H3 A83T A64 EMAC ethernet controllers.
+	  Support for Allwinner H3 A83T A64 R40/V40 EMAC ethernet controllers.
 
 	  This selects Allwinner SoC glue layer support for the
 	  stmmac device driver. This driver is used for H3/A83T/A64
