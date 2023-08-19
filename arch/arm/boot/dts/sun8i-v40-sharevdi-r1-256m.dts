@@ -137,11 +137,11 @@
 		// device_type = "ethernet-phy";
     // NOTE: providing the RTL8201CP compat should not be necessary
 		// compatible = "moxa,moxart-rtl8201cp", "ethernet-phy-ieee802.3-c22";
-		// compatible = "ethernet-phy-ieee802.3-c22";
+		compatible = "ethernet-phy-ieee802.3-c22";
 		reg = <1>;
-		reset-gpios = <&pio 0 21 GPIO_ACTIVE_LOW>; /* PA21 */
-		reset-assert-us = <10000>;
-		reset-deassert-us = <30000>;
+    // reset-gpios = <&pio 0 17 GPIO_ACTIVE_LOW>; /* PA21 */
+    reset-assert-us = <10000>;
+    reset-deassert-us = <1000000>;
 	};
 };
 
