@@ -878,6 +878,7 @@ static int get_phy_c22_id(struct mii_bus *bus, int addr, u32 *phy_id)
 	int phy_reg;
 
 	/* Grab the bits from PHYIR1, and put them in the upper half */
+  pr_info("MDIO bus read MII_PHYSID1\n");
 	phy_reg = mdiobus_read(bus, addr, MII_PHYSID1);
 	if (phy_reg < 0) {
 		/* returning -ENODEV doesn't stop bus scanning */
@@ -886,6 +887,7 @@ static int get_phy_c22_id(struct mii_bus *bus, int addr, u32 *phy_id)
 
 	*phy_id = phy_reg << 16;
 
+  pr_info("MDIO bus read MII_PHYSID2\n");
 	/* Grab the bits from PHYIR2, and put them in the lower half */
 	phy_reg = mdiobus_read(bus, addr, MII_PHYSID2);
 	if (phy_reg < 0) {
@@ -896,8 +898,10 @@ static int get_phy_c22_id(struct mii_bus *bus, int addr, u32 *phy_id)
 	*phy_id |= phy_reg;
 
 	/* If the phy_id is mostly Fs, there is no device there */
-	if ((*phy_id & 0x1fffffff) == 0x1fffffff)
+	if ((*phy_id & 0x1fffffff) == 0x1fffffff) {
+    pr_info("MDIO bus read error, got PHY ID value %x\n", *phy_id);
 		return -ENODEV;
+  }
 
 	return 0;
 }
@@ -954,12 +958,15 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr, bool is_c45)
 
 	if (is_c45)
 		r = get_phy_c45_ids(bus, addr, &c45_ids);
-	else
+	else {
+    pr_info("get_phy_c22_id %p %i (%i)\n", bus, addr, phy_id);
 		r = get_phy_c22_id(bus, addr, &phy_id);
+  }
 
-	if (r)
+	if (r) {
+    pr_info("error getting PHY ID\n");
 		return ERR_PTR(r);
-
+  }
 	/* PHY device such as the Marvell Alaska 88E2110 will return a PHY ID
 	 * of 0 when probed using get_phy_c22_id() with no error. Proceed to
 	 * probe with C45 to see if we're able to get a valid PHY ID in the C45

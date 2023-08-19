@@ -119,10 +119,12 @@ int fwnode_mdiobus_register_phy(struct mii_bus *bus,
 	u32 phy_id;
 	int rc;
 
+  pr_info("fwnode_find_pse_control\n");
 	psec = fwnode_find_pse_control(child);
 	if (IS_ERR(psec))
 		return PTR_ERR(psec);
 
+  pr_info("fwnode_find_mii_timestamper\n");
 	mii_ts = fwnode_find_mii_timestamper(child);
 	if (IS_ERR(mii_ts)) {
 		rc = PTR_ERR(mii_ts);
@@ -130,11 +132,15 @@ int fwnode_mdiobus_register_phy(struct mii_bus *bus,
 	}
 
 	is_c45 = fwnode_device_is_compatible(child, "ethernet-phy-ieee802.3-c45");
-	if (is_c45 || fwnode_get_phy_id(child, &phy_id))
+	if (is_c45 || fwnode_get_phy_id(child, &phy_id)) {
+    pr_info("get_phy_device %p %i (is C45: %d)\n", bus, addr, is_c45);
 		phy = get_phy_device(bus, addr, is_c45);
-	else
+  } else {
+    pr_info("phy_device_create\n");
 		phy = phy_device_create(bus, addr, phy_id, 0, NULL);
-	if (IS_ERR(phy)) {
+  }
+  if (IS_ERR(phy)) {
+    pr_info("PHY err\n");
 		rc = PTR_ERR(phy);
 		goto clean_mii_ts;
 	}

@@ -224,6 +224,8 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 				continue;
 
 			/* be noisy to encourage people to set reg property */
+			pr_info("scan phy %pOFn at address %i\n", child, addr);
+      // HOW DO WE GET TO SEE THIS?!
 			dev_info(&mdio->dev, "scan phy %pOFn at address %i\n",
 				 child, addr);
 
