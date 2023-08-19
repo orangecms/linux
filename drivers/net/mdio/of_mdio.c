@@ -193,12 +193,15 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 			continue;
 		}
 
-		if (of_mdiobus_child_is_phy(child))
+		if (of_mdiobus_child_is_phy(child)) {
+      pr_info("of_mdiobus_register_phy\n");
 			rc = of_mdiobus_register_phy(mdio, child, addr);
-		else
+    } else {
+      pr_info("of_mdiobus_register_device\n");
 			rc = of_mdiobus_register_device(mdio, child, addr);
-
+    }
 		if (rc == -ENODEV)
+      // WE RUN INTO THIS
 			dev_err(&mdio->dev,
 				"MDIO device at address %d is missing.\n",
 				addr);
