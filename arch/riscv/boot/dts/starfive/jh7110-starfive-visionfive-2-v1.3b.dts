@@ -30,7 +30,7 @@
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&aoncrg JH7110_AONCLK_GMAC0_TX>;
 	assigned-clock-parents = <&aoncrg JH7110_AONCLK_GMAC0_RMII_RTX>;
-  status = "disabled";
+  // status = "disabled";
 };
 
 &gmac1 {
@@ -48,7 +48,6 @@
 	motorcomm,rx-data-drv-microamp = <2910>;
 	rx-internal-delay-ps = <1500>;
 	tx-internal-delay-ps = <1500>;
-  status = "disabled";
 };
 
 &phy1 {
@@ -58,5 +57,4 @@
 	motorcomm,rx-data-drv-microamp = <2910>;
 	rx-internal-delay-ps = <300>;
 	tx-internal-delay-ps = <0>;
-  status = "disabled";
 };
