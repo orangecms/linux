@@ -405,7 +405,7 @@
 	pinctrl-0 = <&pwmdac_pins>;
 	status = "okay";
 };
-
+/*
 &qspi {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -441,7 +441,8 @@
 		};
 	};
 };
-
+*/
+/*
 &spi0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi0_pins>;
@@ -453,7 +454,7 @@
 		spi-max-frequency = <10000000>;
 	};
 };
-
+*/
 &stfcamss {
 	status = "okay";
 

@@ -451,7 +451,7 @@
 			#size-cells = <0>;
 			status = "disabled";
 		};
-
+/*
 		spi0: spi@10060000 {
 			compatible = "arm,pl022", "arm,primecell";
 			reg = <0x0 0x10060000 0x0 0x10000>;
@@ -496,7 +496,7 @@
 			#size-cells = <0>;
 			status = "disabled";
 		};
-
+*/
 		tdm: tdm@10090000 {
 			compatible = "starfive,jh7110-tdm";
 			reg = <0x0 0x10090000 0x0 0x1000>;
@@ -718,7 +718,7 @@
 			#size-cells = <0>;
 			status = "disabled";
 		};
-
+/*
 		spi3: spi@12070000 {
 			compatible = "arm,pl022", "arm,primecell";
 			reg = <0x0 0x12070000 0x0 0x10000>;
@@ -778,7 +778,7 @@
 			#size-cells = <0>;
 			status = "disabled";
 		};
-
+*/
 		i2stx0: i2s@120b0000 {
 			compatible = "starfive,jh7110-i2stx0";
 			reg = <0x0 0x120b0000 0x0 0x1000>;
@@ -840,7 +840,7 @@
 			reset-names = "sense", "bus";
 			#thermal-sensor-cells = <0>;
 		};
-
+/*
 		qspi: spi@13010000 {
 			compatible = "starfive,jh7110-qspi", "cdns,qspi-nor";
 			reg = <0x0 0x13010000 0x0 0x10000>,
@@ -859,7 +859,7 @@
 			cdns,trigger-address = <0x0>;
 			status = "disabled";
 		};
-
+*/
 		syscrg: clock-controller@13020000 {
 			compatible = "starfive,jh7110-syscrg";
 			reg = <0x0 0x13020000 0x0 0x10000>;
