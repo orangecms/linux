@@ -27,6 +27,16 @@ static bool riscv_insn_valid_32bit_offset(ptrdiff_t val)
 #endif
 }
 
+static u32 get32(u32*l) {
+	u32 v;
+	memmove(&v, l, 4);
+	return v;
+}
+
+static void put32(u32*l,u32 v) {
+  memmove(l, &v, 4);
+}
+
 static int apply_r_riscv_32_rela(struct module *me, u32 *location, Elf_Addr v)
 {
 	if (v != (u32)v) {
@@ -34,7 +44,7 @@ static int apply_r_riscv_32_rela(struct module *me, u32 *location, Elf_Addr v)
 		       me->name, (long long)v);
 		return -EINVAL;
 	}
-	*location = v;
+	put32(location, v);
 	return 0;
 }
 
@@ -53,7 +63,7 @@ static int apply_r_riscv_branch_rela(struct module *me, u32 *location,
 	u32 imm10_5 = (offset & 0x7e0) << (30 - 10);
 	u32 imm4_1 = (offset & 0x1e) << (11 - 4);
 
-	*location = (*location & 0x1fff07f) | imm12 | imm11 | imm10_5 | imm4_1;
+	put32(location, (get32(location) & 0x1fff07f) | imm12 | imm11 | imm10_5 | imm4_1);
 	return 0;
 }
 
@@ -66,7 +76,7 @@ static int apply_r_riscv_jal_rela(struct module *me, u32 *location,
 	u32 imm11 = (offset & 0x800) << (20 - 11);
 	u32 imm10_1 = (offset & 0x7fe) << (30 - 10);
 
-	*location = (*location & 0xfff) | imm20 | imm19_12 | imm11 | imm10_1;
+	put32(location, (get32(location) & 0xfff) | imm20 | imm19_12 | imm11 | imm10_1);
 	return 0;
 }
 
@@ -117,7 +127,7 @@ static int apply_r_riscv_pcrel_hi20_rela(struct module *me, u32 *location,
 	}
 
 	hi20 = (offset + 0x800) & 0xfffff000;
-	*location = (*location & 0xfff) | hi20;
+	put32(location, (get32(location) & 0xfff) | hi20);
 	return 0;
 }
 
@@ -128,7 +138,7 @@ static int apply_r_riscv_pcrel_lo12_i_rela(struct module *me, u32 *location,
 	 * v is the lo12 value to fill. It is calculated before calling this
 	 * handler.
 	 */
-	*location = (*location & 0xfffff) | ((v & 0xfff) << 20);
+	put32(location, (get32(location) & 0xfffff) | ((v & 0xfff) << 20));
 	return 0;
 }
 
@@ -142,7 +152,7 @@ static int apply_r_riscv_pcrel_lo12_s_rela(struct module *me, u32 *location,
 	u32 imm11_5 = (v & 0xfe0) << (31 - 11);
 	u32 imm4_0 = (v & 0x1f) << (11 - 4);
 
-	*location = (*location & 0x1fff07f) | imm11_5 | imm4_0;
+	put32(location, (get32(location) & 0x1fff07f) | imm11_5 | imm4_0);
 	return 0;
 }
 
@@ -159,7 +169,7 @@ static int apply_r_riscv_hi20_rela(struct module *me, u32 *location,
 	}
 
 	hi20 = ((s32)v + 0x800) & 0xfffff000;
-	*location = (*location & 0xfff) | hi20;
+	put32(location, (get32(location) & 0xfff) | hi20);
 	return 0;
 }
 
@@ -169,7 +179,7 @@ static int apply_r_riscv_lo12_i_rela(struct module *me, u32 *location,
 	/* Skip medlow checking because of filtering by HI20 already */
 	s32 hi20 = ((s32)v + 0x800) & 0xfffff000;
 	s32 lo12 = ((s32)v - hi20);
-	*location = (*location & 0xfffff) | ((lo12 & 0xfff) << 20);
+	put32(location, (get32(location) & 0xfffff) | ((lo12 & 0xfff) << 20));
 	return 0;
 }
 
@@ -181,7 +191,7 @@ static int apply_r_riscv_lo12_s_rela(struct module *me, u32 *location,
 	s32 lo12 = ((s32)v - hi20);
 	u32 imm11_5 = (lo12 & 0xfe0) << (31 - 11);
 	u32 imm4_0 = (lo12 & 0x1f) << (11 - 4);
-	*location = (*location & 0x1fff07f) | imm11_5 | imm4_0;
+	put32(location, (get32(location) & 0x1fff07f) | imm11_5 | imm4_0);
 	return 0;
 }
 
@@ -203,7 +213,7 @@ static int apply_r_riscv_got_hi20_rela(struct module *me, u32 *location,
 	}
 
 	hi20 = (offset + 0x800) & 0xfffff000;
-	*location = (*location & 0xfff) | hi20;
+	put32(location, (get32(location) & 0xfff) | hi20);
 	return 0;
 }
 
@@ -228,16 +238,17 @@ static int apply_r_riscv_call_plt_rela(struct module *me, u32 *location,
 
 	hi20 = (offset + 0x800) & 0xfffff000;
 	lo12 = (offset - hi20) & 0xfff;
-	*location = (*location & 0xfff) | hi20;
-	*(location + 1) = (*(location + 1) & 0xfffff) | (lo12 << 20);
+	put32(location, (get32(location) & 0xfff) | hi20);
+	put32(location+1, (get32(location + 1) & 0xfffff) | (lo12 << 20));
 	return 0;
 }
 
 static int apply_r_riscv_call_rela(struct module *me, u32 *location,
 				   Elf_Addr v)
 {
+	pr_err("v %px location %px\n", (void *)v, location);
 	ptrdiff_t offset = (void *)v - (void *)location;
-	u32 hi20, lo12;
+	u32 hi20, lo12, starl;
 
 	if (!riscv_insn_valid_32bit_offset(offset)) {
 		pr_err(
@@ -248,8 +259,14 @@ static int apply_r_riscv_call_rela(struct module *me, u32 *location,
 
 	hi20 = (offset + 0x800) & 0xfffff000;
 	lo12 = (offset - hi20) & 0xfff;
-	*location = (*location & 0xfff) | hi20;
-	*(location + 1) = (*(location + 1) & 0xfffff) | (lo12 << 20);
+	pr_err("Set %px\n", location);
+	memmove(&starl,location, 4);
+	starl= (starl & 0xfff) | hi20;
+	memmove((void *)location, &starl,4);
+	memmove(&starl,location+1, 4);
+	pr_err("Set %px\n", location+1);
+	starl = (starl & 0xfffff) | (lo12 << 20);
+	memmove((void *)(location + 1) , &starl,4);
 	return 0;
 }
 
