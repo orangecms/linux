@@ -11,6 +11,7 @@
  */
 
 #define pr_fmt(fmt) "i2c-core: " fmt
+#define DEBUG 1
 
 #include <dt-bindings/i2c/i2c.h>
 #include <linux/acpi.h>

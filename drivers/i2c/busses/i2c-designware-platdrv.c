@@ -35,6 +35,8 @@
 
 #include "i2c-designware-core.h"
 
+#define DEBUG 1
+
 static u32 i2c_dw_get_clk_rate_khz(struct dw_i2c_dev *dev)
 {
 	return clk_get_rate(dev->clk) / KILO;
@@ -280,6 +282,7 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 	struct i2c_timings *t;
 	int irq, ret;
 
+  pr_info("dw_i2c_plat_probe\n");
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
 		return irq;
@@ -288,6 +291,7 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 	if (!dev)
 		return -ENOMEM;
 
+  pr_info("   device_get_match_data\n");
 	dev->flags = (uintptr_t)device_get_match_data(&pdev->dev);
 	if (device_property_present(&pdev->dev, "wx,i2c-snps-model"))
 		dev->flags = MODEL_WANGXUN_SP;
@@ -296,50 +300,63 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 	dev->irq = irq;
 	platform_set_drvdata(pdev, dev);
 
+  pr_info("   dw_i2c_plat_request_regs\n");
 	ret = dw_i2c_plat_request_regs(dev);
 	if (ret)
 		return ret;
 
+  pr_info("   devm_reset_control_get_optional_exclusive\n");
 	dev->rst = devm_reset_control_get_optional_exclusive(&pdev->dev, NULL);
 	if (IS_ERR(dev->rst))
 		return PTR_ERR(dev->rst);
 
+  pr_info("   reset_control_deassert\n");
 	reset_control_deassert(dev->rst);
 
 	t = &dev->timings;
+  pr_info("   i2c_parse_fw_timings\n");
 	i2c_parse_fw_timings(&pdev->dev, t, false);
 
+  pr_info("   i2c_parse_fw_timings\n");
 	i2c_dw_adjust_bus_speed(dev);
 
-	if (pdev->dev.of_node)
+	if (pdev->dev.of_node) {
+    pr_info("   dw_i2c_of_configure\n");
 		dw_i2c_of_configure(pdev);
+  }
 
 	if (has_acpi_companion(&pdev->dev))
 		i2c_dw_acpi_configure(&pdev->dev);
 
+  pr_info("   i2c_dw_validate_speed\n");
 	ret = i2c_dw_validate_speed(dev);
 	if (ret)
 		goto exit_reset;
 
+  pr_info("   i2c_dw_probe_lock_support\n");
 	ret = i2c_dw_probe_lock_support(dev);
 	if (ret)
 		goto exit_reset;
 
+  pr_info("   i2c_dw_configure\n");
 	i2c_dw_configure(dev);
 
 	/* Optional interface clock */
+  pr_info("   devm_clk_get_optional  pclk\n");
 	dev->pclk = devm_clk_get_optional(&pdev->dev, "pclk");
 	if (IS_ERR(dev->pclk)) {
 		ret = PTR_ERR(dev->pclk);
 		goto exit_reset;
 	}
 
+  pr_info("   devm_clk_get_optional  clk\n");
 	dev->clk = devm_clk_get_optional(&pdev->dev, NULL);
 	if (IS_ERR(dev->clk)) {
 		ret = PTR_ERR(dev->clk);
 		goto exit_reset;
 	}
 
+  pr_info("   i2c_dw_prepare_clk\n");
 	ret = i2c_dw_prepare_clk(dev, true);
 	if (ret)
 		goto exit_reset;
@@ -372,11 +389,13 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 					DPM_FLAG_SMART_SUSPEND);
 	}
 
+  pr_info("   device_enable_async_suspend\n");
 	device_enable_async_suspend(&pdev->dev);
 
 	/* The code below assumes runtime PM to be disabled. */
 	WARN_ON(pm_runtime_enabled(&pdev->dev));
 
+  pr_info("   DW I2C PM setup\n");
 	pm_runtime_set_autosuspend_delay(&pdev->dev, 1000);
 	pm_runtime_use_autosuspend(&pdev->dev);
 	pm_runtime_set_active(&pdev->dev);
@@ -384,12 +403,15 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 	if (dev->shared_with_punit)
 		pm_runtime_get_noresume(&pdev->dev);
 
+  pr_info("   DW I2C pm_runtime_enable\n");
 	pm_runtime_enable(&pdev->dev);
 
+  pr_info("   pm_runtime_enable\n");
 	ret = i2c_dw_probe(dev);
 	if (ret)
 		goto exit_probe;
 
+  pr_info("   DONE\n");
 	return ret;
 
 exit_probe:

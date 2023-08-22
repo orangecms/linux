@@ -19,8 +19,8 @@
 		i2c6 = &i2c6;
 		mmc0 = &mmc0;
 		mmc1 = &mmc1;
-	  // pcie0 = &pcie0;
-	  // pcie1 = &pcie1;
+	  pcie0 = &pcie0;
+	  pcie1 = &pcie1;
 		serial0 = &uart0;
 	};
 
@@ -144,7 +144,7 @@
 };
 
 &csi2rx {
-	status = "okay";
+	status = "disabled";
 
 	assigned-clocks = <&ispcrg JH7110_ISPCLK_VIN_SYS>;
 	assigned-clock-rates = <297000000>;
@@ -177,7 +177,7 @@
 };
 
 &dc8200 {
-	status = "okay";
+	status = "disabled";
 
 	dc_out: port {
 		#address-cells = <1>;
@@ -379,7 +379,7 @@
 	pinctrl-0 = <&mmc1_pins>;
 	status = "okay";
 };
-/*
+
 &pcie0 {
 	pinctrl-names = "default";
 	perst-gpios = <&sysgpio 26 GPIO_ACTIVE_LOW>;
@@ -393,7 +393,7 @@
 	pinctrl-0 = <&pcie1_pins>;
 	status = "okay";
 };
-*/
+
 &ptc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pwm_pins>;
@@ -405,11 +405,11 @@
 	pinctrl-0 = <&pwmdac_pins>;
 	status = "okay";
 };
-/*
+
 &qspi {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	status = "okay";
+	status = "disabled";
 
 	nor_flash: flash@0 {
 		compatible = "jedec,spi-nor";
@@ -435,18 +435,17 @@
 			uboot@100000 {
 				reg = <0x100000 0x400000>;
 			};
-			reserved-data@600000 {
-				reg = <0x600000 0x1000000>;
+			reserved-data@400000 {
+				reg = <0x400000 0xc00000>;
 			};
 		};
 	};
 };
-*/
-/*
+
 &spi0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi0_pins>;
-	status = "okay";
+	status = "disabled";
 
 	spi_dev0: spi@0 {
 		compatible = "rohm,dh2228fv";
@@ -454,9 +453,9 @@
 		spi-max-frequency = <10000000>;
 	};
 };
-*/
+
 &stfcamss {
-	status = "okay";
+	status = "disabled";
 
 	assigned-clocks = <&ispcrg JH7110_ISPCLK_DOM4_APB_FUNC>;
 	assigned-clock-rates = <49500000>;
@@ -677,7 +676,7 @@
 			slew-rate = <0>;
 		};
 	};
-/*
+
 	pcie0_pins: pcie0-0 {
 		wake-pins {
 			pinmux = <GPIOMUX(32, GPOUT_LOW,
@@ -725,7 +724,7 @@
 			slew-rate = <0>;
 		};
 	};
-*/
+
 	pwm_pins: pwm-0 {
 		pwm-pins {
 			pinmux = <GPIOMUX(46, GPOUT_SYS_PWM_CHANNEL0,

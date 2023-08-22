@@ -27,6 +27,7 @@ static int axp20x_i2c_probe(struct i2c_client *i2c)
 	struct axp20x_dev *axp20x;
 	int ret;
 
+  pr_info("axp20x_i2c_probe\n");
 	axp20x = devm_kzalloc(&i2c->dev, sizeof(*axp20x), GFP_KERNEL);
 	if (!axp20x)
 		return -ENOMEM;
@@ -35,10 +36,12 @@ static int axp20x_i2c_probe(struct i2c_client *i2c)
 	axp20x->irq = i2c->irq;
 	dev_set_drvdata(axp20x->dev, axp20x);
 
+  pr_info("axp20x_match_device\n");
 	ret = axp20x_match_device(axp20x);
 	if (ret)
 		return ret;
 
+  pr_info("devm_regmap_init_i2c\n");
 	axp20x->regmap = devm_regmap_init_i2c(i2c, axp20x->regmap_cfg);
 	if (IS_ERR(axp20x->regmap)) {
 		ret = PTR_ERR(axp20x->regmap);
@@ -46,6 +49,7 @@ static int axp20x_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
+  pr_info("axp20x_device_probe\n");
 	return axp20x_device_probe(axp20x);
 }
 
