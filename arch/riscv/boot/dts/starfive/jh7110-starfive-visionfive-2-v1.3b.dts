@@ -12,7 +12,7 @@
 	compatible = "starfive,visionfive-2-v1.3b", "starfive,jh7110";
 
 	chosen {
-		bootargs = "earlycon console=ttyS0,115200 debug loglevel=8";
+		bootargs = "earlycon console=ttyS0,115200 debug loglevel=5";
 		stdout-path = "serial0:115200n8";
 	};
 
@@ -30,6 +30,7 @@
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&aoncrg JH7110_AONCLK_GMAC0_TX>;
 	assigned-clock-parents = <&aoncrg JH7110_AONCLK_GMAC0_RMII_RTX>;
+  mac-address = [ 46 43 4B 45 46 49 ];
   // Power to the People, Hell Yea (um PHY)!
   phy-supply = <&vcc_3v3>;
 };
@@ -38,6 +39,7 @@
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&syscrg JH7110_SYSCLK_GMAC1_TX>;
 	assigned-clock-parents = <&syscrg JH7110_SYSCLK_GMAC1_RMII_RTX>;
+  mac-address = [ 46 43 4B 53 42 49 ];
   phy-supply = <&vcc_3v3>;
 };
 
