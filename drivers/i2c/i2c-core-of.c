@@ -19,8 +19,6 @@
 
 #include "i2c-core.h"
 
-#define DEBUG 1
-
 int of_i2c_get_board_info(struct device *dev, struct device_node *node,
 			  struct i2c_board_info *info)
 {
@@ -93,8 +91,6 @@ void of_i2c_register_devices(struct i2c_adapter *adap)
 	if (!adap->dev.of_node)
 		return;
 
-	pr_info("of_i2c: walking child nodes\n");
-	dev_info(&adap->dev, "of_i2c: walking child nodes\n");
 	dev_dbg(&adap->dev, "of_i2c: walking child nodes\n");
 
 	bus = of_get_child_by_name(adap->dev.of_node, "i2c-bus");
@@ -151,8 +147,6 @@ const struct of_device_id
 		     struct i2c_client *client)
 {
 	const struct of_device_id *match;
- 
-  pr_info(" i2c_of_match_device 0\n");
 
 	if (!(client && matches))
 		return NULL;

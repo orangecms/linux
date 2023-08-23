@@ -745,15 +745,12 @@ static int __init i2c_dev_init(void)
 {
 	int res;
 
-  // WE GET HERE
 	pr_info("i2c /dev entries driver\n");
 
-  pr_info("[i2c] mkdev\n");
 	res = register_chrdev_region(MKDEV(I2C_MAJOR, 0), I2C_MINORS, "i2c");
 	if (res)
 		goto out;
 
-  pr_info("     class_create\n");
 	i2c_dev_class = class_create("i2c-dev");
 	if (IS_ERR(i2c_dev_class)) {
 		res = PTR_ERR(i2c_dev_class);
@@ -762,16 +759,13 @@ static int __init i2c_dev_init(void)
 	i2c_dev_class->dev_groups = i2c_groups;
 
 	/* Keep track of adapters which will be added or removed later */
-  pr_info("     bus_register_notifier\n");
 	res = bus_register_notifier(&i2c_bus_type, &i2cdev_notifier);
 	if (res)
 		goto out_unreg_class;
 
 	/* Bind to already existing adapters right away */
-  pr_info("     i2c_dev_attach_adapter\n");
 	i2c_for_each_dev(NULL, i2c_dev_attach_adapter);
 
-  pr_info("     done\n");
 	return 0;
 
 out_unreg_class:
