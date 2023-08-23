@@ -126,7 +126,7 @@ static void populate_properties(const void *blob,
 
 		val = fdt_getprop_by_offset(blob, cur, &pname, &sz);
 		if (!val) {
-			pr_warn("Cannot locate property %s at 0x%x (%p)\n", pname, cur, &blob);
+			pr_warn("Cannot locate property at 0x%x\n", cur);
 			continue;
 		}
 

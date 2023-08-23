@@ -27,8 +27,6 @@
 #include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 
-#define DEBUG 1
-
 #define AXP20X_OFF	BIT(7)
 
 #define AXP806_REG_ADDR_EXT_ADDR_MASTER_MODE	0
@@ -1301,16 +1299,13 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 					  "x-powers,self-working-mode"))
 			regmap_write(axp20x->regmap, AXP806_REG_ADDR_EXT,
 				     AXP806_REG_ADDR_EXT_ADDR_MASTER_MODE);
-		else {
-      pr_info("  axp20x_device_probe  regmap_write\n");
+		else
 			regmap_write(axp20x->regmap, AXP806_REG_ADDR_EXT,
 				     AXP806_REG_ADDR_EXT_ADDR_SLAVE_MODE);
-	  }
-  }
+	}
 
 	/* Only if there is an interrupt line connected towards the CPU. */
 	if (axp20x->irq > 0) {
-    pr_info("  axp20x_device_probe  regmap_add_irq_chip\n");
 		ret = regmap_add_irq_chip(axp20x->regmap, axp20x->irq,
 				IRQF_ONESHOT | IRQF_SHARED | axp20x->irq_flags,
 				-1, axp20x->regmap_irq_chip,
@@ -1322,7 +1317,6 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 		}
 	}
 
-  pr_info("  axp20x_device_probe  mfd_add_devices\n");
 	ret = mfd_add_devices(axp20x->dev, -1, axp20x->cells,
 			      axp20x->nr_cells, NULL, 0, NULL);
 
@@ -1332,13 +1326,11 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 		return ret;
 	}
 
-	if (axp20x->variant != AXP288_ID) {
-    pr_info("  axp20x_device_probe  devm_register_sys_off_handler\n");
+	if (axp20x->variant != AXP288_ID)
 		devm_register_sys_off_handler(axp20x->dev,
 					      SYS_OFF_MODE_POWER_OFF,
 					      SYS_OFF_PRIO_DEFAULT,
 					      axp20x_power_off, axp20x);
-  }
 
 	dev_info(axp20x->dev, "AXP20X driver loaded\n");
 
