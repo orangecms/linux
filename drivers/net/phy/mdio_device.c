@@ -6,8 +6,6 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#define DEBUG 1
-
 #include <linux/delay.h>
 #include <linux/errno.h>
 #include <linux/gpio.h>
@@ -67,9 +65,7 @@ struct mdio_device *mdio_device_create(struct mii_bus *bus, int addr)
 
 	dev_set_name(&mdiodev->dev, PHY_ID_FMT, bus->id, addr);
 
-  pr_info("   mdio_device_create     device_initialize\n");
 	device_initialize(&mdiodev->dev);
-  pr_info("   mdio_device_create     device_initialize OK\n");
 
 	return mdiodev;
 }
@@ -83,7 +79,6 @@ int mdio_device_register(struct mdio_device *mdiodev)
 {
 	int err;
 
-  pr_info("    mdio_device_register  .......\n");
 	dev_dbg(&mdiodev->dev, "%s\n", __func__);
 
 	err = mdiobus_register_device(mdiodev);

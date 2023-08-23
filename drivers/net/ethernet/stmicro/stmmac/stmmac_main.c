@@ -7149,7 +7149,6 @@ int stmmac_dvr_probe(struct device *device,
 	u32 rxq;
 	int i, ret = 0;
 
-  printk("STM MAC probe     alloc\n");
 	ndev = devm_alloc_etherdev_mqs(device, sizeof(struct stmmac_priv),
 				       MTL_MAX_TX_QUEUES, MTL_MAX_RX_QUEUES);
 	if (!ndev)
@@ -7161,7 +7160,6 @@ int stmmac_dvr_probe(struct device *device,
 	priv->device = device;
 	priv->dev = ndev;
 
-  printk("STM MAC probe     ops\n");
 	stmmac_set_ethtool_ops(ndev);
 	priv->pause = pause;
 	priv->plat = plat_dat;
@@ -7182,11 +7180,9 @@ int stmmac_dvr_probe(struct device *device,
 	if (!is_zero_ether_addr(res->mac))
 		eth_hw_addr_set(priv->dev, res->mac);
 
-  printk("STM MAC probe     dev_set_drvdata\n");
 	dev_set_drvdata(device, priv->dev);
 
 	/* Verify driver arguments */
-  printk("STM MAC probe     verify driver args\n");
 	stmmac_verify_args();
 
 	priv->af_xdp_zc_qps = bitmap_zalloc(MTL_MAX_TX_QUEUES, GFP_KERNEL);
@@ -7194,7 +7190,6 @@ int stmmac_dvr_probe(struct device *device,
 		return -ENOMEM;
 
 	/* Allocate workqueue */
-  printk("STM MAC probe     alloc work queue\n");
 	priv->wq = create_singlethread_workqueue("stmmac_wq");
 	if (!priv->wq) {
 		dev_err(priv->device, "failed to create workqueue\n");
@@ -7202,11 +7197,9 @@ int stmmac_dvr_probe(struct device *device,
 		goto error_wq_init;
 	}
 
-  printk("STM MAC probe     init work\n");
 	INIT_WORK(&priv->service_task, stmmac_service_task);
 
 	/* Initialize Link Partner FPE workqueue */
-  printk("STM MAC probe     init work\n");
 	INIT_WORK(&priv->fpe_task, stmmac_fpe_lp_task);
 
 	/* Override with kernel parameters if supplied XXX CRS XXX
@@ -7225,14 +7218,12 @@ int stmmac_dvr_probe(struct device *device,
 			reset_control_reset(priv->plat->stmmac_rst);
 	}
 
-  printk("STM MAC probe     deassert\n");
 	ret = reset_control_deassert(priv->plat->stmmac_ahb_rst);
 	if (ret == -ENOTSUPP)
 		dev_err(priv->device, "unable to bring out of ahb reset: %pe\n",
 			ERR_PTR(ret));
 
 	/* Init MAC and get the capabilities */
-  printk("STM MAC probe     HW init\n");
 	ret = stmmac_hw_init(priv);
 	if (ret)
 		goto error_hw_init;
@@ -7242,7 +7233,6 @@ int stmmac_dvr_probe(struct device *device,
 	if (priv->synopsys_id < DWMAC_CORE_5_20)
 		priv->plat->dma_cfg->dche = false;
 
-  printk("STM MAC probe     check address\n");
 	stmmac_check_ether_addr(priv);
 
 	ndev->netdev_ops = &stmmac_netdev_ops;
@@ -7254,7 +7244,6 @@ int stmmac_dvr_probe(struct device *device,
 	ndev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
 			     NETDEV_XDP_ACT_XSK_ZEROCOPY;
 
-  printk("STM MAC probe     tc init\n");
 	ret = stmmac_tc_init(priv, priv);
 	if (!ret) {
 		ndev->hw_features |= NETIF_F_HW_TC;
@@ -7324,12 +7313,10 @@ int stmmac_dvr_probe(struct device *device,
 			ndev->features |= NETIF_F_HW_VLAN_STAG_TX;
 	}
 #endif
-  printk("STM MAC probe     netif msg init\n");
 	priv->msg_enable = netif_msg_init(debug, default_msg_level);
 
 	/* Initialize RSS */
 	rxq = priv->plat->rx_queues_to_use;
-  printk("STM MAC probe     RSS init\n");
 	netdev_rss_key_fill(priv->rss.key, sizeof(priv->rss.key));
 	for (i = 0; i < ARRAY_SIZE(priv->rss.table); i++)
 		priv->rss.table[i] = ethtool_rxfh_indir_default(i, rxq);
@@ -7366,10 +7353,8 @@ int stmmac_dvr_probe(struct device *device,
 	ndev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
 
 	/* Setup channels NAPI */
-  printk("STM MAC probe     set up NAPI channels\n");
 	stmmac_napi_add(ndev);
 
-  printk("STM MAC probe     mutex init\n");
 	mutex_init(&priv->lock);
 
 	/* If a specific clk_csr value is passed from the platform
@@ -7383,24 +7368,17 @@ int stmmac_dvr_probe(struct device *device,
 	else
 		stmmac_clk_csr_set(priv);
 
-  printk("STM MAC probe     check PCS mode\n");
 	stmmac_check_pcs_mode(priv);
 
-  printk("STM MAC probe     PM runtime\n");
 	pm_runtime_get_noresume(device);
 	pm_runtime_set_active(device);
 	if (!pm_runtime_enabled(device))
 		pm_runtime_enable(device);
 
-  printk("STM MAC probe     PM runtime done\n");
 	if (priv->hw->pcs != STMMAC_PCS_TBI &&
 	    priv->hw->pcs != STMMAC_PCS_RTBI) {
 		/* MDIO bus Registration */
-    printk("STM MAC probe     MDIO bus setup\n");
-    // WE REACH HERE
 		ret = stmmac_mdio_register(ndev);
-    // WE DO NOT GET HERE
-    printk("STM MAC probe     MDIO bus registration tried\n");
 		if (ret < 0) {
 			dev_err_probe(priv->device, ret,
 				      "%s: MDIO bus (id: %d) registration failed\n",
@@ -7409,25 +7387,21 @@ int stmmac_dvr_probe(struct device *device,
 		}
 	}
 
-  printk("STM MAC probe     speed mode\n");
 	if (priv->plat->speed_mode_2500)
 		priv->plat->speed_mode_2500(ndev, priv->plat->bsp_priv);
 
-  printk("STM MAC probe     MDIO/XPCS\n");
 	if (priv->plat->mdio_bus_data && priv->plat->mdio_bus_data->has_xpcs) {
 		ret = stmmac_xpcs_setup(priv->mii);
 		if (ret)
 			goto error_xpcs_setup;
 	}
 
-  printk("STM MAC probe     PHY setup\n");
 	ret = stmmac_phy_setup(priv);
 	if (ret) {
 		netdev_err(ndev, "failed to setup phy (%d)\n", ret);
 		goto error_phy_setup;
 	}
 
-  printk("STM MAC probe     register net device\n");
 	ret = register_netdev(ndev);
 	if (ret) {
 		dev_err(priv->device, "%s: ERROR %i registering the device\n",
@@ -7445,13 +7419,11 @@ int stmmac_dvr_probe(struct device *device,
 	/* Let pm_runtime_put() disable the clocks.
 	 * If CONFIG_PM is not enabled, the clocks will stay powered.
 	 */
-  printk("STM MAC probe     disable clocks\n");
 	pm_runtime_put(device);
 
 	return ret;
 
 error_netdev_register:
-  printk("STM MAC probe     error registering net device\n");
 	phylink_destroy(priv->phylink);
 error_xpcs_setup:
 error_phy_setup:
@@ -7459,14 +7431,12 @@ error_phy_setup:
 	    priv->hw->pcs != STMMAC_PCS_RTBI)
 		stmmac_mdio_unregister(ndev);
 error_mdio_register:
-  printk("STM MAC probe     MDIO bus registration failed\n");
 	stmmac_napi_del(ndev);
 error_hw_init:
 	destroy_workqueue(priv->wq);
 error_wq_init:
 	bitmap_free(priv->af_xdp_zc_qps);
 
-  printk("STM MAC probe     error :(\n");
 	return ret;
 }
 EXPORT_SYMBOL_GPL(stmmac_dvr_probe);
