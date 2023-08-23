@@ -7,6 +7,7 @@
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#define DEBUG 1
 
 #include <linux/delay.h>
 #include <linux/device.h>
@@ -72,8 +73,11 @@ int mdiobus_register_device(struct mdio_device *mdiodev)
 {
 	int err;
 
-	if (mdiodev->bus->mdio_map[mdiodev->addr])
+  // WE GET HERE!!!!!!!
+	if (mdiodev->bus->mdio_map[mdiodev->addr]) {
+    pr_info("## MDIO bus is very busy, please come back another time!\n");
 		return -EBUSY;
+  }
 
 	if (mdiodev->flags & MDIO_DEVICE_FLAG_PHY) {
 		err = mdiobus_register_gpiod(mdiodev);

@@ -55,7 +55,8 @@ static int of_mdiobus_register_device(struct mii_bus *mdio,
 	struct mdio_device *mdiodev;
 	int rc;
 
-  printk(" MDIO bus register dev   crate\n");
+  printk(" MDIO bus register dev   create\n");
+  // WE GET HERE
 	mdiodev = mdio_device_create(mdio, addr);
 	if (IS_ERR(mdiodev))
 		return PTR_ERR(mdiodev);
@@ -63,10 +64,12 @@ static int of_mdiobus_register_device(struct mii_bus *mdio,
 	/* Associate the OF node with the device structure so it
 	 * can be looked up later.
 	 */
+  pr_info(" MDIO bus register dev   fwnode_handle_get\n");
 	fwnode_handle_get(fwnode);
 	device_set_node(&mdiodev->dev, fwnode);
 
 	/* All data is now stored in the mdiodev struct; register it. */
+  pr_info(" MDIO bus register dev   mdio_device_register\n");
 	rc = mdio_device_register(mdiodev);
 	if (rc) {
 		device_set_node(&mdiodev->dev, NULL);
@@ -197,9 +200,10 @@ int __of_mdiobus_register(struct mii_bus *mdio, struct device_node *np,
 		if (of_mdiobus_child_is_phy(child)) {
       printk("OF MDIO BUS    is PHY\n");
 			rc = of_mdiobus_register_phy(mdio, child, addr);
-    } else
+    } else {
       printk("OF MDIO BUS    is device\n");
 			rc = of_mdiobus_register_device(mdio, child, addr);
+    }
 
 		if (rc == -ENODEV)
 			dev_err(&mdio->dev,
