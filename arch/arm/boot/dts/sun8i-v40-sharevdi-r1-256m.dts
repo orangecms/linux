@@ -117,17 +117,19 @@
 };
 
 &ehci1 {
+  // FIXME: This is from BananaPi Berry
 	/* Terminus Tech FE 1.1s 4-port USB 2.0 hub here */
 	status = "okay";
 };
 
 &gmac {
-	pinctrl-names = "default";
-	pinctrl-0 = <&gmac_mii_pins>;
-	phy-handle = <&phy1>;
-	phy-mode = "mii";
-	phy-supply = <&reg_dc1sw>;
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&gmac_rgmii_pins>;
+	phy-handle = <&phy1>;
+	phy-mode = "rgmii";
+	phy-supply = <&reg_dldo1>;
+  mac-address = [ 46 43 4B 45 46 49 ];
 };
 
 &gmac_mdio {
@@ -136,9 +138,6 @@
 	phy1: ethernet-phy@1 {
 		compatible = "ethernet-phy-ieee802.3-c22";
 		reg = <1>;
-    // reset-gpios = <&pio 0 17 GPIO_ACTIVE_LOW>; /* PA21 */
-    // reset-assert-us = <10000>;
-    // reset-deassert-us = <1000000>;
 	};
 };
 
@@ -189,7 +188,7 @@
 	regulator-name = "avcc";
 };
 
-&reg_dc1sw {
+&reg_dldo1 {
 	regulator-min-microvolt = <3300000>;
 	regulator-max-microvolt = <3300000>;
 	regulator-name = "vcc-gmac-phy";
