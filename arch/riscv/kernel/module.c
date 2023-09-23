@@ -50,7 +50,9 @@ static int apply_r_riscv_32_rela(struct module *me, u32 *location, Elf_Addr v)
 
 static int apply_r_riscv_64_rela(struct module *me, u32 *location, Elf_Addr v)
 {
-	*(u64 *)location = v;
+	// *(u64 *)location = v;
+	put32(location, (u32)((u64)v) & 0xffffffff);
+	put32(location+1, (u32)(((u64)v) >> 32));
 	return 0;
 }
 
@@ -302,7 +304,12 @@ static int apply_r_riscv_add32_rela(struct module *me, u32 *location,
 static int apply_r_riscv_add64_rela(struct module *me, u32 *location,
 				    Elf_Addr v)
 {
-	*(u64 *)location += (u64)v;
+	// *(u64 *)location += (u64)v;
+  u64 val;
+  val = (u64) get32(location) | ((u64) (get32(location + 1)) << 32);
+  val += (u64)v;
+	put32(location, (u32)(val & 0xffffffff));
+	put32(location+1, (u32)(val >> 32));
 	return 0;
 }
 
@@ -323,7 +330,12 @@ static int apply_r_riscv_sub32_rela(struct module *me, u32 *location,
 static int apply_r_riscv_sub64_rela(struct module *me, u32 *location,
 				    Elf_Addr v)
 {
-	*(u64 *)location -= (u64)v;
+	// *(u64 *)location -= (u64)v;
+  u64 val;
+  val = (u64) get32(location) | ((u64) (get32(location + 1)) << 32);
+  val -= (u64)v;
+	put32(location, (u32)(val & 0xffffffff));
+	put32(location+1, (u32)(val >> 32));
 	return 0;
 }
 

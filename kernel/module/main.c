@@ -253,7 +253,11 @@ static const char *kernel_symbol_name(const struct kernel_symbol *sym)
 #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 	return offset_to_ptr(&sym->name_offset);
 #else
-	return sym->name;
+  u32 v;
+  pr_info("   kernel_symbol_name %p\n", sym);
+  memmove(&v, (u32*)sym, 4);
+  pr_info("   kernel_symbol_name fixup %p\n", v);
+	return ((const struct kernel_symbol*)v)->name;
 #endif
 }
 
@@ -311,6 +315,7 @@ bool find_symbol(struct find_symbol_arg *fsa)
 	struct module *mod;
 	unsigned int i;
 
+  pr_info("    find_symbol  module_assert_mutex_or_preempt\n");
 	module_assert_mutex_or_preempt();
 
 	for (i = 0; i < ARRAY_SIZE(arr); i++)
@@ -1322,12 +1327,16 @@ static int verify_exported_symbols(struct module *mod)
 		{ mod->gpl_syms, mod->num_gpl_syms },
 	};
 
+  pr_info("  verify_exported_symbols loop\n");
+  // WE GET HERE
 	for (i = 0; i < ARRAY_SIZE(arr); i++) {
 		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
 			struct find_symbol_arg fsa = {
 				.name	= kernel_symbol_name(s),
 				.gplok	= true,
 			};
+      // WE DO NOT GET HERE
+      pr_info("  verify_exported_symbols find_symbol\n");
 			if (find_symbol(&fsa)) {
 				pr_err("%s: exports duplicate symbol %s"
 				       " (owned by %s)\n",
@@ -2715,18 +2724,25 @@ static int complete_formation(struct module *mod, struct load_info *info)
 	int err;
 
 	mutex_lock(&module_mutex);
+  // WE GET HERE
 
 	/* Find duplicate symbols (must be called under lock). */
+  pr_info("verify_exported_symbols\n");
 	err = verify_exported_symbols(mod);
 	if (err < 0)
 		goto out;
 
 	/* These rely on module_mutex for list integrity. */
+  pr_info("module_bug_finalize\n");
 	module_bug_finalize(info->hdr, info->sechdrs, mod);
+  pr_info("module_cfi_finalize\n");
 	module_cfi_finalize(info->hdr, info->sechdrs, mod);
 
+  pr_info("module_enable_ro\n");
 	module_enable_ro(mod, false);
+  pr_info("module_enable_nx\n");
 	module_enable_nx(mod);
+  pr_info("module_enable_x\n");
 	module_enable_x(mod);
 
 	/*
@@ -2925,23 +2941,31 @@ static int load_module(struct load_info *info, const char __user *uargs,
 		goto free_arch_cleanup;
 	}
 
+  // WE GET HERE
+  pr_info("init_build_id\n");
 	init_build_id(mod, info);
 
 	/* Ftrace init must be called in the MODULE_STATE_UNFORMED state */
+  pr_info("ftrace_module_init\n");
 	ftrace_module_init(mod);
 
 	/* Finally it's fully formed, ready to start executing. */
+  pr_info("complete_formation\n");
 	err = complete_formation(mod, info);
 	if (err)
 		goto ddebug_cleanup;
 
+  // WE DO NOT GET HERE
+  pr_info("prepare_coming_module\n");
 	err = prepare_coming_module(mod);
 	if (err)
 		goto bug_cleanup;
 
+  pr_info("async_probe_requested\n");
 	mod->async_probe_requested = async_probe;
 
 	/* Module is ready to execute: parsing args may do that. */
+  pr_info("parse_args\n");
 	after_dashes = parse_args(mod->name, mod->args, mod->kp, mod->num_kp,
 				  -32768, 32767, mod,
 				  unknown_module_param_cb);
