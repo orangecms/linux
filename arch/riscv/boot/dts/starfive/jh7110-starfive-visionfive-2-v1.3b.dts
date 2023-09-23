@@ -12,7 +12,7 @@
 	compatible = "starfive,visionfive-2-v1.3b", "starfive,jh7110";
 
 	chosen {
-		bootargs = "earlycon console=ttyS0,115200 debug loglevel=5";
+		bootargs = "earlycon console=ttyS0,115200 debug loglevel=7";
 		stdout-path = "serial0:115200n8";
 	};
 
