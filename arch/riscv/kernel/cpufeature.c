@@ -650,7 +650,9 @@ out:
 
 static int __init check_unaligned_access_boot_cpu(void)
 {
+#ifdef CONFIG_RISCV_PROBE_UNALIGNED
 	check_unaligned_access(0);
+#endif
 	unaligned_emulation_finish();
 	return 0;
 }
