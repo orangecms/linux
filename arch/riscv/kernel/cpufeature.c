@@ -647,7 +647,9 @@ out:
 
 static int check_unaligned_access_boot_cpu(void)
 {
+#ifdef CONFIG_RISCV_PROBE_UNALIGNED
 	check_unaligned_access(0);
+#endif
 	return 0;
 }
 

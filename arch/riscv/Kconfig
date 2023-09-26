@@ -573,6 +573,13 @@ config RISCV_ISA_ZICBOZ
 
 	   If you don't know what to do here, say Y.
 
+config RISCV_PROBE_UNALIGNED
+	bool "Probe for slow unaligned access (e.g., emulated)"
+	default n
+	help
+      Run a check on the boot hart to figure out whether misaligned access
+      is slow. This is the case on SiFive cores with SBI handling it.
+
 config TOOLCHAIN_HAS_ZIHINTPAUSE
 	bool
 	default y
