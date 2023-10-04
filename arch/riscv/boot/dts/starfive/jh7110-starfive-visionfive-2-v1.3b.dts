@@ -83,3 +83,11 @@
 &qspi {
 	status = "disabled";
 };
+
+&mmc0 {
+	status = "disabled";
+};
+
+&mmc1 {
+	status = "disabled";
+};
