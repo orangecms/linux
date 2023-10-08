@@ -197,6 +197,14 @@
 				regulator-max-microvolt = <1800000>;
 				regulator-name = "emmc_vdd";
 			};
+
+			phyio_vcc: bldo2 {
+				regulator-boot-on;
+				regulator-always-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "phyio_vcc";
+			};
 		};
 	};
 };
@@ -237,6 +245,8 @@
 	post-power-on-delay-ms = <200>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc1_pins>;
+	vmmc-supply = <&phyio_vcc>;
+	vqmmc-supply = <&vcc_phy>;
 	status = "okay";
 };
 
