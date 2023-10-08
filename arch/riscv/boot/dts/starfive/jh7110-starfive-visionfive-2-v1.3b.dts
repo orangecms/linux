@@ -32,8 +32,9 @@
 	assigned-clock-parents = <&aoncrg JH7110_AONCLK_GMAC0_RMII_RTX>;
 	mac-address = [ 46 43 4B 45 46 49 ];
 	// Power to the People, Hell Yea (um PHY)!
-	phy-supply = <&vcc_3v3>;
-	status = "disabled";
+	// phy-supply = <&vcc_3v3>;
+	phy-supply = <&vcc_phy>;
+	// status = "disabled";
 };
 
 &gmac1 {
@@ -41,8 +42,9 @@
 	assigned-clocks = <&syscrg JH7110_SYSCLK_GMAC1_TX>;
 	assigned-clock-parents = <&syscrg JH7110_SYSCLK_GMAC1_RMII_RTX>;
 	mac-address = [ 46 43 4B 53 42 49 ];
-	phy-supply = <&vcc_3v3>;
-	status = "disabled";
+	// phy-supply = <&vcc_3v3>;
+	phy-supply = <&phyio_vcc>;
+	// status = "disabled";
 };
 
 &phy0 {
