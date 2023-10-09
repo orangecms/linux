@@ -63,7 +63,6 @@ int fwnode_mdiobus_phy_device_register(struct mii_bus *mdio,
 {
 	int rc;
 
-  printk("   FWNODE MDIO PHY dev register   get IRQ\n");
 	rc = fwnode_irq_get(child, 0);
 	/* Don't wait forever if the IRQ provider doesn't become available,
 	 * just fall back to poll mode
@@ -83,7 +82,6 @@ int fwnode_mdiobus_phy_device_register(struct mii_bus *mdio,
 	if (fwnode_property_read_bool(child, "broken-turn-around"))
 		mdio->phy_ignore_ta_mask |= 1 << addr;
 
-  printk("   FWNODE MDIO PHY dev register   get resets\n");
 	fwnode_property_read_u32(child, "reset-assert-us",
 				 &phy->mdio.reset_assert_delay);
 	fwnode_property_read_u32(child, "reset-deassert-us",
@@ -93,7 +91,6 @@ int fwnode_mdiobus_phy_device_register(struct mii_bus *mdio,
 	 * can be looked up later
 	 */
 	fwnode_handle_get(child);
-  printk("   FWNODE MDIO PHY dev register   set node\n");
 	device_set_node(&phy->mdio.dev, child);
 
 	/* All data is now stored in the phy struct;
@@ -122,33 +119,26 @@ int fwnode_mdiobus_register_phy(struct mii_bus *bus,
 	u32 phy_id;
 	int rc;
 
-  printk("  FWNODE MDIO       PSE\n");
 	psec = fwnode_find_pse_control(child);
 	if (IS_ERR(psec))
 		return PTR_ERR(psec);
 
-  printk("  FWNODE MDIO       MII ts\n");
 	mii_ts = fwnode_find_mii_timestamper(child);
 	if (IS_ERR(mii_ts)) {
 		rc = PTR_ERR(mii_ts);
 		goto clean_pse;
 	}
 
-  printk("  FWNODE MDIO       is C45?\n");
 	is_c45 = fwnode_device_is_compatible(child, "ethernet-phy-ieee802.3-c45");
-	if (is_c45 || fwnode_get_phy_id(child, &phy_id)) {
-    printk("  FWNODE MDIO       is C45...\n");
+	if (is_c45 || fwnode_get_phy_id(child, &phy_id))
 		phy = get_phy_device(bus, addr, is_c45);
-	} else {
-    printk("  FWNODE MDIO       dev create...\n");
+	else
 		phy = phy_device_create(bus, addr, phy_id, 0, NULL);
-  }
-  if (IS_ERR(phy)) {
+	if (IS_ERR(phy)) {
 		rc = PTR_ERR(phy);
 		goto clean_mii_ts;
 	}
 
-  printk("  FWNODE MDIO       is ACPI?\n");
 	if (is_acpi_node(child)) {
 		phy->irq = bus->irq[addr];
 
@@ -165,7 +155,6 @@ int fwnode_mdiobus_register_phy(struct mii_bus *bus,
 			goto clean_phy;
 		}
 	} else if (is_of_node(child)) {
-    printk("  FWNODE MDIO       PHY dev register\n");
 		rc = fwnode_mdiobus_phy_device_register(bus, phy, child, addr);
 		if (rc)
 			goto clean_phy;
