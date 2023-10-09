@@ -607,10 +607,8 @@ int stmmac_mdio_register(struct net_device *ndev)
 
 	/* If fixed-link is set, skip PHY scanning */
 	fwnode = priv->plat->port_node;
-	if (!fwnode) {
-    printk("STM MAC MDIO     no FW node\n");
+	if (!fwnode)
 		fwnode = dev_fwnode(priv->device);
-  }
 
   printk("STM MAC MDIO     recheck FW node\n");
 	if (fwnode) {

@@ -640,7 +640,6 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, u32 phy_id,
 	int ret = 0;
 
 	/* We allocate the device, and initialize the default values */
-  printk("     PHY DEVICE CREATE      kzalloc\n");
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev)
 		return ERR_PTR(-ENOMEM);
@@ -792,7 +791,6 @@ static int get_phy_c45_ids(struct mii_bus *bus, int addr,
 	/* Find first non-zero Devices In package. Device zero is reserved
 	 * for 802.3 c45 complied PHYs, so don't probe it at first.
 	 */
-  printk("     GET PHY C45 IDs      for\n");
 	for (i = 1; i < MDIO_MMD_NUM && (devs_in_pkg == 0 ||
 	     (devs_in_pkg & 0x1fffffff) == 0x1fffffff); i++) {
 		if (i == MDIO_MMD_VEND1 || i == MDIO_MMD_VEND2) {
@@ -813,14 +811,12 @@ static int get_phy_c45_ids(struct mii_bus *bus, int addr,
 		if (phy_reg < 0)
 			return -EIO;
 	}
-  printk("     GET PHY C45 IDs      for done\n");
 
 	if ((devs_in_pkg & 0x1fffffff) == 0x1fffffff) {
 		/* If mostly Fs, there is no device there, then let's probe
 		 * MMD 0, as some 10G PHYs have zero Devices In package,
 		 * e.g. Cortina CS4315/CS4340 PHY.
 		 */
-    printk("     GET PHY C45 IDs      devs in pkg\n");
 		phy_reg = get_phy_c45_devs_in_pkg(bus, addr, 0, &devs_in_pkg);
 		if (phy_reg < 0)
 			return -EIO;
@@ -840,7 +836,6 @@ static int get_phy_c45_ids(struct mii_bus *bus, int addr,
 			 * to ignore these if they do not contain IEEE 802.3
 			 * registers.
 			 */
-      printk("     GET PHY C45 IDs      probe present\n");
 			ret = phy_c45_probe_present(bus, addr, i);
 			if (ret < 0)
 				return ret;
@@ -849,13 +844,11 @@ static int get_phy_c45_ids(struct mii_bus *bus, int addr,
 				continue;
 		}
 
-    printk("     GET PHY C45 IDs      read PHY SID 1\n");
 		phy_reg = mdiobus_c45_read(bus, addr, i, MII_PHYSID1);
 		if (phy_reg < 0)
 			return -EIO;
 		c45_ids->device_ids[i] = phy_reg << 16;
 
-    printk("     GET PHY C45 IDs      read PHY SID 2\n");
 		phy_reg = mdiobus_c45_read(bus, addr, i, MII_PHYSID2);
 		if (phy_reg < 0)
 			return -EIO;
@@ -885,7 +878,6 @@ static int get_phy_c22_id(struct mii_bus *bus, int addr, u32 *phy_id)
 	int phy_reg;
 
 	/* Grab the bits from PHYIR1, and put them in the upper half */
-  printk("      GET PHY C22 ID      read PHY SID 1\n");
 	phy_reg = mdiobus_read(bus, addr, MII_PHYSID1);
 	if (phy_reg < 0) {
 		/* returning -ENODEV doesn't stop bus scanning */
@@ -895,7 +887,6 @@ static int get_phy_c22_id(struct mii_bus *bus, int addr, u32 *phy_id)
 	*phy_id = phy_reg << 16;
 
 	/* Grab the bits from PHYIR2, and put them in the lower half */
-  printk("      GET PHY C22 ID      read PHY SID 2\n");
 	phy_reg = mdiobus_read(bus, addr, MII_PHYSID2);
 	if (phy_reg < 0) {
 		/* returning -ENODEV doesn't stop bus scanning */
@@ -959,16 +950,12 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr, bool is_c45)
 
 	c45_ids.devices_in_package = 0;
 	c45_ids.mmds_present = 0;
-  printk("     PHY DEVICE GET       memset\n");
 	memset(c45_ids.device_ids, 0xff, sizeof(c45_ids.device_ids));
 
-	if (is_c45) {
-    printk("     PHY DEVICE GET       get C45 IDs\n");
+	if (is_c45)
 		r = get_phy_c45_ids(bus, addr, &c45_ids);
-  } else {
-    printk("     PHY DEVICE GET       get C22 ID\n");
+	else
 		r = get_phy_c22_id(bus, addr, &phy_id);
-  }
 
 	if (r)
 		return ERR_PTR(r);
@@ -985,7 +972,6 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr, bool is_c45)
 						 true, &c45_ids);
 	}
 
-  printk("     PHY DEVICE GET       return dev create\n");
 	return phy_device_create(bus, addr, phy_id, is_c45, &c45_ids);
 }
 EXPORT_SYMBOL(get_phy_device);
