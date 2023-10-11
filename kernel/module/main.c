@@ -253,11 +253,7 @@ static const char *kernel_symbol_name(const struct kernel_symbol *sym)
 #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 	return offset_to_ptr(&sym->name_offset);
 #else
-  u32 v;
-  pr_info("   kernel_symbol_name %p\n", sym);
-  memmove(&v, (u32*)sym, 4);
-  pr_info("   kernel_symbol_name fixup %p\n", v);
-	return ((const struct kernel_symbol*)v)->name;
+	return sym->name;
 #endif
 }
 
@@ -1339,6 +1335,7 @@ static int verify_exported_symbols(struct module *mod)
   // WE GET HERE
 	for (i = 0; i < ARRAY_SIZE(arr); i++) {
 		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
+      pr_info("   kernel_symbol_name %p\n", s);
 			struct find_symbol_arg fsa = {
 				.name	= kernel_symbol_name(s),
 				.gplok	= true,
