@@ -15,6 +15,10 @@
 		ethernet1 = &rtl8723ds;
 	};
 
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
   /*
 	hdmi_connector: connector {
 		compatible = "hdmi-connector";
@@ -58,11 +62,12 @@
 };
 
 &usbphy {
+	usb0_id_det-gpios = <&pio 3 21 GPIO_ACTIVE_LOW>; /* PD21 */
 	usb1_vbus-supply = <&reg_vcc>;
 };
 
 &spi0 {
-  pinctrl-0 = <&spi0_tft_pins>;
+  pinctrl-0 = <&spi0_pins>;
   pinctrl-names = "default";
   status = "okay";
   num-cs = <1>;
@@ -71,20 +76,20 @@
     compatible = "sitronix,st7789v";
     buswidth = <0x8>;
     reg = <0>;
-    reset-gpios = <&pio 2 6 GPIO_ACTIVE_LOW>; /* PC6 */
-    dc-gpios = <&pio 2 5 GPIO_ACTIVE_HIGH>; /* PC5 */
-    led-gpios = <&pio 3 18 GPIO_ACTIVE_HIGH>; /* PD18 */
+    reset-gpios = <&pio 2 6 GPIO_ACTIVE_LOW>; // PC6
+    dc-gpios = <&pio 2 5 GPIO_ACTIVE_HIGH>; // PC5
+    led-gpios = <&pio 3 18 GPIO_ACTIVE_HIGH>; // PD18
     spi-max-frequency = <32000000>;
     // FIXME: should have offsets; the screen really is 80x160
     width = <110>;
-    height = <160>;
+    height = <162>;
     bgr = <1>;
-    txbuflen = <16384>;
+    txbuflen = <32768>;
     spi-cpol;
     spi-cpha;
     rotate = <90>;
     fps = <25>;
-    debug = <0>;
     status = "okay";
+    debug = <1>;
   };
 };
