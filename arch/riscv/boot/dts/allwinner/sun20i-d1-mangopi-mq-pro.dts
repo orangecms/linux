@@ -131,6 +131,14 @@
 	};
 };
 
+&ohci0 {
+  status = "disabled";
+};
+
+&ehci0 {
+  status = "disabled";
+};
+
 &usb_otg {
 	dr_mode = "peripheral";
 	status = "okay";
