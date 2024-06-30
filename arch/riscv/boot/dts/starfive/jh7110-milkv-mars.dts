@@ -9,12 +9,18 @@
 / {
 	model = "Milk-V Mars";
 	compatible = "milkv,mars", "starfive,jh7110";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "earlycon console=ttyS0,115200 loglevel=7 iomem=relaxed";
+	};
 };
 
 &gmac0 {
 	starfive,tx-use-rgmii-clk;
 	assigned-clocks = <&aoncrg JH7110_AONCLK_GMAC0_TX>;
 	assigned-clock-parents = <&aoncrg JH7110_AONCLK_GMAC0_RMII_RTX>;
+	mac-address = [ 46 43 4B 45 46 49 ];
 };
 
 
@@ -27,4 +33,10 @@
 	motorcomm,rx-data-drv-microamp = <2910>;
 	rx-internal-delay-ps = <1500>;
 	tx-internal-delay-ps = <1500>;
+};
+
+&usb0 {
+	status = "okay";
+	// dr_mode = "otg";
+	dr_mode = "peripheral";
 };
