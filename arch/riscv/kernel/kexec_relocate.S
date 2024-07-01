@@ -55,6 +55,7 @@ SYM_CODE_START(riscv_kexec_relocate)
 
 	/* Process entries in a loop */
 .align 2
+// This is the new STVEC - via s6
 1:
 	REG_L	t0, 0(s0)		/* t0 = *image->entry */
 	addi	s0, s0, RISCV_SZPTR	/* image->entry++ */
@@ -70,7 +71,55 @@ SYM_CODE_START(riscv_kexec_relocate)
 	andi	t1, t0, 0x2
 	beqz	t1, 2f
 	andi	s0, t0, ~0x2
+
+	/* dump current machine state */
+	/*
+	li	a7, 0x0A023B00
+	li	a6, 0x53544154 // STAT
+	ecall
+	*/
+
+	/* dump new STVEC */
+	/* include the previus 32 bytes for orientation */
+	/*
+	mv	a0, s6
+	addi	a0, s6, -0x20
+	li	a1, 0x100
+	li	a7, 0x0A023B00
+	li	a6, 0x44554D50 // DUMP
+	ecall
+	*/
+
+	/* dump SATP */
+	/*
+	csrr	a0, CSR_SATP
+	li	a7, 0x0A023B00
+	li	a6, 0x44484558 // DHEX (dump hex)
+	ecall
+	*/
+
+	/* dump root page table */
+	/*
+	csrr	a0, CSR_SATP
+	slli	a0, a0, 20
+	srli	a0, a0, 8
+	li	a1, 0x1000
+	li	a7, 0x0A023B00
+	li	a6, 0x44554D50 // DUMP
+	ecall
+	*/
+
+	/*
+	 * Turn off the MMU by clearing the SATP CSR
+	 * (supervisor address translation and protection)
+	 */
 	csrw	CSR_SATP, zero
+
+	/*
+	 * With the MMU off, we hit an instruction load fault here.
+	 * So execution continues at STVEC, which is also stored in s6.
+	 * `jr` is "jump register" - jump to address in s6 (STVEC).
+	 */
 	jr	s6
 
 2:
@@ -98,6 +147,27 @@ SYM_CODE_START(riscv_kexec_relocate)
 	j	3b
 
 4:
+	mv	a0, s1
+	li	a7, 0x0A023B00
+	li	a6, 0x44484558 // DHEX (dump hex)
+	ecall
+
+	mv	a0, s1
+	// add some context
+	addi	a0, s1, -0x60
+	li	a1, 0x100
+	li	a7, 0x0A023B00
+	li	a6, 0x44554D50 // DUMP
+	ecall
+
+	/* undelegate traps */
+	li	a7, 0x0A023B00
+	li	a6, 0x54524150 // TRAP (delegate nothing)
+	// ecall
+	// this revealed unaligned access again, which occurs in purgatory,
+	// which is why we ended up in our stvec again, which then causes a
+	// load fault, because s0 is set to 0 some value from purgatory
+
 	/* Pass the arguments to the next kernel  / Cleanup*/
 	mv	a0, s3
 	mv	a1, s2

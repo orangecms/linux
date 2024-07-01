@@ -393,6 +393,7 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
 	if (ret)
 		goto out;
 
+	kexec_dprintk("image start = %lu\n", image->start);
 	ret = kexec_calculate_store_digests(image);
 	if (ret)
 		goto out;
@@ -914,6 +915,7 @@ static int kexec_purgatory_setup_sechdrs(struct purgatory_info *pi,
 
 	offset = 0;
 	bss_addr = kbuf->mem + kbuf->bufsz;
+	kexec_dprintk("original image start = %lu\n", kbuf->image->start);
 	kbuf->image->start = pi->ehdr->e_entry;
 
 	for (i = 0; i < pi->ehdr->e_shnum; i++) {
@@ -960,6 +962,8 @@ static int kexec_purgatory_setup_sechdrs(struct purgatory_info *pi,
 		sechdrs[i].sh_offset = offset;
 		offset += sechdrs[i].sh_size;
 	}
+
+	kexec_dprintk("purgatory image start = %lu\n", kbuf->image->start);
 
 	return 0;
 }

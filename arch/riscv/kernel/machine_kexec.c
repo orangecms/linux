@@ -38,6 +38,7 @@ machine_kexec_prepare(struct kimage *image)
 
 	/* Find the Flattened Device Tree and save its physical address */
 	for (i = 0; i < image->nr_segments; i++) {
+		pr_info("Copy segment %d\n", i);
 		if (image->segment[i].memsz <= sizeof(fdt))
 			continue;
 
