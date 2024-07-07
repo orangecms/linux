@@ -43,6 +43,8 @@ impl kernel::Module for RustPrint {
     fn init(_module: &'static ThisModule) -> Result<Self> {
         pr_info!("Rust printing macros sample (init)\n");
 
+        pr_info!("\n       ---- works on RISC-V ----\n\n");
+
         pr_emerg!("Emergency message (level 0) without args\n");
         pr_alert!("Alert message (level 1) without args\n");
         pr_crit!("Critical message (level 2) without args\n");
