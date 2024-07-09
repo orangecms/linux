@@ -147,6 +147,7 @@ SYM_CODE_START(riscv_kexec_relocate)
 	j	3b
 
 4:
+	/*
 	mv	a0, s1
 	li	a7, 0x0A023B00
 	li	a6, 0x44484558 // DHEX (dump hex)
@@ -159,14 +160,17 @@ SYM_CODE_START(riscv_kexec_relocate)
 	li	a7, 0x0A023B00
 	li	a6, 0x44554D50 // DUMP
 	ecall
+	*/
 
 	/* undelegate traps */
-	li	a7, 0x0A023B00
-	li	a6, 0x54524150 // TRAP (delegate nothing)
-	// ecall
 	// this revealed unaligned access again, which occurs in purgatory,
 	// which is why we ended up in our stvec again, which then causes a
 	// load fault, because s0 is set to 0 some value from purgatory
+	/*
+	li	a7, 0x0A023B00
+	li	a6, 0x54524150 // TRAP (delegate nothing)
+	ecall
+	*/
 
 	/* Pass the arguments to the next kernel  / Cleanup*/
 	mv	a0, s3
