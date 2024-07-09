@@ -17,6 +17,16 @@ u8 purgatory_sha256_digest[SHA256_DIGEST_SIZE] __section(".kexec-purgatory");
 
 struct kexec_sha_region purgatory_sha_regions[KEXEC_SEGMENT_MAX] __section(".kexec-purgatory");
 
+// Special simplified implementation
+void sbi_console_putchar(int ch);
+
+void sbi_console_putchar(int ch)
+{
+	register uintptr_t a0 asm ("a0") = (uintptr_t)(ch);
+	register uintptr_t a7 asm ("a7") = (uintptr_t)(1);
+	asm volatile ("ecall" : "+r" (a0) : "r" (a7) : "memory");
+}
+
 static int verify_sha256_digest(void)
 {
 	struct kexec_sha_region *ptr, *end;
