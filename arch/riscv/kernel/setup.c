@@ -293,6 +293,7 @@ void __init setup_arch(char **cmdline_p)
 	sbi_init();
 	jump_label_init();
 	parse_early_param();
+	// NOTE: This is where we can get a first print.
 
 	efi_init();
 	paging_init();
