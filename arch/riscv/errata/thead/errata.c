@@ -23,15 +23,19 @@
 #define CSR_TH_SXSTATUS		0x5c0
 #define SXSTATUS_MAEE		_AC(0x200000, UL)
 
+// RISC-V arch 8000000009140d00
+// RISC-V core vendor: T-Head (0x05b7)
+// RISC-V implementation: C908 (Kendryte K230) (0x00050000)
+
 static bool errata_probe_mae(unsigned int stage,
 			     unsigned long arch_id, unsigned long impid)
 {
 	if (!IS_ENABLED(CONFIG_ERRATA_THEAD_MAE))
 		return false;
-
+	/*
 	if (arch_id != 0 || impid != 0)
 		return false;
-
+	*/
 	if (stage != RISCV_ALTERNATIVES_EARLY_BOOT &&
 	    stage != RISCV_ALTERNATIVES_MODULE)
 		return false;
@@ -110,10 +114,10 @@ static bool errata_probe_cmo(unsigned int stage,
 {
 	if (!IS_ENABLED(CONFIG_ERRATA_THEAD_CMO))
 		return false;
-
+/*
 	if (arch_id != 0 || impid != 0)
 		return false;
-
+*/
 	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
 		return false;
 
@@ -133,9 +137,10 @@ static bool errata_probe_pmu(unsigned int stage,
 		return false;
 
 	/* target-c9xx cores report arch_id and impid as 0 */
+	/*
 	if (arch_id != 0 || impid != 0)
 		return false;
-
+	*/
 	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
 		return false;
 
