@@ -1027,6 +1027,7 @@ void start_kernel(void)
 
 	kmem_cache_init_late();
 
+	// LOL
 	/*
 	 * HACK ALERT! This is early. We're enabling the console before
 	 * we've done PCI setups etc, and console_init() must be aware of
