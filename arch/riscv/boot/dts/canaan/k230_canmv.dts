@@ -17,7 +17,7 @@
 	};
 
 	chosen {
-		bootargs = "earlycon=sbi console=tty0 console=ttyS0,115200 loglevel=7";
+		bootargs = "earlycon=sbi console=tty0 console=ttyS0,115200 loglevel=7 g_ether.dev_addr=02:3b:00:4b:23:0d g_ether.host_addr=02:3b:00:4b:23:0a";
 		stdout-path = "serial0:115200";
 	};
 };
@@ -30,3 +30,7 @@
 	status = "okay";
 };
 */
+&usb0 {
+	status = "okay";
+	dr_mode = "otg";
+};
