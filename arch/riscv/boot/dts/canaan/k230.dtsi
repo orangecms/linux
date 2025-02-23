@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2023, Canaan Bright Sight Co., Ltd
 */
+// see also https://github.com/kendryte/linux-xuantie-kernel/blob/linux-6.6/arch/riscv/boot/dts/canaan/k230.dtsi
 
 #include <dt-bindings/interrupt-controller/irq.h>
 
@@ -64,6 +65,13 @@
 			compatible = "fixed-clock";
 			clock-frequency = <100000000>;
 			clock-output-names = "dummy_sd";
+			#clock-cells = <0>;
+		};
+
+		clk_dummy: clock-dummy {
+			compatible = "fixed-clock";
+			clock-frequency = <0>;
+			clock-output-names = "clk_dummy";
 			#clock-cells = <0>;
 		};
 
@@ -232,6 +240,34 @@
 			interrupts = <25 IRQ_TYPE_LEVEL_HIGH>;
 			clock-frequency = <400000>;
 			status = "disabled";
+		};
+
+		usb0: usb@91500000 {
+			compatible = "canaan,k230-otg", "snps,dwc2";
+			reg = <0x0 0x91500000 0x0 0x40000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			interrupt-parent = <&plic>;
+			interrupts = <173 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk_dummy>;
+			clock-names = "otg";
+			g-rx-fifo-size = <512>;
+			g-np-tx-fifo-size = <64>;
+			g-tx-fifo-size = <512 1024 64 64 64 64>;
+		};
+
+		usb1: usb@91540000 {
+			compatible = "canaan,k230-otg", "snps,dwc2";
+			reg = <0x0 0x91540000 0x0 0x40000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			interrupt-parent = <&plic>;
+			interrupts = <174 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk_dummy>;
+			clock-names = "otg";
+			g-rx-fifo-size = <512>;
+			g-np-tx-fifo-size = <64>;
+			g-tx-fifo-size = <512 1024 64 64 64 64>;
 		};
 
 		sysctl: sysctl {
