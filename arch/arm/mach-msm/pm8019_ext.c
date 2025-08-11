@@ -12,7 +12,7 @@
  * 01    10Apr14     LuoWei         Create file
  *****************************************************************************/
 #include <linux/kobject.h>
-#include <include/mach/msm_smem.h>
+#include <mach/msm_smem.h>
 #include <linux/gpio.h>
 #include <linux/stat.h>
 #include "pm8019_ext.h"
