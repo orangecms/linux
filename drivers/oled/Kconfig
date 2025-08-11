@@ -1,0 +1,19 @@
+config OLED
+	bool "Support OLED display"
+	default n
+	---help---
+	  Say Y here if you use OLED display
+
+config OLED_SSD1306_PT
+	bool "Driver for OLED SSD1306"
+	select OLED
+	default n
+	---help---
+	  Say Y here if you use OLED SSD1306
+
+config OLED_S90319_PT
+	bool "Driver for OLED s90319"
+	select OLED
+	default n
+	---help---
+	  Say Y here if you use OLED S90319
