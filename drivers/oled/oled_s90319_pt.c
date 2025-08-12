@@ -358,8 +358,8 @@ static int oled_s90319_fill_with_pic(const uint8_t *pic, const uint8_t x,
 			}
 			else
 			{
-				frame_data_buf[j] = 0xFF;
-				frame_data_buf[j + 1] = 0xFF;
+				frame_data_buf[j] = 0x77;
+				frame_data_buf[j + 1] = 0x77;
 			}
 			j = j + 2;
 		}
