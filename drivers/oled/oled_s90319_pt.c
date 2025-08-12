@@ -358,8 +358,9 @@ static int oled_s90319_fill_with_pic(const uint8_t *pic, const uint8_t x,
 			}
 			else
 			{
-				frame_data_buf[j] = 0xFF;
-				frame_data_buf[j + 1] = 0xFF;
+        // Go purple!
+				frame_data_buf[j] = 0xaa;
+				frame_data_buf[j + 1] = 0x77;
 			}
 			j = j + 2;
 		}
@@ -684,6 +685,13 @@ static void oled_s90319_pin_assign(void)
 ************************************************************/
 static int __devinit oled_s90319_probe(struct platform_device *pdev)
 {
+  const uint8_t pic[128] = {
+    255, 0, 255, 0, 255, 0, 255, 0,
+    255, 0, 255, 0, 255, 0, 255, 0,
+    255, 0, 255, 0, 255, 0, 255, 0,
+    255, 0, 255, 0, 255, 0, 255, 0,
+  };
+
 	struct device_node *node = pdev->dev.of_node;
 	if (!node)
 	{
@@ -713,6 +721,14 @@ static int __devinit oled_s90319_probe(struct platform_device *pdev)
 
 	mutex_init(&flush_mutex);
 	mutex_init(&oled_panel_mutex);
+
+  // Indicator that our kernel is running, drawing a thick dashed line.
+	msleep(50);
+  oled_s90319_panel_on();
+  oled_s90319_set_backlight(1);
+  oled_s90319_fill_with_pic(pic, 40, 40, 64, 4);
+	// Our kernel currently crashes. Keep the image for a few seconds.
+  msleep(4000);
 
 	return 0;
 }
