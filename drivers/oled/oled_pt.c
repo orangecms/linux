@@ -87,14 +87,12 @@ static ssize_t oled_buffer_store(struct device *dev, struct device_attribute *at
 #ifdef CONFIG_OLED_SSD1306_PT
 	memcpy(oled_ssd1306_buf, buf + 4, data_length);
 
-	oled_pdata->oled_fill_with_pic(oled_ssd1306_buf,
-		x, y, width, height);
+	oled_pdata->oled_fill_with_pic(oled_ssd1306_buf, x, y, width, height);
 #endif
 
 #ifdef CONFIG_OLED_S90319_PT
 	memcpy(oled_s90319_buf, buf + 4, buf[2] * buf[3] / 8);
-	oled_pdata->oled_fill_with_pic(oled_s90319_buf,
-		x, y, width, height);
+	oled_pdata->oled_fill_with_pic(oled_s90319_buf, x, y, width, height);
 #endif
 
 	mutex_unlock(&oled_mutex);
