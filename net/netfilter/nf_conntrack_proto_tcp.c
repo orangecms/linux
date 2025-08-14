@@ -64,22 +64,24 @@ static const char *const tcp_conntrack_names[] = {
 #define HOURS * 60 MINS
 #define DAYS * 24 HOURS
 
+/* [houjihai start] modify tcp timeout */
 static unsigned int tcp_timeouts[TCP_CONNTRACK_TIMEOUT_MAX] __read_mostly = {
-	[TCP_CONNTRACK_SYN_SENT]	= 2 MINS,
-	[TCP_CONNTRACK_SYN_RECV]	= 60 SECS,
-	[TCP_CONNTRACK_ESTABLISHED]	= 5 DAYS,
-	[TCP_CONNTRACK_FIN_WAIT]	= 2 MINS,
-	[TCP_CONNTRACK_CLOSE_WAIT]	= 60 SECS,
+	[TCP_CONNTRACK_SYN_SENT]	= 30 SECS,
+	[TCP_CONNTRACK_SYN_RECV]	= 30 SECS,
+	[TCP_CONNTRACK_ESTABLISHED]	= 30 MINS,
+	[TCP_CONNTRACK_FIN_WAIT]	= 30 SECS,
+	[TCP_CONNTRACK_CLOSE_WAIT]	= 30 SECS,
 	[TCP_CONNTRACK_LAST_ACK]	= 30 SECS,
-	[TCP_CONNTRACK_TIME_WAIT]	= 2 MINS,
-	[TCP_CONNTRACK_CLOSE]		= 10 SECS,
-	[TCP_CONNTRACK_SYN_SENT2]	= 2 MINS,
+	[TCP_CONNTRACK_TIME_WAIT]	= 30 SECS,
+	[TCP_CONNTRACK_CLOSE]		= 1  SECS,
+	[TCP_CONNTRACK_SYN_SENT2]	= 30 SECS,
 /* RFC1122 says the R2 limit should be at least 100 seconds.
    Linux uses 15 packets as limit, which corresponds
    to ~13-30min depending on RTO. */
 	[TCP_CONNTRACK_RETRANS]		= 5 MINS,
 	[TCP_CONNTRACK_UNACK]		= 5 MINS,
 };
+/* [houjihai end] */
 
 #define sNO TCP_CONNTRACK_NONE
 #define sSS TCP_CONNTRACK_SYN_SENT

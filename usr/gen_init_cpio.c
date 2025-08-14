@@ -533,7 +533,9 @@ int main (int argc, char *argv[])
 	int line_nr = 0;
 	const char *filename;
 
-	default_mtime = time(NULL);
+	/* [jiyu] Modify default_mtime for lte update */
+//	default_mtime = time(NULL);
+	default_mtime = (time_t)1417749575;
 	while (1) {
 		int opt = getopt(argc, argv, "t:h");
 		char *invalid;

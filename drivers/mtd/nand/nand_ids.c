@@ -161,6 +161,7 @@ struct nand_flash_dev nand_flash_ids[] = {
 	 BBT_AUTO_REFRESH
 	},
 
+	{"NAND 4GiB 1,8V 8-bit",       0xAC, 2048, 4096, 0x20000, 0},
 	{NULL,}
 };
 
@@ -168,7 +169,14 @@ struct nand_flash_dev nand_flash_ids[] = {
 *	Manufacturer ID list
 */
 struct nand_manufacturers nand_manuf_ids[] = {
+#if 0
+#ifdef CONFIG_FLASH_TYPE_ETRON
+	{NAND_MFR_ETRON, "Etron"},
+#else
 	{NAND_MFR_TOSHIBA, "Toshiba"},
+#endif
+#endif
+	{NAND_MFR_ETRON, "Etron"},
 	{NAND_MFR_SAMSUNG, "Samsung"},
 	{NAND_MFR_FUJITSU, "Fujitsu"},
 	{NAND_MFR_NATIONAL, "National"},
@@ -178,6 +186,7 @@ struct nand_manufacturers nand_manuf_ids[] = {
 	{NAND_MFR_MICRON, "Micron"},
 	{NAND_MFR_AMD, "AMD"},
 	{NAND_MFR_MACRONIX, "Macronix"},
+	{NAND_MFR_ESMT, "ESMT"},
 	{0x0, "Unknown"}
 };
 

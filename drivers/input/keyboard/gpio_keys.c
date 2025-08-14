@@ -29,6 +29,7 @@
 #include <linux/of_platform.h>
 #include <linux/of_gpio.h>
 #include <linux/spinlock.h>
+#include <linux/wakelock.h>
 
 struct gpio_button_data {
 	const struct gpio_keys_button *button;
@@ -51,6 +52,7 @@ struct gpio_keys_drvdata {
 	struct gpio_button_data data[0];
 };
 
+struct wake_lock gpio_keys_wlock;
 /*
  * SYSFS interface for enabling/disabling keys and switches:
  *
@@ -366,7 +368,8 @@ static irqreturn_t gpio_keys_gpio_isr(int irq, void *dev_id)
 			jiffies + msecs_to_jiffies(bdata->timer_debounce));
 	else
 		schedule_work(&bdata->work);
-
+	// [houjihai] add timeout wake lock
+	wake_lock_timeout(&gpio_keys_wlock, 5 * HZ);
 	return IRQ_HANDLED;
 }
 
@@ -557,6 +560,7 @@ static int gpio_keys_get_devtree_pdata(struct device *dev,
 	memset(pdata, 0, sizeof *pdata);
 
 	pdata->rep = !!of_get_property(node, "autorepeat", NULL);
+	pdata->name = of_get_property(node, "input-name", NULL);
 
 	/* First count the subnodes */
 	pdata->nbuttons = 0;
@@ -644,6 +648,20 @@ static void gpio_remove_key(struct gpio_button_data *bdata)
 		gpio_free(bdata->button->gpio);
 }
 
+/* [houjihai start] add pm domain for gpio keys */
+static int no_suppend_resume(struct device *dev)
+{
+	return 0;
+}
+
+struct dev_pm_domain gpio_keys_pm_domain = {
+	.ops = {
+			.suspend	= no_suppend_resume,
+			.resume		= no_suppend_resume,
+	}
+};
+/* [houjihai end] */
+
 static int __devinit gpio_keys_probe(struct platform_device *pdev)
 {
 	const struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
@@ -683,6 +701,8 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	input->name = pdata->name ? : pdev->name;
 	input->phys = "gpio-keys/input0";
 	input->dev.parent = &pdev->dev;
+        // [houjihai] add pm domain for gpio keys
+	input->dev.pm_domain = &gpio_keys_pm_domain;
 	input->open = gpio_keys_open;
 	input->close = gpio_keys_close;
 
@@ -804,11 +824,14 @@ static int gpio_keys_resume(struct device *dev)
 		struct gpio_button_data *bdata = &ddata->data[i];
 		if (bdata->button->wakeup && device_may_wakeup(dev))
 			disable_irq_wake(bdata->irq);
-
+        /* [houjihai start] no need pass up event when resume*/
+#if 0
 		if (gpio_is_valid(bdata->button->gpio))
 			gpio_keys_gpio_report_event(bdata);
+#endif
 	}
-	input_sync(ddata->input);
+	//input_sync(ddata->input);
+	/* [houjihai end]*/
 
 	return 0;
 }
@@ -829,11 +852,13 @@ static struct platform_driver gpio_keys_device_driver = {
 
 static int __init gpio_keys_init(void)
 {
+	wake_lock_init(&gpio_keys_wlock, WAKE_LOCK_SUSPEND, "gpiokeys");
 	return platform_driver_register(&gpio_keys_device_driver);
 }
 
 static void __exit gpio_keys_exit(void)
 {
+	wake_lock_destroy(&gpio_keys_wlock);
 	platform_driver_unregister(&gpio_keys_device_driver);
 }
 

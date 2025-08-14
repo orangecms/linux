@@ -549,7 +549,14 @@ struct nand_chip {
 /*
  * NAND Flash Manufacturer ID Codes
  */
+#if 0
+#ifdef CONFIG_FLASH_TYPE_ETRON
+#define NAND_MFR_ETRON		0x98
+#else
 #define NAND_MFR_TOSHIBA	0x98
+#endif
+#endif
+#define NAND_MFR_ETRON		0x98
 #define NAND_MFR_SAMSUNG	0xec
 #define NAND_MFR_FUJITSU	0x04
 #define NAND_MFR_NATIONAL	0x8f
@@ -559,6 +566,10 @@ struct nand_chip {
 #define NAND_MFR_MICRON		0x2c
 #define NAND_MFR_AMD		0x01
 #define NAND_MFR_MACRONIX	0xc2
+#define NAND_MFR_ESMT		0xc8
+
+#define ETRON_2G1G_MANID	0x98
+#define ETRON_2G1G_DEVID	0xaa
 
 /**
  * struct nand_flash_dev - NAND Flash Device ID Structure

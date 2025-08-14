@@ -13,6 +13,7 @@
 #include <linux/device.h>
 #include <linux/mmc/core.h>
 #include <linux/mod_devicetable.h>
+#include <linux/notifier.h>
 
 struct mmc_cid {
 	unsigned int		manfid;
@@ -53,11 +54,19 @@ struct mmc_ext_csd {
 	u8			part_config;
 	u8			cache_ctrl;
 	u8			rst_n_function;
+	u8			max_packed_writes;
+	u8			max_packed_reads;
+	u8			packed_event_en;
 	unsigned int		part_time;		/* Units: ms */
 	unsigned int		sa_timeout;		/* Units: 100ns */
 	unsigned int		generic_cmd6_time;	/* Units: 10ms */
 	unsigned int            power_off_longtime;     /* Units: ms */
+	u8			power_off_notification;	/* state */
 	unsigned int		hs_max_dtr;
+#define MMC_HIGH_26_MAX_DTR	26000000
+#define MMC_HIGH_52_MAX_DTR	52000000
+#define MMC_HIGH_DDR_MAX_DTR	52000000
+#define MMC_HS200_MAX_DTR	200000000
 	unsigned int		sectors;
 	unsigned int		card_type;
 	unsigned int		hc_erase_size;		/* In sectors */
@@ -72,11 +81,15 @@ struct mmc_ext_csd {
 	bool			hpi_en;			/* HPI enablebit */
 	bool			hpi;			/* HPI support bit */
 	unsigned int		hpi_cmd;		/* cmd used as HPI */
+	bool			bkops;		/* background support bit */
+	bool			bkops_en;	/* background enable bit */
 	unsigned int            data_sector_size;       /* 512 bytes or 4KB */
 	unsigned int            data_tag_unit_size;     /* DATA TAG UNIT size */
 	unsigned int		boot_ro_lock;		/* ro lock support */
 	bool			boot_ro_lockable;
+	u8			raw_exception_status;	/* 53 */
 	u8			raw_partition_support;	/* 160 */
+	u8			raw_rpmb_size_mult;	/* 168 */
 	u8			raw_erased_mem_count;	/* 181 */
 	u8			raw_ext_csd_structure;	/* 194 */
 	u8			raw_card_type;		/* 196 */
@@ -89,6 +102,7 @@ struct mmc_ext_csd {
 	u8			raw_sec_erase_mult;	/* 230 */
 	u8			raw_sec_feature_support;/* 231 */
 	u8			raw_trim_mult;		/* 232 */
+	u8			raw_bkops_status;	/* 246 */
 	u8			raw_sectors[4];		/* 212 - 4 bytes */
 
 	unsigned int            feature_support;
@@ -160,7 +174,8 @@ struct sdio_cccr {
 				wide_bus:1,
 				high_power:1,
 				high_speed:1,
-				disable_cd:1;
+				disable_cd:1,
+				async_intr_sup:1;
 };
 
 struct sdio_cis {
@@ -173,8 +188,45 @@ struct sdio_cis {
 struct mmc_host;
 struct sdio_func;
 struct sdio_func_tuple;
+struct mmc_queue;
 
 #define SDIO_MAX_FUNCS		7
+
+enum mmc_packed_stop_reasons {
+	EXCEEDS_SEGMENTS = 0,
+	EXCEEDS_SECTORS,
+	WRONG_DATA_DIR,
+	FLUSH_OR_DISCARD,
+	EMPTY_QUEUE,
+	REL_WRITE,
+	THRESHOLD,
+	LARGE_SEC_ALIGN,
+	RANDOM,
+	FUA,
+	MAX_REASONS,
+};
+
+enum mmc_blk_status {
+	MMC_BLK_SUCCESS = 0,
+	MMC_BLK_PARTIAL,
+	MMC_BLK_CMD_ERR,
+	MMC_BLK_RETRY,
+	MMC_BLK_ABORT,
+	MMC_BLK_DATA_ERR,
+	MMC_BLK_ECC_ERR,
+	MMC_BLK_NOMEDIUM,
+	MMC_BLK_NEW_REQUEST,
+	MMC_BLK_URGENT,
+	MMC_BLK_URGENT_DONE,
+};
+
+struct mmc_wr_pack_stats {
+	u32 *packing_events;
+	u32 pack_stop_reason[MAX_REASONS];
+	spinlock_t lock;
+	bool enabled;
+	bool print_in_read;
+};
 
 /* The number of MMC physical partitions.  These consist of:
  * boot partitions (2), general purpose partitions (4) in MMC v4.4.
@@ -196,6 +248,63 @@ struct mmc_part {
 #define MMC_BLK_DATA_AREA_MAIN	(1<<0)
 #define MMC_BLK_DATA_AREA_BOOT	(1<<1)
 #define MMC_BLK_DATA_AREA_GP	(1<<2)
+#define MMC_BLK_DATA_AREA_RPMB	(1<<3)
+};
+
+#define BKOPS_NUM_OF_SEVERITY_LEVELS	3
+#define BKOPS_SEVERITY_1_INDEX		0
+#define BKOPS_SEVERITY_2_INDEX		1
+#define BKOPS_SEVERITY_3_INDEX		2
+struct mmc_bkops_stats {
+	spinlock_t		lock;
+	bool			enabled;
+	unsigned int		hpi;    /* hpi issued   */
+	unsigned int		suspend;/* card sleed issued */
+	bool			print_stats;
+	unsigned int bkops_level[BKOPS_NUM_OF_SEVERITY_LEVELS];
+	bool			ignore_card_bkops_status;
+};
+
+/**
+ * struct mmc_bkops_info - BKOPS data
+ * @dw:	Idle time bkops delayed work
+ * @host_delay_ms:	The host controller time to start bkops
+ * @delay_ms:	The time to start the BKOPS
+ *        delayed work once MMC thread is idle
+ * @min_sectors_to_queue_delayed_work: the changed
+ *        number of sectors that should issue check for BKOPS
+ *        need
+ * @size_percentage_to_queue_delayed_work: the changed
+ *        percentage of sectors that should issue check for
+ *        BKOPS need
+ * @bkops_stats: BKOPS statistics
+ * @cancel_delayed_work: A flag to indicate if the delayed work
+ *        should be cancelled
+ * @sectors_changed:  number of  sectors written or
+ *       discard since the last idle BKOPS were scheduled
+ */
+struct mmc_bkops_info {
+	struct delayed_work	dw;
+	unsigned int		host_delay_ms;
+	unsigned int		delay_ms;
+	unsigned int		min_sectors_to_queue_delayed_work;
+	unsigned int		size_percentage_to_queue_delayed_work;
+	struct mmc_bkops_stats  bkops_stats;
+/*
+ * A default time for checking the need for non urgent BKOPS once mmcqd
+ * is idle.
+ */
+#define MMC_IDLE_BKOPS_TIME_MS 200
+	bool			cancel_delayed_work;
+	unsigned int		sectors_changed;
+/*
+ * Since canceling the delayed work might have significant effect on the
+ * performance of small requests we won't queue the delayed work every time
+ * mmcqd thread is idle.
+ * The delayed work for idle BKOPS will be scheduled only after a significant
+ * amount of write or discard data.
+ */
+#define BKOPS_SIZE_PERCENTAGE_TO_QUEUE_DELAYED_WORK 1 /* 1% */
 };
 
 /*
@@ -220,7 +329,8 @@ struct mmc_card {
 #define MMC_CARD_SDXC		(1<<6)		/* card is SDXC */
 #define MMC_CARD_REMOVED	(1<<7)		/* card has been removed */
 #define MMC_STATE_HIGHSPEED_200	(1<<8)		/* card is in HS200 mode */
-#define MMC_STATE_SLEEP		(1<<9)		/* card is in sleep state */
+#define MMC_STATE_DOING_BKOPS	(1<<10)		/* card is doing BKOPS */
+#define MMC_STATE_NEED_BKOPS	(1<<11)		/* card needs to do BKOPS */
 	unsigned int		quirks; 	/* card quirks */
 #define MMC_QUIRK_LENIENT_FN0	(1<<0)		/* allow SDIO FN0 writes outside of the VS CCCR range */
 #define MMC_QUIRK_BLKSZ_FOR_BYTE_MODE (1<<1)	/* use func->cur_blksize */
@@ -234,12 +344,9 @@ struct mmc_card {
 #define MMC_QUIRK_BLK_NO_CMD23	(1<<7)		/* Avoid CMD23 for regular multiblock */
 #define MMC_QUIRK_BROKEN_BYTE_MODE_512 (1<<8)	/* Avoid sending 512 bytes in */
 #define MMC_QUIRK_LONG_READ_TIME (1<<9)		/* Data read time > CSD says */
+#define MMC_QUIRK_SEC_ERASE_TRIM_BROKEN (1<<10)	/* Skip secure for erase/trim */
 						/* byte mode */
-	unsigned int    poweroff_notify_state;	/* eMMC4.5 notify feature */
-#define MMC_NO_POWER_NOTIFICATION	0
-#define MMC_POWERED_ON			1
-#define MMC_POWEROFF_SHORT		2
-#define MMC_POWEROFF_LONG		3
+#define MMC_QUIRK_INAND_DATA_TIMEOUT  (1<<8)    /* For incorrect data timeout */
 
 	unsigned int		erase_size;	/* erase size in sectors */
  	unsigned int		erase_shift;	/* if erase unit is power 2 */
@@ -270,6 +377,16 @@ struct mmc_card {
 	struct dentry		*debugfs_root;
 	struct mmc_part	part[MMC_NUM_PHY_PARTITION]; /* physical partitions */
 	unsigned int    nr_parts;
+	unsigned int	part_curr;
+
+	struct mmc_wr_pack_stats wr_pack_stats; /* packed commands stats*/
+
+	struct mmc_bkops_info	bkops_info;
+
+	struct device_attribute rpm_attrib;
+	unsigned int		idle_timeout;
+	struct notifier_block        reboot_notify;
+	bool issue_long_pon;
 };
 
 /*
@@ -285,6 +402,11 @@ static inline void mmc_part_add(struct mmc_card *card, unsigned int size,
 	card->part[card->nr_parts].force_ro = ro;
 	card->part[card->nr_parts].area_type = area_type;
 	card->nr_parts++;
+}
+
+static inline bool mmc_large_sec(struct mmc_card *card)
+{
+	return card->ext_csd.data_sector_size == 4096;
 }
 
 /*
@@ -386,7 +508,8 @@ static inline void __maybe_unused remove_quirk(struct mmc_card *card, int data)
 #define mmc_sd_card_uhs(c)	((c)->state & MMC_STATE_ULTRAHIGHSPEED)
 #define mmc_card_ext_capacity(c) ((c)->state & MMC_CARD_SDXC)
 #define mmc_card_removed(c)	((c) && ((c)->state & MMC_CARD_REMOVED))
-#define mmc_card_is_sleep(c)	((c)->state & MMC_STATE_SLEEP)
+#define mmc_card_doing_bkops(c)	((c)->state & MMC_STATE_DOING_BKOPS)
+#define mmc_card_need_bkops(c)	((c)->state & MMC_STATE_NEED_BKOPS)
 
 #define mmc_card_set_present(c)	((c)->state |= MMC_STATE_PRESENT)
 #define mmc_card_set_readonly(c) ((c)->state |= MMC_STATE_READONLY)
@@ -398,9 +521,10 @@ static inline void __maybe_unused remove_quirk(struct mmc_card *card, int data)
 #define mmc_sd_card_set_uhs(c) ((c)->state |= MMC_STATE_ULTRAHIGHSPEED)
 #define mmc_card_set_ext_capacity(c) ((c)->state |= MMC_CARD_SDXC)
 #define mmc_card_set_removed(c) ((c)->state |= MMC_CARD_REMOVED)
-#define mmc_card_set_sleep(c)	((c)->state |= MMC_STATE_SLEEP)
-
-#define mmc_card_clr_sleep(c)	((c)->state &= ~MMC_STATE_SLEEP)
+#define mmc_card_set_doing_bkops(c)	((c)->state |= MMC_STATE_DOING_BKOPS)
+#define mmc_card_clr_doing_bkops(c)	((c)->state &= ~MMC_STATE_DOING_BKOPS)
+#define mmc_card_set_need_bkops(c)	((c)->state |= MMC_STATE_NEED_BKOPS)
+#define mmc_card_clr_need_bkops(c)	((c)->state &= ~MMC_STATE_NEED_BKOPS)
 /*
  * Quirk add/remove for MMC products.
  */
@@ -483,6 +607,7 @@ struct mmc_driver {
 	void (*remove)(struct mmc_card *);
 	int (*suspend)(struct mmc_card *);
 	int (*resume)(struct mmc_card *);
+	void (*shutdown)(struct mmc_card *);
 };
 
 extern int mmc_register_driver(struct mmc_driver *);
@@ -490,5 +615,9 @@ extern void mmc_unregister_driver(struct mmc_driver *);
 
 extern void mmc_fixup_device(struct mmc_card *card,
 			     const struct mmc_fixup *table);
-
+extern struct mmc_wr_pack_stats *mmc_blk_get_packed_statistics(
+			struct mmc_card *card);
+extern void mmc_blk_init_packed_statistics(struct mmc_card *card);
+extern void mmc_blk_disable_wr_packing(struct mmc_queue *mq);
+extern int mmc_send_long_pon(struct mmc_card *card);
 #endif /* LINUX_MMC_CARD_H */

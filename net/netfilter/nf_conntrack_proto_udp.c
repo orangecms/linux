@@ -31,10 +31,15 @@ enum udp_conntrack {
 	UDP_CT_MAX
 };
 
+/* [houjihai start] modify udp timeout and add dns timeout */
 static unsigned int udp_timeouts[UDP_CT_MAX] = {
-	[UDP_CT_UNREPLIED]	= 30*HZ,
-	[UDP_CT_REPLIED]	= 180*HZ,
+	[UDP_CT_UNREPLIED]	= 60*HZ,
+	[UDP_CT_REPLIED]	= 120*HZ,
 };
+
+static unsigned int nf_ct_udp_dns_replied_timeout __read_mostly = 20*HZ;
+static unsigned int nf_ct_udp_dns_unreplied_timeout __read_mostly = 3*HZ;
+/* [houjihai end] */
 
 static bool udp_pkt_to_tuple(const struct sk_buff *skb,
 			     unsigned int dataoff,
@@ -85,17 +90,38 @@ static int udp_packet(struct nf_conn *ct,
 		      unsigned int hooknum,
 		      unsigned int *timeouts)
 {
+        const struct iphdr *iph = ip_hdr(skb);
+        const struct udphdr *udph = (void *)iph + iph->ihl * 4;
+        const __u16 dport = ntohs(udph->dest);
+        const __u16 sport = ntohs(udph->source);
 	/* If we've seen traffic both ways, this is some kind of UDP
 	   stream.  Extend timeout. */
 	if (test_bit(IPS_SEEN_REPLY_BIT, &ct->status)) {
-		nf_ct_refresh_acct(ct, ctinfo, skb,
-				   timeouts[UDP_CT_REPLIED]);
+                /* [houjihai] if is a dns connection, shorten timeout */
+                if ((dport == 53) || (sport == 53)) {
+                    nf_ct_refresh_acct(ct, ctinfo, skb, nf_ct_udp_dns_replied_timeout);
+                } else {
+		    nf_ct_refresh_acct(ct, ctinfo, skb, timeouts[UDP_CT_REPLIED]);
+                }
 		/* Also, more likely to be important, and not a probe */
 		if (!test_and_set_bit(IPS_ASSURED_BIT, &ct->status))
 			nf_conntrack_event_cache(IPCT_ASSURED, ct);
 	} else {
-		nf_ct_refresh_acct(ct, ctinfo, skb,
-				   timeouts[UDP_CT_UNREPLIED]);
+                /* [houjihai] handle unreplied dns
+                * from BRCM 89xx:16Jun08, LiShaozhang
+                * Special handling of UNRPLIED DNS query packet: Song Wang
+                * Before NAT and WAN interface are UP, during that time window,
+                * if a DNS query is sent out, there will be an UNRPLIED DNS connection track entry
+                * in which expected src/dst are private IP addresses in the tuple.
+                * After NAT and WAN interface are UP, the UNRPLIED DNS connection track
+                * entry should go away ASAP to enable the establishment  of the tuple with
+                * the expected src/dst that are public IP addresses.
+                */
+                if (dport == 53) {
+                    nf_ct_refresh_acct(ct, ctinfo, skb, nf_ct_udp_dns_unreplied_timeout);
+                } else {
+	            nf_ct_refresh_acct(ct, ctinfo, skb, timeouts[UDP_CT_UNREPLIED]);
+                }
 	}
 	return NF_ACCEPT;
 }

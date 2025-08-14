@@ -277,6 +277,16 @@ struct sdhci_ops {
 	void	(*hw_reset)(struct sdhci_host *host);
 	void	(*platform_suspend)(struct sdhci_host *host);
 	void	(*platform_resume)(struct sdhci_host *host);
+	void	(*check_power_status)(struct sdhci_host *host, u32 req_type);
+#define REQ_BUS_OFF	(1 << 0)
+#define REQ_BUS_ON	(1 << 1)
+#define REQ_IO_LOW	(1 << 2)
+#define REQ_IO_HIGH	(1 << 3)
+	int	(*execute_tuning)(struct sdhci_host *host, u32 opcode);
+	void	(*toggle_cdr)(struct sdhci_host *host, bool enable);
+	unsigned int	(*get_max_segments)(void);
+	void	(*platform_bus_voting)(struct sdhci_host *host, u32 enable);
+	void    (*disable_data_xfer)(struct sdhci_host *host);
 };
 
 #ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
