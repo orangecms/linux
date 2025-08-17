@@ -685,12 +685,14 @@ static void oled_s90319_pin_assign(void)
 ************************************************************/
 static int __devinit oled_s90319_probe(struct platform_device *pdev)
 {
-  const uint8_t pic[128] = {
+  const uint8_t pic[32] = {
     255, 0, 255, 0, 255, 0, 255, 0,
     255, 0, 255, 0, 255, 0, 255, 0,
     255, 0, 255, 0, 255, 0, 255, 0,
     255, 0, 255, 0, 255, 0, 255, 0,
   };
+  // const uint8_t pic[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
+  uint8_t i = 0;
 
 	struct device_node *node = pdev->dev.of_node;
 	if (!node)
@@ -726,9 +728,12 @@ static int __devinit oled_s90319_probe(struct platform_device *pdev)
 	msleep(50);
   oled_s90319_panel_on();
   oled_s90319_set_backlight(1);
-  oled_s90319_fill_with_pic(pic, 40, 40, 64, 4);
+  for (i=0; i<4; i++) {
+    oled_s90319_fill_with_pic(pic, 40, 20 + 8*i, 64, 4);
+    msleep(250);
+  }
 	// Our kernel currently crashes. Keep the image for a few seconds.
-  msleep(4000);
+  msleep(3000);
 
 	return 0;
 }
