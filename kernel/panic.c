@@ -23,13 +23,9 @@
 #include <linux/init.h>
 #include <linux/nmi.h>
 #include <linux/dmi.h>
-#include <linux/coresight.h>
 
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
-
-/* Machine specific panic information string */
-char *mach_panic_string;
 
 int panic_on_oops;
 static unsigned long tainted_mask;
@@ -37,10 +33,7 @@ static int pause_on_oops;
 static int pause_on_oops_flag;
 static DEFINE_SPINLOCK(pause_on_oops_lock);
 
-#ifndef CONFIG_PANIC_TIMEOUT
-#define CONFIG_PANIC_TIMEOUT 0
-#endif
-int panic_timeout = CONFIG_PANIC_TIMEOUT;
+int panic_timeout;
 EXPORT_SYMBOL_GPL(panic_timeout);
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
@@ -80,15 +73,6 @@ void panic(const char *fmt, ...)
 	va_list args;
 	long i, i_next = 0;
 	int state = 0;
-
-	coresight_abort();
-	/*
-	 * Disable local interrupts. This will prevent panic_smp_self_stop
-	 * from deadlocking the first cpu that invokes the panic, since
-	 * there is nothing to prevent an interrupt handler (that runs
-	 * after the panic_lock is acquired) from invoking panic again.
-	 */
-	local_irq_disable();
 
 	/*
 	 * It's possible to come here directly from a panic-assertion and
@@ -369,7 +353,6 @@ void oops_enter(void)
 	tracing_off();
 	/* can't trust the integrity of the kernel anymore: */
 	debug_locks_off();
-	oops_printk_start();
 	do_oops_enter_exit();
 }
 
@@ -392,11 +375,6 @@ late_initcall(init_oops_id);
 void print_oops_end_marker(void)
 {
 	init_oops_id();
-
-	if (mach_panic_string)
-		printk(KERN_WARNING "Board Information: %s\n",
-		       mach_panic_string);
-
 	printk(KERN_WARNING "---[ end trace %016llx ]---\n",
 		(unsigned long long)oops_id);
 }
