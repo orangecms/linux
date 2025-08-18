@@ -23,26 +23,14 @@
 #include <linux/fb.h>
 #include <linux/init.h>
 
-// HACK THE PLANET
-extern int oled_s90319_fill_with_pic(
-	const uint8_t *pic,
-	const uint8_t x,
-	const uint8_t y,
-	const uint8_t width,
-	const uint8_t height
-);
+    /*
+     *  RAM we reserve for the frame buffer. This defines the maximum screen
+     *  size
+     *
+     *  The default can be overridden if the driver is compiled as a module
+     */
 
-extern int oled_s90319_panel_on(void);
-
-extern int oled_s90319_set_backlight(const uint8_t on);
-
-/*
- *  RAM we reserve for the frame buffer. This defines the maximum screen
- *  size
- *
- *  The default can be overridden if the driver is compiled as a module
- */
-#define VIDEOMEMSIZE	(128*128)	/* 1 MB */
+#define VIDEOMEMSIZE	(1*1024*1024)	/* 1 MB */
 
 static void *videomemory;
 static u_long videomemorysize = VIDEOMEMSIZE;
@@ -98,25 +86,25 @@ static void rvfree(void *mem, unsigned long size)
 }
 
 static struct fb_var_screeninfo vfb_default __devinitdata = {
-	.xres =		128,
-	.yres =		128,
-	.xres_virtual =	128,
-	.yres_virtual =	128,
-	.bits_per_pixel = 16,
-	.red =		{ 5, 0, 0 },
-  .green =	{ 0, 6, 0 },
-  .blue =		{ 0, 0, 5 },
-  .activate =	FB_ACTIVATE_TEST,
-  .height =	-1,
-  .width =	-1,
-  .pixclock =	20000,
-  .left_margin  =	0,
-  .right_margin =	0,
-  .upper_margin =	0,
-  .lower_margin =	0,
-  .hsync_len    =	64,
-  .vsync_len    =	2,
-  .vmode =	FB_VMODE_NONINTERLACED,
+	.xres =		640,
+	.yres =		480,
+	.xres_virtual =	640,
+	.yres_virtual =	480,
+	.bits_per_pixel = 8,
+	.red =		{ 0, 8, 0 },
+      	.green =	{ 0, 8, 0 },
+      	.blue =		{ 0, 8, 0 },
+      	.activate =	FB_ACTIVATE_TEST,
+      	.height =	-1,
+      	.width =	-1,
+      	.pixclock =	20000,
+      	.left_margin =	64,
+      	.right_margin =	64,
+      	.upper_margin =	32,
+      	.lower_margin =	32,
+      	.hsync_len =	64,
+      	.vsync_len =	2,
+      	.vmode =	FB_VMODE_NONINTERLACED,
 };
 
 static struct fb_fix_screeninfo vfb_fix __devinitdata = {
@@ -145,14 +133,14 @@ static int vfb_mmap(struct fb_info *info,
 static struct fb_ops vfb_ops = {
 	.fb_read        = fb_sys_read,
 	.fb_write       = fb_sys_write,
-	.fb_check_var   = vfb_check_var,
-	.fb_set_par	    = vfb_set_par,
-	.fb_setcolreg	  = vfb_setcolreg,
+	.fb_check_var	= vfb_check_var,
+	.fb_set_par	= vfb_set_par,
+	.fb_setcolreg	= vfb_setcolreg,
 	.fb_pan_display	= vfb_pan_display,
-	.fb_fillrect	  = sys_fillrect,
-	.fb_copyarea	  = sys_copyarea,
-	.fb_imageblit  	= sys_imageblit,
-	.fb_mmap	      = vfb_mmap,
+	.fb_fillrect	= sys_fillrect,
+	.fb_copyarea	= sys_copyarea,
+	.fb_imageblit	= sys_imageblit,
+	.fb_mmap	= vfb_mmap,
 };
 
     /*
@@ -507,20 +495,8 @@ static int __init vfb_setup(char *options)
 
 static int __devinit vfb_probe(struct platform_device *dev)
 {
-  const uint8_t pic[32] = {
-    255, 0, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 0, 255, 0, 255, 0,
-  };
 	struct fb_info *info;
 	int retval = -ENOMEM;
-
-  // LOL
-  oled_s90319_panel_on();
-  oled_s90319_set_backlight(1);
-  oled_s90319_fill_with_pic(pic, 40, 90, 64, 4);
-  msleep(3000);
 
 	/*
 	 * For real video cards we use ioremap.

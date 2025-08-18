@@ -140,4 +140,6 @@ uint8_t oled_s90319_set_row_addr[] = {
 	0x00, 0x00, 0x00, 0x00
 };
 
-#endif	/* __OLED_S90320_PT__ */
+#endif	/* __OLED_S90319_PT__ */
+
+
