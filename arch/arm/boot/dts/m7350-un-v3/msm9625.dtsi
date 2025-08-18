@@ -440,6 +440,7 @@
 
 	oled {
 		compatible = "tp,oled_pt";
+    status = "disabled";
 		qcom,oled_s90319 {
 			compatible = "qcom,oled_s90319_pt";
 			qcom,oled-cs-gpio = <&msmgpio 6 0>;  /* refer to board-9625-gpiomux.c */
