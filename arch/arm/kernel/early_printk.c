@@ -29,6 +29,7 @@ static void early_console_write(struct console *con, const char *s, unsigned n)
 	early_write(s, n);
 }
 
+// HACK THE PLANET
 static struct console early_console = {
 	.name =		"earlycon",
 	.write =	early_console_write,

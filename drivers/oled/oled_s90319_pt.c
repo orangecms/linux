@@ -328,7 +328,7 @@ static int oled_s90319_area_check(const uint8_t x, const uint8_t y,
   Input	     :
   Return     :
 ************************************************************/
-static int oled_s90319_fill_with_pic(const uint8_t *pic, const uint8_t x,
+int oled_s90319_fill_with_pic(const uint8_t *pic, const uint8_t x,
 	const uint8_t y, const uint8_t width, const uint8_t height)
 {
 	int i = 0, m = 0, j = 0;
@@ -396,7 +396,7 @@ static int oled_s90319_print_buffer(char* buf)
   Input	     :
   Return     :
 ************************************************************/
-static int oled_s90319_set_backlight(const uint8_t on)
+int oled_s90319_set_backlight(const uint8_t on)
 {
 #if defined(OLED_S90319_DEBUG)
 	printk("%s, on =%u\n", __func__, on);
@@ -570,7 +570,7 @@ static void s90319_disp_powerup(void)
   Input	     :
   Return     :
 ************************************************************/
-static int oled_s90319_panel_on(void)
+int oled_s90319_panel_on(void)
 {
 #if defined(OLED_S90319_DEBUG)
 	printk("%s\n", __func__);
