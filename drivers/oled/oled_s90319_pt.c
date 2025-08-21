@@ -60,7 +60,7 @@ static struct oled_panel_data *oled_s90319_pdata;
 static struct mutex flush_mutex;
 static struct mutex oled_panel_mutex;
 
-#define BUFFER_SIZE 4<<10
+#define BUFFER_SIZE 4 << 10
 struct spi_message spi_msg;
 //struct spi_transfer spi_xfer;
 unsigned char *tx_buf;
@@ -331,8 +331,7 @@ static int oled_s90319_area_check(const uint8_t x, const uint8_t y,
 static int oled_s90319_fill_with_pic(const uint8_t *pic, const uint8_t x,
 	const uint8_t y, const uint8_t width, const uint8_t height)
 {
-	int i = 0, m = 0, j = 0;
-	uint8_t data;
+	int i = 0;
 #if defined(OLED_S90319_DEBUG)
 	printk("%s,width=%d, height=%d\n", __func__, width, height);
 #endif
@@ -346,24 +345,9 @@ static int oled_s90319_fill_with_pic(const uint8_t *pic, const uint8_t x,
 	oled_s90319_set_row_addr[1] = y + Y_OFFSET;
 	oled_s90319_set_row_addr[3] = y + height - 1 + Y_OFFSET;
 
-	for (i = 0; i < width * height / 8; i++)
+	for (i = 0; i < width * height * 2; i++)
 	{
-		data = *pic;
-		for(m = 7; (m >= 0)&&(m <= 7); m--)
-		{
-			if((data >> m) & 0x01)
-			{
-				frame_data_buf[j] = 0x00;
-				frame_data_buf[j + 1] = 0x00;
-			}
-			else
-			{
-        // Go purple!
-				frame_data_buf[j] = 0xaa;
-				frame_data_buf[j + 1] = 0x77;
-			}
-			j = j + 2;
-		}
+		frame_data_buf[i] = *pic;
 		pic++;
 	}
 
@@ -686,12 +670,11 @@ static void oled_s90319_pin_assign(void)
 static int __devinit oled_s90319_probe(struct platform_device *pdev)
 {
   const uint8_t pic[32] = {
-    255, 0, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 0, 255, 0, 255, 0,
+    255, 127, 255, 0, 255, 0, 255, 0,
+    255, 0, 255, 127, 255, 0, 255, 0,
+    0, 255, 0, 255, 127, 255, 0, 255,
+    0, 255, 0, 255, 0, 255, 127, 255,
   };
-  // const uint8_t pic[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
   uint8_t i = 0;
 
 	struct device_node *node = pdev->dev.of_node;
@@ -724,16 +707,15 @@ static int __devinit oled_s90319_probe(struct platform_device *pdev)
 	mutex_init(&flush_mutex);
 	mutex_init(&oled_panel_mutex);
 
-  // Indicator that our kernel is running, drawing a thick dashed line.
+  // Indicator that our kernel is running, budget loading animation.
 	msleep(50);
   oled_s90319_panel_on();
   oled_s90319_set_backlight(1);
-  for (i=0; i<4; i++) {
-    oled_s90319_fill_with_pic(pic, 40, 20 + 8*i, 64, 4);
-    msleep(250);
+  for (i=0; i<15; i++) {
+    oled_s90319_fill_with_pic(pic, 4 + 8*i, 4, 4, 4);
+    oled_s90319_fill_with_pic(pic, 4 + 8*i, 120, 4, 4);
+    msleep(80);
   }
-	// Our kernel currently crashes. Keep the image for a few seconds.
-  msleep(3000);
 
 	return 0;
 }

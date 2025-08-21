@@ -69,7 +69,7 @@ static ssize_t oled_buffer_store(struct device *dev, struct device_attribute *at
 	uint8_t width = buf[2];
 	uint8_t height = buf[3];
 
-	if ('\n' == *(buf + count - 1)){
+	if ('\n' == *(buf + count - 1)) {
 		data_length = count - 5;
 	} else {
 		data_length = count - 4;
@@ -86,12 +86,11 @@ static ssize_t oled_buffer_store(struct device *dev, struct device_attribute *at
 
 #ifdef CONFIG_OLED_SSD1306_PT
 	memcpy(oled_ssd1306_buf, buf + 4, data_length);
-
 	oled_pdata->oled_fill_with_pic(oled_ssd1306_buf, x, y, width, height);
 #endif
 
 #ifdef CONFIG_OLED_S90319_PT
-	memcpy(oled_s90319_buf, buf + 4, buf[2] * buf[3] / 8);
+	memcpy(oled_s90319_buf, buf + 4, width * height * 2);
 	oled_pdata->oled_fill_with_pic(oled_s90319_buf, x, y, width, height);
 #endif
 
@@ -196,7 +195,7 @@ static int __devinit oled_probe(struct platform_device *pdev)
 
 	oled_pdata = pdev->dev.platform_data;
 
-	oled_buf_size = oled_pdata->panel_width * oled_pdata->panel_height;
+	oled_buf_size = oled_pdata->panel_width * oled_pdata->panel_height * 2;
 
 	oled_display.dev = dev;
 	ret = oled_display_register(dev, &oled_display);
