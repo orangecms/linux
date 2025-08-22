@@ -1113,7 +1113,7 @@ struct net_device *gether_connect(struct gether *link)
 	if (!dev)
 		return ERR_PTR(-EINVAL);
 
-	link->header = kzalloc(sizeof(struct rndis_packet_msg_type),
+	link->header = kzalloc(44, // sizeof(struct rndis_packet_msg_type),
 							GFP_ATOMIC);
 	if (!link->header) {
 		pr_err("RNDIS header memory allocation failed.\n");

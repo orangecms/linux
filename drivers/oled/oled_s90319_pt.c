@@ -314,7 +314,7 @@ static int oled_s90319_area_check(const uint8_t x, const uint8_t y,
 {
 	if ((x < 0) || (y < 0) || (width <= 0) || (height <= 0)
 		|| (x + width > COLUMN_NUM) || (y + height > ROW_NUM)){
-		printk("%s error, row_start=%d, col_start=%d, width=%d, height=%d",
+		printk("%s error, row_start=%d, col_start=%d, width=%d, height=%d\n",
 			__func__, x, y, width, height);
 		return -EINVAL;
 	}
@@ -670,10 +670,12 @@ static void oled_s90319_pin_assign(void)
 static int __devinit oled_s90319_probe(struct platform_device *pdev)
 {
   const uint8_t pic[32] = {
-    255, 127, 255, 0, 255, 0, 255, 0,
-    255, 0, 255, 127, 255, 0, 255, 0,
-    0, 255, 0, 255, 127, 255, 0, 255,
-    0, 255, 0, 255, 0, 255, 127, 255,
+    //                       RED
+    127, 255, 255, 0,   248, 0, 248, 0,
+    255, 0, 127, 255,   248, 0, 248, 0,
+    //    BLUE
+    0, 255, 0, 255,     127, 255, 0, 255,
+    0, 255, 0, 255,     0, 255, 127, 255,
   };
   uint8_t i = 0;
 

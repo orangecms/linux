@@ -75,6 +75,9 @@ static ssize_t oled_buffer_store(struct device *dev, struct device_attribute *at
 		data_length = count - 4;
 	}
 
+	printk("%s, width=%d, height=%d, count=%d, oled_buf_size=%d\n",
+			__func__, width, height, count, oled_buf_size);
+
 	if (data_length > oled_buf_size) {
 		printk("%s, data_length=%d, oled_buf_size=%d, oled buffer overflow!\n",
 			__func__, data_length, oled_buf_size);
@@ -90,7 +93,7 @@ static ssize_t oled_buffer_store(struct device *dev, struct device_attribute *at
 #endif
 
 #ifdef CONFIG_OLED_S90319_PT
-	memcpy(oled_s90319_buf, buf + 4, width * height * 2);
+	memcpy(oled_s90319_buf, buf + 4, (uint32_t)width * (uint32_t)height * 2);
 	oled_pdata->oled_fill_with_pic(oled_s90319_buf, x, y, width, height);
 #endif
 
