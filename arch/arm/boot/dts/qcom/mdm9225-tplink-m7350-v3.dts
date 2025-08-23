@@ -12,6 +12,10 @@
 	compatible = "tplink,m7350-v3", "qcom,mdm9225", "qcom,mdm9625";
 	chassis-type = "embedded";
 	
+	qcom,msm-id = <134 7 0x20001>, <152 7 0x20001>, <149 7 0x20001>,
+		      <150 7 0x20001>, <151 7 0x20001>, <148 7 0x20001>,
+		      <173 7 0x20001>, <174 7 0x20001>, <175 7 0x20001>;
+
 	gpio-keys {
 		compatible = "gpio-keys";
 
