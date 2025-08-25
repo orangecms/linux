@@ -117,6 +117,13 @@ config PINCTRL_MDM9615
 	  This is the pinctrl, pinmux, pinconf and gpiolib driver for the
 	  Qualcomm TLMM block found in the Qualcomm 9615 platform.
 
+config PINCTRL_MDM9625
+	tristate "Qualcomm 9625 pin controller driver"
+	depends on ARM || COMPILE_TEST
+	help
+	  This is the pinctrl, pinmux, pinconf and gpiolib driver for the
+	  Qualcomm TLMM block found in the Qualcomm 9625 platform.
+
 config PINCTRL_MSM8X74
 	tristate "Qualcomm 8x74 pin controller driver"
 	depends on ARM || COMPILE_TEST
