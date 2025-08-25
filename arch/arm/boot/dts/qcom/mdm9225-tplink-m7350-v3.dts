@@ -1,0 +1,197 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2025, Jack Matthews <jack@jackmatthe.ws>
+ */
+
+#include "mdm9625.dtsi"
+#include "pm8019.dtsi"
+#include <dt-bindings/input/input.h>
+
+/ {
+	model = "TP-Link M7350 V3";
+	compatible = "tplink,m7350-v3", "qcom,mdm9225", "qcom,mdm9625";
+	chassis-type = "embedded";
+	
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-0 = <&gpio_keys_default>;
+		pinctrl-names = "default";
+
+		key-menu {
+			label = "Menu";
+			gpios = <&tlmm 14 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_MENU>;
+			debounce-interval = <15>;
+		};
+
+		key-reset {
+			label = "Reset";
+			gpios = <&tlmm 15 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+			debounce-interval = <15>;
+		};
+	};
+
+	backlight: backlight {
+		compatible = "gpio-backlight";
+		gpios = <&tlmm 61 GPIO_ACTIVE_HIGH>;
+		default-on;
+		status = "okay";
+	};
+};
+
+&blsp1_spi2 {
+	status = "okay";
+
+	spi-max-frequency = <25000000>;
+
+	num-chipselects = <1>;
+	cs-gpios = <&tlmm 6 GPIO_ACTIVE_LOW>;
+
+	panel@0 {
+		compatible = "tplink,s90319", "panel-mipi-dbi-spi";
+		reg = <0>;
+		backlight = <&backlight>;
+		dc-gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&tlmm 20 GPIO_ACTIVE_HIGH>;
+
+		height-mm = <29>;
+		width-mm = <29>;
+
+		spi-max-frequency = <9600000>;
+
+		panel-timing {
+			hactive = <128>;
+			vactive = <128>;
+			hback-porch = <0>;
+			vback-porch = <0>;
+			clock-frequency = <0>;
+			hfront-porch = <0>;
+			hsync-len = <0>;
+			vfront-porch = <0>;
+			vsync-len = <0>;
+		};
+	};
+};
+
+&tlmm {
+	gpio_keys_default: gpio-keys-default-state {
+		pins = "gpio14", "gpio15";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-up;
+	};
+};
+
+&rpm_requests {
+	pm8019-regulators {
+		compatible = "qcom,rpm-pm8019-regulators";
+
+		pm8019_s1: s1 {
+			regulator-min-microvolt = <800000>;
+			regulator-max-microvolt = <1050000>;
+		};
+
+		pm8019_s2: s2 {
+			regulator-min-microvolt = <1250000>;
+			regulator-max-microvolt = <1250000>;
+			regulator-always-on;
+		};
+		
+		pm8019_s3: s3 {
+			regulator-min-microvolt = <1000000>;
+			regulator-max-microvolt = <1100000>;
+			regulator-always-on;
+		};
+
+		pm8019_s4: s4 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <2075000>;
+			regulator-always-on;
+		};
+
+		pm8019_l1: l1 {
+			regulator-min-microvolt = <1225000>;
+			regulator-max-microvolt = <1225000>;
+		};
+
+		pm8019_l2: l2 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8019_l3: l3 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8019_l4: l4 {
+			regulator-min-microvolt = <3075000>;
+			regulator-max-microvolt = <3075000>;
+		};
+
+		pm8019_l5: l5 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <2850000>;
+		};
+
+		pm8019_l6: l6 {
+			regulator-min-microvolt = <1700000>;
+			regulator-max-microvolt = <3050000>;
+		};
+
+		pm8019_l7: l7 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8019_l8: l8 {
+			regulator-min-microvolt = <2050000>;
+			regulator-max-microvolt = <2050000>;
+		};
+
+		pm8019_l9: l9 {
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			regulator-always-on;
+		};
+
+		pm8019_l10: l10 {
+			regulator-min-microvolt = <500000>;
+			regulator-max-microvolt = <1050000>;
+		};
+
+		pm8019_l11: l11 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-always-on;
+		};
+
+		pm8019_l12: l12 {
+			regulator-min-microvolt = <675000>;
+			regulator-max-microvolt = <1050000>;
+		};
+		
+		pm8019_l13: l13 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <2950000>;
+		};
+
+		pm8019_l14: l14 {
+			regulator-min-microvolt = <2700000>;
+			regulator-max-microvolt = <2700000>;
+		};
+	};
+};
+
+&usb {
+	dr_mode = "peripheral";
+
+	status = "okay";
+};
+
+&usb_hs_phy {
+	v1p8-supply = <&pm8019_l2>;
+	v3p3-supply = <&pm8019_l4>;
+};
