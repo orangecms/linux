@@ -33,6 +33,7 @@
 #define PON_RT_STS			0x10
 #define  PON_KPDPWR_N_SET		BIT(0)
 #define  PON_RESIN_N_SET		BIT(1)
+#define  PON_CBLPWR_N_SET	 	BIT(2)
 #define  PON_GEN3_RESIN_N_SET		BIT(6)
 #define  PON_GEN3_KPDPWR_N_SET		BIT(7)
 
@@ -45,6 +46,7 @@
 #define  PON_PS_HOLD_TYPE_HARD_RESET	7
 
 #define PON_PULL_CTL			0x70
+#define  PON_CBLPWR_PULL_UP		BIT(2)
 #define  PON_KPDPWR_PULL_UP		BIT(1)
 #define  PON_RESIN_PULL_UP		BIT(0)
 
@@ -436,6 +438,16 @@ static const struct pm8941_data resin_data = {
 	.has_pon_pbs = false,
 };
 
+static const struct pm8941_data cblpwr_data = {
+	.pull_up_bit = PON_CBLPWR_PULL_UP,
+	.status_bit = PON_CBLPWR_N_SET,
+	.name = "pm8941_cblpwr",
+	.phys = "pm8941_cblpwr/input0",
+	.supports_ps_hold_poff_config = true,
+	.supports_debounce_config = true,
+	.has_pon_pbs = false,
+};
+
 static const struct pm8941_data pon_gen3_pwrkey_data = {
 	.status_bit = PON_GEN3_KPDPWR_N_SET,
 	.name = "pmic_pwrkey",
@@ -457,6 +469,7 @@ static const struct pm8941_data pon_gen3_resin_data = {
 static const struct of_device_id pm8941_pwr_key_id_table[] = {
 	{ .compatible = "qcom,pm8941-pwrkey", .data = &pwrkey_data },
 	{ .compatible = "qcom,pm8941-resin", .data = &resin_data },
+	{ .compatible = "qcom,pm8941-cblpwr", .data = &cblpwr_data },
 	{ .compatible = "qcom,pmk8350-pwrkey", .data = &pon_gen3_pwrkey_data },
 	{ .compatible = "qcom,pmk8350-resin", .data = &pon_gen3_resin_data },
 	{ }
