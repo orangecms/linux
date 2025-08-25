@@ -1,0 +1,363 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2025, Jack Matthews <jack@jackmatthe.ws>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/clock/qcom,gcc-msm8974.h>
+#include <dt-bindings/reset/qcom,gcc-msm8974.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	model = "Qualcomm MDM9625";
+	compatible = "qcom,mdm9625";
+	interrupt-parent = <&intc>;
+
+	chosen { };
+
+	clocks {
+		xo_board: xo_board {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <19200000>;
+		};
+
+		sleep_clk: sleep_clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a5";
+			reg = <0>;
+			next-level-cache = <&l2>;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x300000 0x0>;
+	};
+
+	rpm: remoteproc {
+		compatible = "qcom,rpm-proc";
+
+		smd-edge {
+			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
+			qcom,smd-edge = <15>;
+			mboxes = <&apcs 0>;
+
+			rpm_requests: rpm-requests {
+				compatible = "qcom,rpm-mdm9625", "qcom,smd-rpm";
+				qcom,smd-channels = "rpm_requests";
+
+				rpmcc: clock-controller {
+					compatible = "qcom,rpmcc-mdm9625", "qcom,rpmcc";
+					#clock-cells = <1>;
+					clocks = <&xo_board>;
+					clock-names = "xo";
+				};
+			};
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		smem@0 {
+			compatible = "qcom,smem";
+			reg = <0x0 0x300000>;
+			no-map;
+
+			hwlocks = <&tcsr_mutex 3>;
+			qcom,rpm-msg-ram = <&rpm_msg_ram>;
+		};
+
+		mem_hole: memory@1c00000 {
+			no-map;
+			reg = <0x1c00000 0x4800000>;
+		};
+
+		mem_hole_2: memory@7e00000 {
+			no-map;
+			reg = <0x7e00000 0x200000>;
+		};
+	};
+
+	soc: soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		intc: interrupt-controller@f9000000 {
+			compatible = "qcom,msm-qgic2";
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			reg = <0xf9000000 0x1000>,
+			      <0xf9002000 0x1000>;
+		};
+
+		apcs: mailbox@f9011000 {
+			compatible = "qcom,mdm9625-apcs-kpss-global",
+				     "qcom,msm8916-apcs-kpss-global", "syscon";
+			reg = <0xf9011000 0x1000>;
+			#mbox-cells = <1>;
+			clocks = <&a5pll>, <&gcc GPLL0_VOTE>;
+			clock-names = "pll", "aux";
+			#clock-cells = <0>;
+		};
+
+		
+		a5pll: clock@f9008018 {
+			compatible = "qcom,mdm9625-a5pll";
+			reg = <0xf9008018 0x18>;
+			#clock-cells = <0>;
+			clocks = <&xo_board>;
+			clock-names = "xo";
+			operating-points-v2 = <&a5pll_opp_table>;
+
+			a5pll_opp_table: opp-table {
+				compatible = "operating-points-v2";
+
+				opp-748800000 {
+					opp-hz = /bits/ 64 <748800000>;
+				};
+
+				opp-998400000 {
+					opp-hz = /bits/ 64 <998400000>;
+				};
+			};
+		};
+
+		l2: cache-controller@f9040000 {
+			compatible = "arm,pl310-cache";
+			reg = <0xf9040000 0x1000>;
+			cache-unified;
+			cache-level = <2>;
+			// Needs to be turned on by SCM
+			status = "disabled";
+		};
+
+		timer@f9020000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+			compatible = "arm,armv7-timer-mem";
+			reg = <0xf9020000 0x1000>;
+			clock-frequency = <19200000>;
+
+			frame@f9021000 {
+				frame-number = <0>;
+				interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>,
+					    	 <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9021000 0x1000>,
+				      <0xf9022000 0x1000>;
+			};
+
+			frame@f9023000 {
+				frame-number = <1>;
+				interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9023000 0x1000>;
+				status = "disabled";
+			};
+
+			frame@f9024000 {
+				frame-number = <2>;
+				interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9024000 0x1000>;
+				status = "disabled";
+			};
+
+			frame@f9025000 {
+				frame-number = <3>;
+				interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9025000 0x1000>;
+				status = "disabled";
+			};
+
+			frame@f9026000 {
+				frame-number = <4>;
+				interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9026000 0x1000>;
+				status = "disabled";
+			};
+
+			frame@f9027000 {
+				frame-number = <5>;
+				interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9027000 0x1000>;
+				status = "disabled";
+			};
+
+			frame@f9028000 {
+				frame-number = <6>;
+				interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9028000 0x1000>;
+				status = "disabled";
+			};
+
+			frame@f9029000 {
+				frame-number = <7>;
+				interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
+				reg = <0xf9029000 0x1000>;
+				status = "disabled";
+			};
+		};
+
+		blsp1_spi2: spi@f9924000 {
+			compatible = "qcom,spi-qup-v2.2.1";
+			reg = <0xf9924000 0x1000>;
+			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&gcc GCC_BLSP1_QUP2_SPI_APPS_CLK>, <&gcc GCC_BLSP1_AHB_CLK>;
+			clock-names = "core", "iface";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			pinctrl-0 = <&blsp1_spi2_default>;
+			pinctrl-1 = <&blsp1_spi2_sleep>;
+			pinctrl-names = "default", "sleep";
+
+			status = "disabled";
+		};
+
+		usb: usb@f9a55000 {
+			compatible = "qcom,ci-hdrc";
+			reg = <0xf9a55000 0x200>,
+			      <0xf9a55200 0x200>;
+			interrupts = <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&gcc GCC_USB_HS_AHB_CLK>,
+				 <&gcc GCC_USB_HS_SYSTEM_CLK>;
+			clock-names = "iface", "core";
+			assigned-clocks = <&gcc GCC_USB_HS_SYSTEM_CLK>;
+			assigned-clock-rates = <75000000>;
+			resets = <&gcc GCC_USB_HS_BCR>;
+			reset-names = "core";
+			phy_type = "ulpi";
+			dr_mode = "peripheral";
+			hnp-disable;
+			srp-disable;
+			adp-disable;
+			ahb-burst-config = <0>;
+			phy-names = "usb-phy";
+			phys = <&usb_hs_phy>;
+			#reset-cells = <1>;
+
+			status = "disabled";
+
+			ulpi {
+				usb_hs_phy: phy {
+					compatible = "qcom,usb-hs-phy-mdm9625",
+						     "qcom,usb-hs-phy";
+					#phy-cells = <0>;
+					clocks = <&xo_board>, <&sleep_clk>;
+					clock-names = "ref", "sleep";
+					resets = <&usb 0>;
+					reset-names = "por";
+				};
+			};
+		};
+
+		rng@f9bff000 {
+			compatible = "qcom,prng";
+			reg = <0xf9bff000 0x200>;
+			clocks = <&gcc GCC_PRNG_AHB_CLK>;
+			clock-names = "core";
+			
+			status = "disabled";
+		};
+
+		gcc: clock-controller@fc400000 {
+			compatible = "qcom,gcc-mdm9625";
+			reg = <0xfc400000 0x4000>;
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+			#power-domain-cells = <1>;
+
+			clocks = <&xo_board>,
+				 <&sleep_clk>;
+			clock-names = "xo",
+				      "sleep_clk";			
+		};
+
+		rpm_msg_ram: sram@fc428000 {
+			compatible = "qcom,rpm-msg-ram";
+			reg = <0xfc428000 0x4000>;
+		};
+
+		restart@fc4ab000 {
+			compatible = "qcom,pshold";
+			reg = <0xfc4ab000 0x4>;
+		};
+
+		spmi_bus: spmi@fc4cf000 {
+			compatible = "qcom,spmi-pmic-arb";
+			reg-names = "core", "intr", "cnfg";
+			reg = <0xfc4cf000 0x1000>,
+			      <0xfc4cb000 0x1000>,
+			      <0xfc4ca000 0x1000>;
+			interrupt-names = "periph_irq";
+			interrupts = <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
+			qcom,ee = <0>;
+			qcom,channel = <0>;
+			#address-cells = <2>;
+			#size-cells = <0>;
+			interrupt-controller;
+			#interrupt-cells = <4>;
+		};
+		
+		tlmm: pinctrl@fd510000 {
+			compatible = "qcom,mdm9625-pinctrl";
+			reg = <0xfd510000 0x4000>;
+			gpio-controller;
+			gpio-ranges = <&tlmm 0 0 76>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>;
+
+			blsp1_spi2_default: blsp1-spi2-default-state {
+				spi-pins {
+					pins = "gpio4", "gpio5", "gpio7";
+					function = "blsp_spi2";
+					drive-strength = <12>;
+					bias-disable;
+				};
+				
+				cs-pins {
+					pins = "gpio6";
+					function = "gpio";
+					drive-strength = <12>;
+					bias-disable;
+					output-high;
+				};
+			};
+
+			blsp1_spi2_sleep: blsp1-spi2-sleep-state {
+				pins = "gpio4", "gpio5", "gpio6", "gpio7";
+				function = "gpio";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		tcsr_mutex: hwlock@fd484000 {
+			compatible = "qcom,mdm9625-tcsr-mutex", "qcom,msm8226-tcsr-mutex", "qcom,tcsr-mutex";
+			reg = <0xfd484000 0x1000>;
+			#hwlock-cells = <1>;
+		};
+	};
+};
