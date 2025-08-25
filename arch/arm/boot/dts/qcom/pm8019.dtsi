@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include <dt-bindings/spmi/spmi.h>
+
+&spmi_bus {
+	pm8019_0: pmic@0 {
+		compatible = "qcom,pm8019", "qcom,spmi-pmic";
+		reg = <0x0 SPMI_USID>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pm8019_mpps: mpps@a000 {
+			compatible = "qcom,pm8019-mpp", "qcom,spmi-mpp";
+			reg = <0xa000>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&pm8019_mpps 0 0 6>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		pm8019_gpios: gpios@c000 {
+			compatible = "qcom,pm8019-gpio", "qcom,spmi-gpio";
+			reg = <0xc000>;
+			gpio-controller;
+			gpio-ranges = <&pm8019_gpios 0 0 6>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+	};
+};
