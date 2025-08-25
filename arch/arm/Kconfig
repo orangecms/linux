@@ -1588,6 +1588,13 @@ config XIP_DEFLATED_DATA
 config ARCH_SUPPORTS_KEXEC
 	def_bool (!SMP || PM_SLEEP_SMP) && MMU
 
+config ARCH_SUPPORTS_KEXEC_FILE
+	def_bool y
+
+config ARCH_SELECTS_KEXEC_FILE
+	def_bool y
+	depends on KEXEC_FILE
+
 config ATAGS_PROC
 	bool "Export atags in procfs"
 	depends on ATAGS && KEXEC
