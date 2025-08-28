@@ -61,6 +61,8 @@
 
 		spi-max-frequency = <9600000>;
 
+		big-endian;
+
 		panel-timing {
 			hactive = <128>;
 			vactive = <128>;
