@@ -367,6 +367,9 @@ static int panel_mipi_dbi_spi_probe(struct spi_device *spi)
 	if (device_property_present(dev, "write-only"))
 		dbi->read_commands = NULL;
 
+	if (device_property_present(dev, "big-endian"))
+		dbi->swap_bytes = true;
+
 	dbidev->driver_private = panel_mipi_dbi_commands_from_fw(dev);
 	if (IS_ERR(dbidev->driver_private))
 		return PTR_ERR(dbidev->driver_private);
