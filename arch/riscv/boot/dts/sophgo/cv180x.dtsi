@@ -433,7 +433,7 @@
 		};
 
 		usb: usb@4340000 {
-			compatible = "sophgo,cv1800-usb";
+			compatible = "sophgo,cv1800b-usb";
 			reg = <0x04340000 0x10000>;
 			clocks = <&clk CLK_AXI4_USB>, <&clk CLK_APB_USB>;
 			clock-names = "otg", "utmi";
