@@ -98,3 +98,11 @@
 &usb {
 	status = "okay";
 };
+
+&mdio {
+	status = "okay";
+};
+
+&gmac0 {
+	status = "okay";
+};
