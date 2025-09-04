@@ -94,3 +94,7 @@
 	pinctrl-names = "default";
 	status = "okay";
 };
+
+&usb {
+	status = "okay";
+};
